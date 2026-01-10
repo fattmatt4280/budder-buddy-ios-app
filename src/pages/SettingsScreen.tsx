@@ -8,8 +8,7 @@ import {
   ChevronRight,
   Clock,
   Droplet,
-  Trash2,
-  Plus
+  Trash2
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { useTattoos, useSettings } from '@/hooks/useStorage';
 import { getDayNumber, getHealingPhase } from '@/types';
 import { cn } from '@/lib/utils';
+import mascotImage from '@/assets/mascot.png';
 import {
   Dialog,
   DialogContent,
@@ -69,9 +69,16 @@ export default function SettingsScreen() {
 
   return (
     <div className="min-h-screen bg-background safe-area-top">
-      {/* Header */}
+      {/* Header with mascot */}
       <div className="px-6 pt-6 pb-4">
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        <div className="flex items-center gap-4">
+          <img 
+            src={mascotImage} 
+            alt="Budder Buddy" 
+            className="w-12 h-12 rounded-xl shadow-md"
+          />
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        </div>
       </div>
 
       <div className="px-6 pb-8 space-y-6">
