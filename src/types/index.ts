@@ -41,19 +41,37 @@ export interface PhotoEntry {
   caption?: string;
 }
 
+export type FrequencyPreset = '2_per_day' | '3_per_day' | '4_per_day';
+export type SnoozeDuration = '30' | '60' | '120';
+
+export interface ReminderTypesEnabled {
+  wash: boolean;
+  moisturize: boolean;
+  checkin: boolean;
+}
+
 export interface NotificationSchedule {
-  morningTime: string; // HH:MM format
-  eveningTime: string; // HH:MM format
-  frequencyPreset: '1_per_day' | '2_per_day' | 'none';
+  morningTime: string; // HH:MM format (legacy)
+  eveningTime: string; // HH:MM format (legacy)
+  frequencyPreset: FrequencyPreset;
 }
 
 export interface AppSettings {
   notificationsEnabled: boolean;
   notifSchedule: NotificationSchedule;
+  // New Smart Reminders settings
+  quietHoursEnabled: boolean;
+  wakeTime: string; // HH:MM format
+  bedTime: string; // HH:MM format
+  reminderTypesEnabled: ReminderTypesEnabled;
+  snoozeMinutes: SnoozeDuration;
+  pausedUntil: string | null; // ISO date string for pause feature
+  // Existing settings
   cloudSyncEnabled: boolean;
   selectedTattooId: string | null;
   hasCompletedOnboarding: boolean;
   hasAcknowledgedDisclaimer: boolean;
+  hasCompletedReminderSetup: boolean;
 }
 
 export interface HealingPhase {

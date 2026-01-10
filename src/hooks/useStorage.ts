@@ -15,10 +15,23 @@ const DEFAULT_SETTINGS: AppSettings = {
     eveningTime: '20:00',
     frequencyPreset: '2_per_day',
   },
+  // Smart Reminders defaults
+  quietHoursEnabled: true,
+  wakeTime: '09:00',
+  bedTime: '23:00',
+  reminderTypesEnabled: {
+    wash: true,
+    moisturize: true,
+    checkin: true,
+  },
+  snoozeMinutes: '60',
+  pausedUntil: null,
+  // Existing settings
   cloudSyncEnabled: false,
   selectedTattooId: null,
   hasCompletedOnboarding: false,
   hasAcknowledgedDisclaimer: false,
+  hasCompletedReminderSetup: false,
 };
 
 function getFromStorage<T>(key: string, defaultValue: T): T {
