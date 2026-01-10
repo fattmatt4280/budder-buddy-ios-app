@@ -40,9 +40,9 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const FREQUENCY_OPTIONS: { value: FrequencyPreset; label: string }[] = [
-  { value: '2_per_day', label: '2x/day' },
-  { value: '3_per_day', label: '3x/day' },
-  { value: '4_per_day', label: '4x/day' },
+  { value: '2_per_day', label: '+2/day' },
+  { value: '3_per_day', label: '+3/day' },
+  { value: '4_per_day', label: '+4/day' },
 ];
 
 const SNOOZE_OPTIONS: { value: SnoozeDuration; label: string }[] = [
@@ -264,7 +264,7 @@ export default function SettingsScreen() {
 
                 {/* Frequency */}
                 <div className="p-4 space-y-3">
-                  <Label className="text-sm text-muted-foreground">Frequency</Label>
+                  <Label className="text-sm text-muted-foreground">Extra reminders (+ wake &amp; bed)</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {FREQUENCY_OPTIONS.map((option) => (
                       <button
