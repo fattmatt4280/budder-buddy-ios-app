@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Droplet, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSettings } from '@/hooks/useStorage';
+import mascotImage from '@/assets/mascot.png';
 
 export default function WelcomeScreen() {
   const navigate = useNavigate();
@@ -18,12 +18,11 @@ export default function WelcomeScreen() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         {/* Mascot/Logo */}
         <div className="relative mb-8 animate-fade-in">
-          <div className="w-32 h-32 rounded-full gradient-primary flex items-center justify-center shadow-2xl">
-            <Droplet className="w-16 h-16 text-primary-foreground" strokeWidth={1.5} />
-          </div>
-          <div className="absolute -top-1 -right-1">
-            <Sparkles className="w-8 h-8 text-accent animate-pulse-soft" />
-          </div>
+          <img 
+            src={mascotImage} 
+            alt="Budder Buddy mascot" 
+            className="w-40 h-40 rounded-3xl shadow-2xl"
+          />
         </div>
 
         {/* Title */}
