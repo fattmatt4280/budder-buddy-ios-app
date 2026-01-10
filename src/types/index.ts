@@ -72,6 +72,10 @@ export interface AppSettings {
   hasCompletedOnboarding: boolean;
   hasAcknowledgedDisclaimer: boolean;
   hasCompletedReminderSetup: boolean;
+  // Post-reminder UX flags
+  remindersJustSaved: boolean;
+  todayStartHereDismissed: boolean;
+  notificationPermissionStatus: 'granted' | 'denied' | 'default' | null;
 }
 
 export interface HealingPhase {

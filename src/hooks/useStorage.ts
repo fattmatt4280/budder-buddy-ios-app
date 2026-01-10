@@ -32,6 +32,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   hasCompletedOnboarding: false,
   hasAcknowledgedDisclaimer: false,
   hasCompletedReminderSetup: false,
+  // Post-reminder UX flags
+  remindersJustSaved: false,
+  todayStartHereDismissed: false,
+  notificationPermissionStatus: null,
 };
 
 function getFromStorage<T>(key: string, defaultValue: T): T {

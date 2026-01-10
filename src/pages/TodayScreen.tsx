@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Camera, Plus, Check, Droplet, Sun, Hand, GlassWater, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { useTattoos, useSettings, useCheckins, generateId } from '@/hooks/useStorage';
-import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist } from '@/types';
+import { useTattoos, useSettings, useCheckins, usePhotos, generateId } from '@/hooks/useStorage';
+import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist, HEALING_PHASES } from '@/types';
 import { getDayContent, getAdjustedContent } from '@/data/healingTimeline';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import mascotImage from '@/assets/mascot.png';
+import StartHereCard from '@/components/reminders/StartHereCard';
+import EnableNotificationsBanner from '@/components/reminders/EnableNotificationsBanner';
 import {
   Dialog,
   DialogContent,
@@ -24,16 +26,52 @@ const CHECKLIST_ITEMS = [
   { key: 'drankWater', label: 'Stayed hydrated', icon: GlassWater },
 ] as const;
 
+// Get a short phase description
+function getPhaseOneLiner(phaseName: string): string {
+  switch (phaseName) {
+    case 'Fresh':
+      return 'Your tattoo is fresh and needs gentle care. Keep it clean and moisturized.';
+    case 'Early Healing':
+      return 'The initial healing has begun. You may see some redness and slight swelling.';
+    case 'Peeling':
+      return 'Peeling is normal! Don\'t pick at it. Let the skin shed naturally.';
+    case 'Settling':
+      return 'Almost there! The tattoo is settling into your skin beautifully.';
+    case 'Healed':
+      return 'Your tattoo has healed! Keep moisturizing and protecting from sun.';
+    default:
+      return 'Keep up the great aftercare routine!';
+  }
+}
+
 export default function TodayScreen() {
   const navigate = useNavigate();
   const { tattoos, getTattoo } = useTattoos();
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const { getCheckinForDay, addCheckin, updateCheckin } = useCheckins();
+  const { getPhotosForTattoo } = usePhotos();
+  
+  const checklistRef = useRef<HTMLDivElement>(null);
+  const whatsNormalRef = useRef<HTMLDivElement>(null);
 
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
+  const [showStartHereHighlight, setShowStartHereHighlight] = useState(false);
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
+
+  // Check if we just saved reminders
+  useEffect(() => {
+    if (settings.remindersJustSaved) {
+      setShowStartHereHighlight(true);
+      // Clear the flag after showing
+      const timer = setTimeout(() => {
+        updateSettings({ remindersJustSaved: false });
+        setShowStartHereHighlight(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [settings.remindersJustSaved, updateSettings]);
 
   if (!tattoo) {
     return (
@@ -57,9 +95,19 @@ export default function TodayScreen() {
   const progress = getHealingProgress(dayNumber);
   const baseContent = getDayContent(dayNumber);
   const content = getAdjustedContent(baseContent, tattoo.sizeTier, tattoo.inkType);
+  const phaseOneLiner = getPhaseOneLiner(phase.name);
 
   const todayDate = new Date().toISOString().split('T')[0];
   const existingCheckin = getCheckinForDay(tattoo.id, dayNumber);
+  const photos = getPhotosForTattoo(tattoo.id);
+  const hasPhotos = photos.length > 0;
+
+  // Show start here card if: not dismissed AND (just saved reminders OR first time with no photos)
+  const shouldShowStartHere = !settings.todayStartHereDismissed && 
+    (settings.remindersJustSaved || !hasPhotos);
+
+  // Show notifications banner if permission denied
+  const showNotificationsBanner = settings.notificationPermissionStatus === 'denied';
 
   const [checklist, setChecklist] = useState<DailyChecklist>({
     washed: false,
@@ -110,6 +158,27 @@ export default function TodayScreen() {
     setNoteDialogOpen(false);
   };
 
+  const handleDismissStartHere = () => {
+    updateSettings({ todayStartHereDismissed: true });
+  };
+
+  const handleScrollToChecklist = () => {
+    checklistRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleOpenAddPhoto = () => {
+    navigate('/photos');
+  };
+
+  const handleOpenWhatsNormal = () => {
+    whatsNormalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleOpenIOSSettings = () => {
+    // For web, we can only show a message. On native iOS, this would open system settings
+    alert('Please open your device Settings app and enable notifications for Budder Buddy.');
+  };
+
   const completedCount = Object.values(checklist).filter(Boolean).length;
 
   return (
@@ -156,8 +225,33 @@ export default function TodayScreen() {
 
       {/* Content cards */}
       <div className="px-6 space-y-4 pb-6">
+        {/* Notifications Banner */}
+        {showNotificationsBanner && (
+          <div className="animate-fade-in">
+            <EnableNotificationsBanner onOpenSettings={handleOpenIOSSettings} />
+          </div>
+        )}
+
+        {/* Start Here Card */}
+        {shouldShowStartHere && (
+          <div className="animate-fade-in">
+            <StartHereCard
+              dayNumber={dayNumber}
+              phaseOneLiner={phaseOneLiner}
+              onScrollToChecklist={handleScrollToChecklist}
+              onOpenAddPhoto={handleOpenAddPhoto}
+              onOpenWhatsNormal={handleOpenWhatsNormal}
+              onDismiss={handleDismissStartHere}
+              isHighlighted={showStartHereHighlight}
+            />
+          </div>
+        )}
+
         {/* What's Normal */}
-        <div className="bg-card rounded-2xl p-5 border border-border animate-fade-in">
+        <div 
+          ref={whatsNormalRef}
+          className="bg-card rounded-2xl p-5 border border-border animate-fade-in"
+        >
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
               <Check className="w-4 h-4 text-success" />
@@ -211,7 +305,11 @@ export default function TodayScreen() {
         </div>
 
         {/* Daily Checklist */}
-        <div className="bg-card rounded-2xl p-5 border border-border animate-fade-in" style={{ animationDelay: '0.3s' }}>
+        <div 
+          ref={checklistRef}
+          className="bg-card rounded-2xl p-5 border border-border animate-fade-in" 
+          style={{ animationDelay: '0.3s' }}
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-foreground">Today's Checklist</h3>
             <span className="text-sm text-muted-foreground">{completedCount}/{CHECKLIST_ITEMS.length}</span>
