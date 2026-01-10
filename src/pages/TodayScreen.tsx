@@ -8,6 +8,7 @@ import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist } fro
 import { getDayContent, getAdjustedContent } from '@/data/healingTimeline';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import mascotImage from '@/assets/mascot.png';
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,11 @@ export default function TodayScreen() {
   if (!tattoo) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
-        <Droplet className="w-16 h-16 text-primary mb-4" />
+        <img 
+          src={mascotImage} 
+          alt="Budder Buddy mascot" 
+          className="w-24 h-24 rounded-2xl shadow-lg mb-4 animate-fade-in"
+        />
         <h2 className="text-xl font-bold mb-2">No Tattoo Added</h2>
         <p className="text-muted-foreground mb-6">Add your first tattoo to start tracking.</p>
         <Button onClick={() => navigate('/settings')} className="gradient-primary">
@@ -109,12 +114,19 @@ export default function TodayScreen() {
 
   return (
     <div className="min-h-screen bg-background safe-area-top">
-      {/* Header */}
+      {/* Header with mascot */}
       <div className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-sm text-muted-foreground">{tattoo.bodyLocation}</p>
-            <h1 className="text-3xl font-bold text-foreground">Day {dayNumber}</h1>
+          <div className="flex items-center gap-3">
+            <img 
+              src={mascotImage} 
+              alt="Budder Buddy" 
+              className="w-12 h-12 rounded-xl shadow-md"
+            />
+            <div>
+              <p className="text-sm text-muted-foreground">{tattoo.bodyLocation}</p>
+              <h1 className="text-3xl font-bold text-foreground">Day {dayNumber}</h1>
+            </div>
           </div>
           <div className={cn(
             "px-3 py-1.5 rounded-full text-sm font-medium",

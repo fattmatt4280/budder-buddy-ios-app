@@ -4,6 +4,7 @@ import { Search, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { EDUCATION_CATEGORIES, searchArticles } from '@/data/educationContent';
 import { cn } from '@/lib/utils';
+import mascotImage from '@/assets/mascot.png';
 
 export default function LearnScreen() {
   const navigate = useNavigate();
@@ -13,12 +14,21 @@ export default function LearnScreen() {
 
   return (
     <div className="min-h-screen bg-background safe-area-top">
-      {/* Header */}
+      {/* Header with mascot */}
       <div className="px-6 pt-6 pb-4">
-        <h1 className="text-2xl font-bold text-foreground mb-1">Learn</h1>
-        <p className="text-muted-foreground text-sm mb-4">
-          Everything you need to know about tattoo healing
-        </p>
+        <div className="flex items-center gap-4 mb-4">
+          <img 
+            src={mascotImage} 
+            alt="Budder Buddy" 
+            className="w-12 h-12 rounded-xl shadow-md"
+          />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Learn</h1>
+            <p className="text-muted-foreground text-sm">
+              Everything about tattoo healing
+            </p>
+          </div>
+        </div>
 
         {/* Search bar */}
         <div className="relative">
