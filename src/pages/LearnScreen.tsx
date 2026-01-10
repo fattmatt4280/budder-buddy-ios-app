@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { EDUCATION_CATEGORIES, searchArticles } from '@/data/educationContent';
 import { cn } from '@/lib/utils';
@@ -74,6 +74,7 @@ export default function LearnScreen() {
               <div className="flex items-center gap-3 mb-3">
                 <div className={cn(
                   "w-10 h-10 rounded-xl flex items-center justify-center text-lg",
+                  category.id === 'aftercare-guide' && "bg-primary/10",
                   category.id === 'whats-normal' && "bg-success/10",
                   category.id === 'common-mistakes' && "bg-warning/10",
                   category.id === 'itch-peeling' && "bg-accent/20",
@@ -82,7 +83,14 @@ export default function LearnScreen() {
                 )}>
                   {category.icon}
                 </div>
-                <h2 className="font-semibold text-foreground">{category.title}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-foreground">{category.title}</h2>
+                  {category.id === 'aftercare-guide' && (
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                      Featured
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Articles */}
@@ -90,15 +98,30 @@ export default function LearnScreen() {
                 {category.articles.map((article) => (
                   <button
                     key={article.id}
-                    onClick={() => navigate(`/learn/${article.id}`)}
-                    className="w-full bg-card rounded-xl p-4 border border-border text-left hover:border-primary/50 transition-colors group"
+                    onClick={() => {
+                      if (article.externalUrl) {
+                        window.open(article.externalUrl, '_blank', 'noopener,noreferrer');
+                      } else {
+                        navigate(`/learn/${article.id}`);
+                      }
+                    }}
+                    className={cn(
+                      "w-full rounded-xl p-4 border text-left transition-colors group",
+                      article.externalUrl 
+                        ? "bg-primary/5 border-primary/20 hover:border-primary/40" 
+                        : "bg-card border-border hover:border-primary/50"
+                    )}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-foreground mb-0.5">{article.title}</h3>
                         <p className="text-sm text-muted-foreground line-clamp-1">{article.summary}</p>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-2" />
+                      {article.externalUrl ? (
+                        <ExternalLink className="w-5 h-5 text-primary group-hover:text-primary/80 transition-colors shrink-0 ml-2" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-2" />
+                      )}
                     </div>
                   </button>
                 ))}

@@ -109,6 +109,7 @@ export interface EducationArticle {
   summary: string;
   content: string[];
   escalationNote?: string;
+  externalUrl?: string;
 }
 
 // Body locations

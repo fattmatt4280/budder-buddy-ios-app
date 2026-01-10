@@ -2,6 +2,23 @@ import { EducationCategory, EducationArticle } from '@/types';
 
 export const EDUCATION_CATEGORIES: EducationCategory[] = [
   {
+    id: 'aftercare-guide',
+    title: 'Tattoo Aftercare Guide',
+    icon: '📖',
+    articles: [
+      {
+        id: 'complete-aftercare-guide',
+        categoryId: 'aftercare-guide',
+        title: 'Complete Aftercare Guide',
+        summary: 'Your comprehensive guide to healing your new tattoo',
+        content: [
+          'Everything you need to know about caring for your new tattoo, from day one through full healing.'
+        ],
+        externalUrl: 'https://bluedreambudder.com/tattoo-aftercare-guide'
+      }
+    ]
+  },
+  {
     id: 'whats-normal',
     title: "What's Normal",
     icon: '✓',
