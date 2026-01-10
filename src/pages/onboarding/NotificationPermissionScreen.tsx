@@ -10,12 +10,11 @@ export default function NotificationPermissionScreen() {
 
   const handleEnableNotifications = async () => {
     // In a native app, this would request permission
-    // For now, we just update settings
+    // For now, we just update settings and proceed to reminder setup
     updateSettings({ 
       notificationsEnabled: true,
-      hasCompletedOnboarding: true 
     });
-    navigate('/');
+    navigate('/reminder-setup');
   };
 
   const handleSkip = () => {

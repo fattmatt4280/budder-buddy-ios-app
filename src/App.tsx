@@ -12,6 +12,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import WelcomeScreen from "@/pages/onboarding/WelcomeScreen";
 import TattooSetupWizard from "@/pages/onboarding/TattooSetupWizard";
 import NotificationPermissionScreen from "@/pages/onboarding/NotificationPermissionScreen";
+import ReminderSetupScreen from "@/pages/onboarding/ReminderSetupScreen";
 
 // Main app screens
 import TodayScreen from "@/pages/TodayScreen";
@@ -35,6 +36,7 @@ function AppRoutes() {
         <Route path="/" element={<WelcomeScreen />} />
         <Route path="/setup" element={<TattooSetupWizard />} />
         <Route path="/notifications" element={<NotificationPermissionScreen />} />
+        <Route path="/reminder-setup" element={<ReminderSetupScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
