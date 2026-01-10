@@ -4,10 +4,12 @@ import { Clock, Moon, Sun, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { useSettings } from '@/hooks/useStorage';
+import { useSettings, useTattoos, useCheckins, generateId } from '@/hooks/useStorage';
 import { cn } from '@/lib/utils';
 import type { FrequencyPreset } from '@/types';
+import { getDayNumber } from '@/types';
 import { generateReminderTimes, formatTimeForDisplay } from '@/lib/reminderScheduler';
+import ReminderSuccessModal from '@/components/reminders/ReminderSuccessModal';
 import mascotImage from '@/assets/mascot.png';
 
 const FREQUENCY_OPTIONS: { value: FrequencyPreset; label: string; recommended?: boolean }[] = [
@@ -19,6 +21,8 @@ const FREQUENCY_OPTIONS: { value: FrequencyPreset; label: string; recommended?: 
 export default function ReminderSetupScreen() {
   const navigate = useNavigate();
   const { settings, updateSettings } = useSettings();
+  const { tattoos } = useTattoos();
+  const { getCheckinForDay, addCheckin } = useCheckins();
   
   const [wakeTime, setWakeTime] = useState(settings.wakeTime);
   const [bedTime, setBedTime] = useState(settings.bedTime);
@@ -26,6 +30,7 @@ export default function ReminderSetupScreen() {
   const [frequencyPreset, setFrequencyPreset] = useState<FrequencyPreset>(
     settings.notifSchedule.frequencyPreset
   );
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Preview scheduled times
   const scheduledReminders = generateReminderTimes(
@@ -36,7 +41,40 @@ export default function ReminderSetupScreen() {
     quietHoursEnabled
   );
 
+  // Calculate values for success modal
+  const quietHoursRange = `${formatTimeForDisplay(bedTime)} – ${formatTimeForDisplay(wakeTime)}`;
+  const frequencyLabel = `+${frequencyPreset === '2_per_day' ? '2' : frequencyPreset === '3_per_day' ? '3' : '4'}/day`;
+  const nextReminderTime = scheduledReminders.times[0]?.time || wakeTime;
+  const totalReminders = scheduledReminders.times.length;
+
+  // Ensure today's dailyCheckin exists
+  const ensureTodayCheckinExists = () => {
+    const tattoo = tattoos[0];
+    if (!tattoo) return;
+    
+    const dayNumber = getDayNumber(tattoo.tattooDate);
+    const todayDate = new Date().toISOString().split('T')[0];
+    const existingCheckin = getCheckinForDay(tattoo.id, dayNumber);
+    
+    if (!existingCheckin) {
+      addCheckin({
+        id: generateId(),
+        tattooId: tattoo.id,
+        dayNumber,
+        date: todayDate,
+        checklist: {
+          washed: false,
+          moisturized: false,
+          avoidedSun: false,
+          didNotScratch: false,
+          drankWater: false,
+        },
+      });
+    }
+  };
+
   const handleSave = () => {
+    // Save settings
     updateSettings({
       wakeTime,
       bedTime,
@@ -47,7 +85,18 @@ export default function ReminderSetupScreen() {
       },
       hasCompletedOnboarding: true,
       hasCompletedReminderSetup: true,
+      remindersJustSaved: true,
     });
+    
+    // Ensure today's checkin exists
+    ensureTodayCheckinExists();
+    
+    // Show success modal
+    setShowSuccessModal(true);
+  };
+
+  const handleContinue = () => {
+    setShowSuccessModal(false);
     navigate('/');
   };
 
@@ -174,6 +223,7 @@ export default function ReminderSetupScreen() {
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Your reminder schedule</span>
+            <span className="text-xs text-muted-foreground ml-auto">({totalReminders} total)</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {scheduledReminders.times.map((reminder, index) => (
@@ -190,6 +240,9 @@ export default function ReminderSetupScreen() {
               </div>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            You can change these anytime in Settings.
+          </p>
         </div>
       </div>
 
@@ -212,6 +265,16 @@ export default function ReminderSetupScreen() {
           Set Up Later
         </Button>
       </div>
+
+      {/* Success Modal */}
+      <ReminderSuccessModal
+        open={showSuccessModal}
+        onContinue={handleContinue}
+        quietHoursRange={quietHoursRange}
+        frequencyLabel={frequencyLabel}
+        nextReminderTime={nextReminderTime}
+        totalReminders={totalReminders}
+      />
     </div>
   );
 }
