@@ -2,10 +2,12 @@ import type { FrequencyPreset, ReminderTypesEnabled } from '@/types';
 
 // Time offsets as percentages of the awake window for each frequency
 // 0 = wake time, 1 = bed time
+// Wake and Bed are ALWAYS included as standard reminders
+// The 2/3/4 selection adds EXTRA reminders in between
 const TIME_OFFSETS: Record<FrequencyPreset, number[]> = {
-  '2_per_day': [0, 1],              // Wake + Bed
-  '3_per_day': [0, 0.5, 1],         // Wake + Midday + Bed
-  '4_per_day': [0, 0.33, 0.66, 1],  // Wake + Morning + Afternoon + Bed
+  '2_per_day': [0, 0.33, 0.66, 1],           // Wake + 2 midday + Bed = 4 total
+  '3_per_day': [0, 0.25, 0.5, 0.75, 1],      // Wake + 3 midday + Bed = 5 total
+  '4_per_day': [0, 0.2, 0.4, 0.6, 0.8, 1],   // Wake + 4 midday + Bed = 6 total
 };
 
 export interface ReminderTime {
@@ -132,9 +134,9 @@ export function formatTimeForDisplay(time: string): string {
  */
 export function getFrequencyLabel(preset: FrequencyPreset): string {
   const labels: Record<FrequencyPreset, string> = {
-    '2_per_day': '2x per day',
-    '3_per_day': '3x per day',
-    '4_per_day': '4x per day',
+    '2_per_day': '+2/day (4 total)',
+    '3_per_day': '+3/day (5 total)',
+    '4_per_day': '+4/day (6 total)',
   };
   return labels[preset];
 }

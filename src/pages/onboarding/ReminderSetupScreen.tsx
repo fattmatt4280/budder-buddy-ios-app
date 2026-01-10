@@ -11,9 +11,9 @@ import { generateReminderTimes, formatTimeForDisplay } from '@/lib/reminderSched
 import mascotImage from '@/assets/mascot.png';
 
 const FREQUENCY_OPTIONS: { value: FrequencyPreset; label: string; recommended?: boolean }[] = [
-  { value: '2_per_day', label: '2x/day', recommended: true },
-  { value: '3_per_day', label: '3x/day' },
-  { value: '4_per_day', label: '4x/day' },
+  { value: '2_per_day', label: '+2/day', recommended: true },
+  { value: '3_per_day', label: '+3/day' },
+  { value: '4_per_day', label: '+4/day' },
 ];
 
 export default function ReminderSetupScreen() {
@@ -142,7 +142,7 @@ export default function ReminderSetupScreen() {
 
         {/* Frequency Selector */}
         <div className="mb-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <Label className="text-sm text-muted-foreground mb-3 block">Reminder frequency</Label>
+          <Label className="text-sm text-muted-foreground mb-3 block">Extra reminders between wake & bed</Label>
           <div className="grid grid-cols-3 gap-2">
             {FREQUENCY_OPTIONS.map((option) => (
               <button
@@ -165,7 +165,7 @@ export default function ReminderSetupScreen() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Moisturize lightly only when needed. Too much can cause issues.
+            Plus morning &amp; bedtime application reminders included automatically.
           </p>
         </div>
 
