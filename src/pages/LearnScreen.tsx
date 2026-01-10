@@ -1,0 +1,102 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, ChevronRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { EDUCATION_CATEGORIES, searchArticles } from '@/data/educationContent';
+import { cn } from '@/lib/utils';
+
+export default function LearnScreen() {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const searchResults = searchQuery.length > 1 ? searchArticles(searchQuery) : null;
+
+  return (
+    <div className="min-h-screen bg-background safe-area-top">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-4">
+        <h1 className="text-2xl font-bold text-foreground mb-1">Learn</h1>
+        <p className="text-muted-foreground text-sm mb-4">
+          Everything you need to know about tattoo healing
+        </p>
+
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search articles..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 h-11 bg-card border-border rounded-xl"
+          />
+        </div>
+      </div>
+
+      {/* Search results */}
+      {searchResults ? (
+        <div className="px-6 pb-8">
+          <p className="text-sm text-muted-foreground mb-4">
+            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
+          </p>
+          <div className="space-y-2">
+            {searchResults.map((article) => (
+              <button
+                key={article.id}
+                onClick={() => navigate(`/learn/${article.id}`)}
+                className="w-full bg-card rounded-xl p-4 border border-border text-left hover:border-primary/50 transition-colors"
+              >
+                <h3 className="font-medium text-foreground mb-1">{article.title}</h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">{article.summary}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* Categories */
+        <div className="px-6 pb-8 space-y-4">
+          {EDUCATION_CATEGORIES.map((category, index) => (
+            <div 
+              key={category.id} 
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
+              {/* Category header */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center text-lg",
+                  category.id === 'whats-normal' && "bg-success/10",
+                  category.id === 'common-mistakes' && "bg-warning/10",
+                  category.id === 'itch-peeling' && "bg-accent/20",
+                  category.id === 'contact-artist' && "bg-info/10",
+                  category.id === 'seek-medical' && "bg-destructive/10",
+                )}>
+                  {category.icon}
+                </div>
+                <h2 className="font-semibold text-foreground">{category.title}</h2>
+              </div>
+
+              {/* Articles */}
+              <div className="space-y-2 pl-1">
+                {category.articles.map((article) => (
+                  <button
+                    key={article.id}
+                    onClick={() => navigate(`/learn/${article.id}`)}
+                    className="w-full bg-card rounded-xl p-4 border border-border text-left hover:border-primary/50 transition-colors group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-foreground mb-0.5">{article.title}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-1">{article.summary}</p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-2" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
