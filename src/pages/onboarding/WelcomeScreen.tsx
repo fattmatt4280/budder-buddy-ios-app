@@ -1,47 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useSettings } from '@/hooks/useStorage';
 import mascotImage from '@/assets/mascot.png';
-import { 
-  removeBackground, 
-  loadImage, 
-  getCachedTransparentImage, 
-  setCachedTransparentImage 
-} from '@/lib/removeBackground';
 
 export default function WelcomeScreen() {
   const navigate = useNavigate();
   const { updateSettings } = useSettings();
-  const [processedImage, setProcessedImage] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(true);
-
-  useEffect(() => {
-    const processImage = async () => {
-      // Check cache first
-      const cached = getCachedTransparentImage();
-      if (cached) {
-        setProcessedImage(cached);
-        setIsProcessing(false);
-        return;
-      }
-
-      try {
-        const img = await loadImage(mascotImage);
-        const transparentDataUrl = await removeBackground(img);
-        setCachedTransparentImage(transparentDataUrl);
-        setProcessedImage(transparentDataUrl);
-      } catch (error) {
-        console.error('Failed to remove background, using original:', error);
-        setProcessedImage(mascotImage);
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
-    processImage();
-  }, []);
 
   const handleStart = () => {
     updateSettings({ hasAcknowledgedDisclaimer: true });
@@ -54,15 +18,11 @@ export default function WelcomeScreen() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         {/* Mascot/Logo */}
         <div className="relative mb-8 animate-fade-in">
-          {isProcessing ? (
-            <Skeleton className="w-40 h-40 rounded-3xl" />
-          ) : (
-            <img 
-              src={processedImage || mascotImage} 
-              alt="Budder Buddy mascot" 
-              className="w-40 h-40 rounded-3xl shadow-2xl"
-            />
-          )}
+          <img 
+            src={mascotImage} 
+            alt="Budder Buddy mascot" 
+            className="w-40 h-40 rounded-3xl shadow-2xl"
+          />
         </div>
 
         {/* Title */}
