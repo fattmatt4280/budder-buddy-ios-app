@@ -1,14 +1,12 @@
 import type { FrequencyPreset, ReminderTypesEnabled } from '@/types';
 
 // Time offsets as percentages of the awake window for each frequency
+// 0 = wake time, 1 = bed time
 const TIME_OFFSETS: Record<FrequencyPreset, number[]> = {
-  '2_per_day': [0.25, 0.75],
-  '3_per_day': [0.20, 0.50, 0.80],
-  '4_per_day': [0.15, 0.40, 0.65, 0.90],
+  '2_per_day': [0, 1],              // Wake + Bed
+  '3_per_day': [0, 0.5, 1],         // Wake + Midday + Bed
+  '4_per_day': [0, 0.33, 0.66, 1],  // Wake + Morning + Afternoon + Bed
 };
-
-// Minimum buffer from wake/bed times in minutes
-const EDGE_BUFFER_MINUTES = 10;
 
 export interface ReminderTime {
   time: string; // HH:MM format
@@ -72,37 +70,44 @@ export function generateReminderTimes(
   const wakeMinutes = parseTimeToMinutes(wakeTime);
   const awakeWindowMinutes = getAwakeWindowMinutes(wakeTime, bedTime);
   
-  // Calculate effective window with edge buffers
-  const effectiveStart = wakeMinutes + EDGE_BUFFER_MINUTES;
-  const effectiveWindow = awakeWindowMinutes - (2 * EDGE_BUFFER_MINUTES);
-  
   const times: ReminderTime[] = [];
+  const isFirstOffset = (index: number) => index === 0;
+  const isLastOffset = (index: number) => index === offsets.length - 1;
   
   // Generate times for each offset
   offsets.forEach((offset, index) => {
-    const reminderMinutes = effectiveStart + Math.round(effectiveWindow * offset);
+    const reminderMinutes = wakeMinutes + Math.round(awakeWindowMinutes * offset);
     const timeString = minutesToTime(reminderMinutes);
     
-    // Alternate between wash and moisturize based on index
-    // Checkin gets the middle slot if enabled
-    if (index === Math.floor(offsets.length / 2) && reminderTypesEnabled.checkin) {
-      times.push({
-        time: timeString,
-        type: 'checkin',
-        label: 'Daily check-in'
-      });
-    } else if (index % 2 === 0 && reminderTypesEnabled.wash) {
-      times.push({
-        time: timeString,
-        type: 'wash',
-        label: 'Wash reminder'
-      });
+    // Determine label based on position
+    let label: string;
+    if (isFirstOffset(index)) {
+      label = 'Morning care';
+    } else if (isLastOffset(index)) {
+      label = 'Bedtime care';
+    } else if (offsets.length === 4 && index === 1) {
+      label = 'Midday care';
+    } else if (offsets.length === 4 && index === 2) {
+      label = 'Afternoon care';
+    } else {
+      label = 'Midday care';
+    }
+    
+    // Determine type based on position and enabled types
+    // First and last are always moisturize (application reminders)
+    // Middle slots alternate or become check-in
+    if (isFirstOffset(index) || isLastOffset(index)) {
+      if (reminderTypesEnabled.moisturize) {
+        times.push({ time: timeString, type: 'moisturize', label });
+      } else if (reminderTypesEnabled.wash) {
+        times.push({ time: timeString, type: 'wash', label });
+      }
+    } else if (reminderTypesEnabled.checkin && index === Math.floor(offsets.length / 2)) {
+      times.push({ time: timeString, type: 'checkin', label: 'Daily check-in' });
+    } else if (reminderTypesEnabled.wash) {
+      times.push({ time: timeString, type: 'wash', label });
     } else if (reminderTypesEnabled.moisturize) {
-      times.push({
-        time: timeString,
-        type: 'moisturize',
-        label: 'Moisturize reminder'
-      });
+      times.push({ time: timeString, type: 'moisturize', label });
     }
   });
   
