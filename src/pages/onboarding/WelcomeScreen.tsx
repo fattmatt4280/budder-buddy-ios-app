@@ -39,19 +39,19 @@ export default function WelcomeScreen() {
       {/* Hero section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         {/* Mascot/Logo */}
-        <div className="relative mb-8 animate-fade-in">
+        <div className="relative mb-6 animate-fade-in">
           <img 
             src={mascotImage} 
             alt="Budder Buddy mascot" 
-            className="w-40 h-40 rounded-3xl shadow-2xl"
+            className="w-32 h-32 rounded-3xl shadow-2xl"
           />
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-foreground mb-3 animate-slide-up">
+        <h1 className="text-4xl font-bold text-foreground mb-2 animate-slide-up">
           Budder Buddy
         </h1>
-        <p className="text-lg text-muted-foreground mb-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        <p className="text-lg text-muted-foreground mb-1 animate-slide-up" style={{ animationDelay: '0.1s' }}>
           Your Tattoo Aftercare Companion
         </p>
         <p className="text-sm text-muted-foreground/80 max-w-xs animate-slide-up" style={{ animationDelay: '0.2s' }}>
@@ -60,9 +60,9 @@ export default function WelcomeScreen() {
       </div>
 
       {/* Bottom section */}
-      <div className="px-6 pb-8 space-y-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+      <div className="px-6 pb-6 space-y-4 animate-slide-up" style={{ animationDelay: '0.3s' }}>
         {/* Disclaimer */}
-        <div className="bg-card/50 rounded-xl p-4 border border-border">
+        <div className="bg-card/50 rounded-xl p-3 border border-border">
           <p className="text-xs text-muted-foreground leading-relaxed">
             <span className="font-semibold text-foreground">Educational Purposes Only:</span>{' '}
             Budder Buddy provides general aftercare guidance and does not offer medical advice. 
@@ -75,7 +75,7 @@ export default function WelcomeScreen() {
         <Button 
           onClick={handleStart}
           size="lg"
-          className="w-full h-14 text-lg font-semibold rounded-xl gradient-primary hover:opacity-90 transition-opacity"
+          className="w-full h-12 text-lg font-semibold rounded-xl gradient-primary hover:opacity-90 transition-opacity"
         >
           Get Started
         </Button>
