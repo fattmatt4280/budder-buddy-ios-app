@@ -38,7 +38,6 @@ function AppRoutes() {
     if (settings.hasCompletedOnboarding) return;
 
     const shouldUnlock =
-      settings.hasCompletedReminderSetup ||
       settings.selectedTattooId !== null ||
       tattoos.length > 0;
 

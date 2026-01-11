@@ -12,7 +12,6 @@ export default function WelcomeScreen() {
   // If the user already has a tattoo/reminders configured, unlock the app and route them in.
   useEffect(() => {
     const shouldUnlock =
-      settings.hasCompletedReminderSetup ||
       settings.selectedTattooId !== null ||
       tattoos.length > 0;
 

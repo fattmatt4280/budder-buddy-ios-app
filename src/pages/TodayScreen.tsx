@@ -108,17 +108,62 @@ export default function TodayScreen() {
 
   if (!tattoo) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
-        <img 
-          src={mascotImage} 
-          alt="Budder Buddy mascot" 
-          className="w-24 h-24 rounded-2xl shadow-lg mb-4 animate-fade-in"
-        />
-        <h2 className="text-xl font-bold mb-2">No Tattoo Added</h2>
-        <p className="text-muted-foreground mb-6">Add your first tattoo to start tracking.</p>
-        <Button onClick={() => navigate('/settings')} className="gradient-primary">
-          Go to Settings
-        </Button>
+      <div className="min-h-screen bg-background safe-area-top px-6 pt-6 pb-6 space-y-4">
+        {/* No Tattoo CTA */}
+        <div className="flex flex-col items-center justify-center text-center py-8">
+          <img 
+            src={mascotImage} 
+            alt="Budder Buddy mascot" 
+            className="w-24 h-24 rounded-2xl shadow-lg mb-4 animate-fade-in"
+          />
+          <h2 className="text-xl font-bold mb-2">No Tattoo Added</h2>
+          <p className="text-muted-foreground mb-6">Add your first tattoo to start tracking.</p>
+          <Button onClick={() => navigate('/settings')} className="gradient-primary">
+            Go to Settings
+          </Button>
+        </div>
+
+        {/* Today's Reminders Card (even without tattoo) */}
+        {settings.notificationsEnabled && scheduledReminders.times.length > 0 && (
+          <div className="bg-card rounded-2xl p-5 border border-border animate-fade-in">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Bell className="w-4 h-4 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">Today's Reminders</h3>
+              <span className="text-xs text-muted-foreground ml-auto">
+                {scheduledReminders.times.length} scheduled
+              </span>
+            </div>
+            <div className="space-y-2">
+              {scheduledReminders.times.map((reminder, index) => (
+                <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                  <span className="text-lg">
+                    {reminder.type === 'wash' ? '🧼' : reminder.type === 'moisturize' ? '🧴' : '✨'}
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">{reminder.label}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{reminder.type}</p>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">
+                    {formatTimeForDisplay(reminder.time)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Daily Tip Card (even without tattoo) */}
+        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl p-5 border border-amber-500/20 animate-fade-in">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+            </div>
+            <h3 className="font-semibold text-foreground">Daily Tip</h3>
+          </div>
+          <p className="text-sm text-muted-foreground">{dailyTip}</p>
+        </div>
       </div>
     );
   }
