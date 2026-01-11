@@ -11,17 +11,23 @@ import {
   Trash2,
   Moon,
   Sun,
-  RefreshCw
+  RefreshCw,
+  LogIn,
+  LogOut,
+  User,
+  Loader2
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useTattoos, useSettings } from '@/hooks/useStorage';
+import { useAuth } from '@/hooks/useAuth';
 import { getDayNumber, getHealingPhase } from '@/types';
 import type { FrequencyPreset, SnoozeDuration } from '@/types';
 import { cn } from '@/lib/utils';
 import mascotImage from '@/assets/mascot.png';
 import { generateReminderTimes, formatTimeForDisplay, getFrequencyLabel } from '@/lib/reminderScheduler';
+import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
   DialogContent,
@@ -55,9 +61,12 @@ export default function SettingsScreen() {
   const navigate = useNavigate();
   const { tattoos, deleteTattoo } = useTattoos();
   const { settings, updateSettings, resetSettings } = useSettings();
+  const { user, isAuthenticated, signOut, loading: authLoading } = useAuth();
+  const { toast } = useToast();
 
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
 
   const selectedTattoo = tattoos.find(t => t.id === settings.selectedTattooId) || tattoos[0];
 
@@ -84,6 +93,25 @@ export default function SettingsScreen() {
   const handleResetOnboarding = () => {
     resetSettings();
     navigate('/');
+  };
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    const { error } = await signOut();
+    setSigningOut(false);
+    
+    if (error) {
+      toast({
+        title: 'Sign out failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Signed out',
+        description: 'You have been signed out successfully.',
+      });
+    }
   };
 
   const handleRescheduleReminders = () => {
@@ -341,8 +369,57 @@ export default function SettingsScreen() {
           </div>
         </section>
 
-        {/* Privacy */}
+        {/* Account */}
         <section className="animate-fade-in" style={{ animationDelay: '0.15s' }}>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">ACCOUNT</h2>
+          <div className="bg-card rounded-xl border border-border divide-y divide-border">
+            {authLoading ? (
+              <div className="p-4 flex items-center justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : isAuthenticated ? (
+              <>
+                <div className="p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">{user?.email}</p>
+                    <p className="text-sm text-muted-foreground">Signed in</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <LogOut className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium text-foreground">Sign Out</span>
+                  </div>
+                  {signingOut && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => navigate('/auth')}
+                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <LogIn className="w-5 h-5 text-muted-foreground" />
+                  <div className="text-left">
+                    <p className="font-medium text-foreground">Sign In</p>
+                    <p className="text-sm text-muted-foreground">Sync your progress across devices</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+        </section>
+
+        {/* Privacy */}
+        <section className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">PRIVACY</h2>
           <div className="bg-card rounded-xl border border-border p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">

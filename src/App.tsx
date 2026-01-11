@@ -22,6 +22,7 @@ import PhotosScreen from "@/pages/PhotosScreen";
 import LearnScreen from "@/pages/LearnScreen";
 import SettingsScreen from "@/pages/SettingsScreen";
 import ArticleScreen from "@/pages/ArticleScreen";
+import AuthScreen from "@/pages/AuthScreen";
 
 import NotFound from "@/pages/NotFound";
 
@@ -75,6 +76,7 @@ function AppRoutes() {
         <Route path="/learn/:articleId" element={<ArticleScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
+      <Route path="/auth" element={<AuthScreen />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
