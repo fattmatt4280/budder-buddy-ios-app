@@ -1,11 +1,33 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useSettings } from '@/hooks/useStorage';
+import { useSettings, useTattoos } from '@/hooks/useStorage';
 import mascotImage from '@/assets/mascot.png';
 
 export default function WelcomeScreen() {
   const navigate = useNavigate();
-  const { updateSettings } = useSettings();
+  const { settings, updateSettings } = useSettings();
+  const { tattoos } = useTattoos();
+
+  // If the user already has a tattoo/reminders configured, unlock the app and route them in.
+  useEffect(() => {
+    const shouldUnlock =
+      settings.hasCompletedReminderSetup ||
+      settings.selectedTattooId !== null ||
+      tattoos.length > 0;
+
+    if (!settings.hasCompletedOnboarding && shouldUnlock) {
+      updateSettings({ hasCompletedOnboarding: true });
+      navigate('/', { replace: true });
+    }
+  }, [
+    settings.hasCompletedOnboarding,
+    settings.hasCompletedReminderSetup,
+    settings.selectedTattooId,
+    tattoos.length,
+    updateSettings,
+    navigate,
+  ]);
 
   const handleStart = () => {
     updateSettings({ hasAcknowledgedDisclaimer: true });

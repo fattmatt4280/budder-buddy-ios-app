@@ -50,6 +50,13 @@ function getFromStorage<T>(key: string, defaultValue: T): T {
 function setToStorage<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+
+    // Keep multiple hook instances in sync within the same tab
+    window.dispatchEvent(
+      new CustomEvent('budder-storage', {
+        detail: { key },
+      })
+    );
   } catch (error) {
     console.error('Failed to save to storage:', error);
   }
@@ -171,9 +178,34 @@ export function useSettings() {
     getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   );
 
+  // Persist local changes
   useEffect(() => {
     setToStorage(STORAGE_KEYS.SETTINGS, settings);
   }, [settings]);
+
+  // Sync across multiple hook instances (same tab) + other tabs
+  useEffect(() => {
+    const syncFromStorage = () => {
+      setSettings(getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS));
+    };
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.SETTINGS) syncFromStorage();
+    };
+
+    const onBudderStorage = (e: Event) => {
+      const ce = e as CustomEvent<{ key: string }>;
+      if (ce.detail?.key === STORAGE_KEYS.SETTINGS) syncFromStorage();
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('budder-storage', onBudderStorage);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('budder-storage', onBudderStorage);
+    };
+  }, []);
 
   const updateSettings = useCallback((updates: Partial<AppSettings>) => {
     setSettings((prev) => ({ ...prev, ...updates }));

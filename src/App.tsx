@@ -1,9 +1,10 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useSettings } from "@/hooks/useStorage";
+import { useSettings, useTattoos } from "@/hooks/useStorage";
 
 // Layouts
 import AppLayout from "@/components/layout/AppLayout";
@@ -27,7 +28,29 @@ import NotFound from "@/pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
+  const { tattoos } = useTattoos();
+
+  // Self-heal onboarding state so users don't get stuck on the welcome screen
+  // if they already have enough state to use the app.
+  useEffect(() => {
+    if (settings.hasCompletedOnboarding) return;
+
+    const shouldUnlock =
+      settings.hasCompletedReminderSetup ||
+      settings.selectedTattooId !== null ||
+      tattoos.length > 0;
+
+    if (shouldUnlock) {
+      updateSettings({ hasCompletedOnboarding: true });
+    }
+  }, [
+    settings.hasCompletedOnboarding,
+    settings.hasCompletedReminderSetup,
+    settings.selectedTattooId,
+    tattoos.length,
+    updateSettings,
+  ]);
 
   // If onboarding not complete, redirect to welcome
   if (!settings.hasCompletedOnboarding) {
