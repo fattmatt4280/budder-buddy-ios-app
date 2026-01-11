@@ -35,7 +35,7 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center gradient-background safe-area-top safe-area-bottom px-6 py-8">
+    <div className="h-screen flex flex-col justify-center gradient-background safe-area-top safe-area-bottom px-6 overflow-hidden">
       {/* Hero section */}
       <div className="flex flex-col items-center text-center mb-6">
         {/* Mascot/Logo */}
