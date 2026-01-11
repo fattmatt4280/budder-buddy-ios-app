@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Camera, Plus, Check, Droplet, Sun, Hand, GlassWater, Sparkles } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Camera, Plus, Check, Droplet, Sun, Hand, GlassWater, Sparkles, Bell, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,12 +11,26 @@ import { useNavigate } from 'react-router-dom';
 import mascotImage from '@/assets/mascot.png';
 import StartHereCard from '@/components/reminders/StartHereCard';
 import EnableNotificationsBanner from '@/components/reminders/EnableNotificationsBanner';
+import { generateReminderTimes, formatTimeForDisplay } from '@/lib/reminderScheduler';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+
+const DAILY_TIPS = [
+  "Drink plenty of water to keep your skin hydrated from within.",
+  "Avoid tight clothing that rubs against your new tattoo.",
+  "Pat dry after washing – never rub your healing tattoo.",
+  "Use fragrance-free moisturizer to avoid irritation.",
+  "Keep your tattoo out of direct sunlight for at least 2 weeks.",
+  "Don't submerge your tattoo in water (pools, baths) while healing.",
+  "Clean hands before touching your tattoo to prevent infection.",
+  "Light peeling is normal – resist the urge to pick at it!",
+  "Apply a very thin layer of moisturizer – less is more.",
+  "Wear loose, breathable fabrics over your healing tattoo.",
+];
 
 const CHECKLIST_ITEMS = [
   { key: 'washed', label: 'Washed gently', icon: Droplet },
@@ -59,6 +73,25 @@ export default function TodayScreen() {
   const [showStartHereHighlight, setShowStartHereHighlight] = useState(false);
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
+
+  // Generate scheduled reminders based on settings
+  const scheduledReminders = useMemo(() => {
+    if (!settings.notificationsEnabled) return { times: [], awakeWindowMinutes: 0 };
+    return generateReminderTimes(
+      settings.wakeTime,
+      settings.bedTime,
+      settings.notifSchedule.frequencyPreset,
+      settings.reminderTypesEnabled,
+      settings.quietHoursEnabled
+    );
+  }, [settings]);
+
+  // Get a random daily tip (stable for the day)
+  const dailyTip = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const seed = today.split('-').reduce((acc, val) => acc + parseInt(val), 0);
+    return DAILY_TIPS[seed % DAILY_TIPS.length];
+  }, []);
 
   // Check if we just saved reminders
   useEffect(() => {
@@ -246,6 +279,48 @@ export default function TodayScreen() {
             />
           </div>
         )}
+
+        {/* Today's Reminders Card */}
+        {settings.notificationsEnabled && scheduledReminders.times.length > 0 && (
+          <div className="bg-card rounded-2xl p-5 border border-border animate-fade-in">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Bell className="w-4 h-4 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">Today's Reminders</h3>
+              <span className="text-xs text-muted-foreground ml-auto">
+                {scheduledReminders.times.length} scheduled
+              </span>
+            </div>
+            <div className="space-y-2">
+              {scheduledReminders.times.map((reminder, index) => (
+                <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                  <span className="text-lg">
+                    {reminder.type === 'wash' ? '🧼' : reminder.type === 'moisturize' ? '🧴' : '✨'}
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">{reminder.label}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{reminder.type}</p>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">
+                    {formatTimeForDisplay(reminder.time)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Daily Tip Card */}
+        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl p-5 border border-amber-500/20 animate-fade-in">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+            </div>
+            <h3 className="font-semibold text-foreground">Daily Tip</h3>
+          </div>
+          <p className="text-sm text-muted-foreground">{dailyTip}</p>
+        </div>
 
         {/* What's Normal */}
         <div 
