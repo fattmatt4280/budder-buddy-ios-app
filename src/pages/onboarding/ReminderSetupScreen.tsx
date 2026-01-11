@@ -79,6 +79,7 @@ export default function ReminderSetupScreen() {
       wakeTime,
       bedTime,
       quietHoursEnabled,
+      notificationsEnabled: true,
       notifSchedule: {
         ...settings.notifSchedule,
         frequencyPreset,
