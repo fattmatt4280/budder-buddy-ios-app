@@ -35,23 +35,23 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col gradient-background safe-area-top safe-area-bottom">
+    <div className="min-h-screen flex flex-col justify-center gradient-background safe-area-top safe-area-bottom px-6 py-8">
       {/* Hero section */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <div className="flex flex-col items-center text-center mb-6">
         {/* Mascot/Logo */}
-        <div className="relative mb-6 animate-fade-in">
+        <div className="relative mb-4 animate-fade-in">
           <img 
             src={mascotImage} 
             alt="Budder Buddy mascot" 
-            className="w-32 h-32 rounded-3xl shadow-2xl"
+            className="w-28 h-28 rounded-2xl shadow-2xl"
           />
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-foreground mb-2 animate-slide-up">
+        <h1 className="text-3xl font-bold text-foreground mb-1 animate-slide-up">
           Budder Buddy
         </h1>
-        <p className="text-lg text-muted-foreground mb-1 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        <p className="text-base text-muted-foreground mb-1 animate-slide-up" style={{ animationDelay: '0.1s' }}>
           Your Tattoo Aftercare Companion
         </p>
         <p className="text-sm text-muted-foreground/80 max-w-xs animate-slide-up" style={{ animationDelay: '0.2s' }}>
@@ -60,7 +60,7 @@ export default function WelcomeScreen() {
       </div>
 
       {/* Bottom section */}
-      <div className="px-6 pb-6 space-y-4 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+      <div className="space-y-4 animate-slide-up" style={{ animationDelay: '0.3s' }}>
         {/* Disclaimer */}
         <div className="bg-card/50 rounded-xl p-3 border border-border">
           <p className="text-xs text-muted-foreground leading-relaxed">
