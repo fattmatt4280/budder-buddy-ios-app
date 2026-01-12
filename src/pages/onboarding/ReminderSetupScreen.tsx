@@ -74,7 +74,7 @@ export default function ReminderSetupScreen() {
   };
 
   const handleSave = () => {
-    // Save settings
+    // Save settings (but NOT hasCompletedOnboarding yet - that happens on Continue)
     updateSettings({
       wakeTime,
       bedTime,
@@ -84,7 +84,6 @@ export default function ReminderSetupScreen() {
         ...settings.notifSchedule,
         frequencyPreset,
       },
-      hasCompletedOnboarding: true,
       hasCompletedReminderSetup: true,
       remindersJustSaved: true,
     });
@@ -98,6 +97,8 @@ export default function ReminderSetupScreen() {
 
   const handleContinue = () => {
     setShowSuccessModal(false);
+    // Complete onboarding THEN navigate to prevent 404
+    updateSettings({ hasCompletedOnboarding: true });
     navigate('/');
   };
 
