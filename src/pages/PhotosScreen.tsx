@@ -37,6 +37,42 @@ export default function PhotosScreen() {
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
 
+  const currentDay = tattoo ? getDayNumber(tattoo.tattooDate) : 1;
+  const photos = tattoo ? getPhotosForTattoo(tattoo.id) : [];
+  const selectedPhotoData = photos.find(p => p.id === selectedPhoto);
+
+  // Group photos by day
+  const photosByDay = photos.reduce((acc, photo) => {
+    if (!acc[photo.dayNumber]) {
+      acc[photo.dayNumber] = [];
+    }
+    acc[photo.dayNumber].push(photo);
+    return acc;
+  }, {} as Record<number, typeof photos>);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !tattoo) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageData = e.target?.result as string;
+      addPhoto({
+        id: generateId(),
+        tattooId: tattoo.id,
+        dayNumber: currentDay,
+        date: new Date().toISOString().split('T')[0],
+        imageData,
+        caption: newCaption || undefined,
+      });
+      setIsAddingPhoto(false);
+      setNewCaption('');
+    };
+    reader.readAsDataURL(file);
+    // Reset the input so the same file can be selected again
+    event.target.value = '';
+  };
+
   if (!tattoo) {
     return (
       <div className="min-h-screen bg-background safe-area-top">
@@ -63,40 +99,6 @@ export default function PhotosScreen() {
       </div>
     );
   }
-
-  const currentDay = getDayNumber(tattoo.tattooDate);
-  const photos = getPhotosForTattoo(tattoo.id);
-  const selectedPhotoData = photos.find(p => p.id === selectedPhoto);
-
-  // Group photos by day
-  const photosByDay = photos.reduce((acc, photo) => {
-    if (!acc[photo.dayNumber]) {
-      acc[photo.dayNumber] = [];
-    }
-    acc[photo.dayNumber].push(photo);
-    return acc;
-  }, {} as Record<number, typeof photos>);
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageData = e.target?.result as string;
-      addPhoto({
-        id: generateId(),
-        tattooId: tattoo.id,
-        dayNumber: currentDay,
-        date: new Date().toISOString().split('T')[0],
-        imageData,
-        caption: newCaption || undefined,
-      });
-      setIsAddingPhoto(false);
-      setNewCaption('');
-    };
-    reader.readAsDataURL(file);
-  };
 
   const handleDeletePhoto = () => {
     if (deleteConfirm) {
