@@ -11,7 +11,6 @@ import AppLayout from "@/components/layout/AppLayout";
 
 // Onboarding screens
 import WelcomeScreen from "@/pages/onboarding/WelcomeScreen";
-import TattooSetupWizard from "@/pages/onboarding/TattooSetupWizard";
 import NotificationPermissionScreen from "@/pages/onboarding/NotificationPermissionScreen";
 import ReminderSetupScreen from "@/pages/onboarding/ReminderSetupScreen";
 
@@ -57,7 +56,7 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/" element={<WelcomeScreen />} />
-        <Route path="/setup" element={<TattooSetupWizard />} />
+        <Route path="/setup" element={<Navigate to="/" replace />} />
         <Route path="/notifications" element={<NotificationPermissionScreen />} />
         <Route path="/reminder-setup" element={<ReminderSetupScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -75,7 +74,7 @@ function AppRoutes() {
         <Route path="/learn/:articleId" element={<ArticleScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
-    <Route path="/setup" element={<TattooSetupWizard />} />
+    <Route path="/setup" element={<Navigate to="/" replace />} />
     <Route path="/auth" element={<AuthScreen />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

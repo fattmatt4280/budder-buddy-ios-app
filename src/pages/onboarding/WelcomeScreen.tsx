@@ -29,8 +29,8 @@ export default function WelcomeScreen() {
   ]);
 
   const handleStart = () => {
-    updateSettings({ hasAcknowledgedDisclaimer: true });
-    navigate('/setup');
+    updateSettings({ hasAcknowledgedDisclaimer: true, hasCompletedOnboarding: true });
+    navigate('/', { replace: true });
   };
 
   return (
