@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Camera, Plus, Trash2, X, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function PhotosScreen() {
+  const navigate = useNavigate();
   const { tattoos, getTattoo } = useTattoos();
   const { settings } = useSettings();
   const { getPhotosForTattoo, addPhoto, deletePhoto, updatePhoto } = usePhotos();
@@ -37,9 +39,27 @@ export default function PhotosScreen() {
 
   if (!tattoo) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
-        <ImageIcon className="w-16 h-16 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">No tattoo to display photos for.</p>
+      <div className="min-h-screen bg-background safe-area-top">
+        <div className="px-6 pt-6 pb-4">
+          <h1 className="text-2xl font-bold text-foreground mb-1">Photo Log</h1>
+          <p className="text-muted-foreground text-sm">Track your healing progress</p>
+        </div>
+        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
+            <Camera className="w-10 h-10 text-muted-foreground" />
+          </div>
+          <h3 className="font-semibold text-foreground mb-2">Add a Tattoo First</h3>
+          <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+            To start tracking your healing with photos, add your tattoo details first.
+          </p>
+          <Button
+            onClick={() => navigate('/setup')}
+            className="gradient-primary rounded-xl"
+          >
+            <Camera className="w-4 h-4 mr-2" />
+            Add Your Tattoo
+          </Button>
+        </div>
       </div>
     );
   }
