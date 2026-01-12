@@ -19,7 +19,7 @@ const STEPS = [
 export default function TattooSetupWizard() {
   const navigate = useNavigate();
   const { addTattoo } = useTattoos();
-  const { updateSettings } = useSettings();
+  const { settings, updateSettings } = useSettings();
 
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
@@ -62,7 +62,14 @@ export default function TattooSetupWizard() {
         shopName: formData.shopName || undefined,
       });
       updateSettings({ selectedTattooId: tattooId });
-      navigate('/notifications');
+      
+      // If onboarding is already complete, go to home
+      // Otherwise, continue the onboarding flow
+      if (settings.hasCompletedOnboarding) {
+        navigate('/');
+      } else {
+        navigate('/notifications');
+      }
     }
   };
 
