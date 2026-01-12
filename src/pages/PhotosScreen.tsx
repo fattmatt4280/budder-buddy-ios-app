@@ -25,8 +25,8 @@ import {
 
 export default function PhotosScreen() {
   const navigate = useNavigate();
-  const { tattoos, getTattoo } = useTattoos();
-  const { settings } = useSettings();
+  const { tattoos, getTattoo, addTattoo } = useTattoos();
+  const { settings, updateSettings } = useSettings();
   const { getPhotosForTattoo, addPhoto, deletePhoto, updatePhoto } = usePhotos();
 
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
@@ -34,6 +34,7 @@ export default function PhotosScreen() {
   const [isAddingPhoto, setIsAddingPhoto] = useState(false);
   const [newCaption, setNewCaption] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingTattooIdRef = useRef<string | null>(null);
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
 
@@ -50,16 +51,37 @@ export default function PhotosScreen() {
     return acc;
   }, {} as Record<number, typeof photos>);
 
+  const handleQuickCapture = () => {
+    if (!tattoo) {
+      // Auto-create a quick tattoo with defaults
+      const newId = generateId();
+      const today = new Date().toISOString().split('T')[0];
+      addTattoo({
+        id: newId,
+        createdAt: new Date().toISOString(),
+        tattooDate: today,
+        bodyLocation: 'Other',
+        sizeTier: 'Medium',
+        inkType: 'BlackGrey',
+      });
+      updateSettings({ selectedTattooId: newId });
+      pendingTattooIdRef.current = newId;
+    }
+    // Open camera
+    fileInputRef.current?.click();
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !tattoo) return;
+    const tattooId = tattoo?.id || pendingTattooIdRef.current;
+    if (!file || !tattooId) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
       const imageData = e.target?.result as string;
       addPhoto({
         id: generateId(),
-        tattooId: tattoo.id,
+        tattooId: tattooId,
         dayNumber: currentDay,
         date: new Date().toISOString().split('T')[0],
         imageData,
@@ -67,6 +89,9 @@ export default function PhotosScreen() {
       });
       setIsAddingPhoto(false);
       setNewCaption('');
+      pendingTattooIdRef.current = null;
+      // Navigate to Today screen after capture
+      navigate('/');
     };
     reader.readAsDataURL(file);
     // Reset the input so the same file can be selected again
@@ -84,17 +109,26 @@ export default function PhotosScreen() {
           <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
             <Camera className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="font-semibold text-foreground mb-2">Add a Tattoo First</h3>
+          <h3 className="font-semibold text-foreground mb-2">Add Your Tattoo</h3>
           <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-            To start tracking your healing with photos, add your tattoo details first.
+            Take a photo to start tracking. You can add details later.
           </p>
           <Button
-            onClick={() => navigate('/setup')}
+            onClick={handleQuickCapture}
             className="gradient-primary rounded-xl"
           >
             <Camera className="w-4 h-4 mr-2" />
             Add Your Tattoo
           </Button>
+          {/* Hidden file input for quick capture */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
         </div>
       </div>
     );
