@@ -75,7 +75,8 @@ function AppRoutes() {
         <Route path="/learn/:articleId" element={<ArticleScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
-      <Route path="/auth" element={<AuthScreen />} />
+    <Route path="/setup" element={<TattooSetupWizard />} />
+    <Route path="/auth" element={<AuthScreen />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
