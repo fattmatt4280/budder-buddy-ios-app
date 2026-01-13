@@ -30,7 +30,7 @@ export default function WelcomeScreen() {
 
   const handleStart = () => {
     updateSettings({ hasAcknowledgedDisclaimer: true, hasCompletedOnboarding: true });
-    navigate('/', { replace: true });
+    navigate('/learn', { replace: true });
   };
 
   return (
