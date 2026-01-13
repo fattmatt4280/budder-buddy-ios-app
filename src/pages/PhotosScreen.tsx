@@ -4,6 +4,7 @@ import { Camera, Plus, Trash2, X, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTattoos, useSettings, usePhotos, generateId } from '@/hooks/useStorage';
+import { useToast } from '@/hooks/use-toast';
 import { getDayNumber } from '@/types';
 import { cn } from '@/lib/utils';
 import {
@@ -25,6 +26,7 @@ import {
 
 export default function PhotosScreen() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { tattoos, getTattoo, addTattoo } = useTattoos();
   const { settings, updateSettings } = useSettings();
   const { getPhotosForTattoo, addPhoto, deletePhoto, updatePhoto } = usePhotos();
@@ -40,7 +42,7 @@ export default function PhotosScreen() {
 
   const currentDay = tattoo ? getDayNumber(tattoo.tattooDate) : 1;
   const photos = tattoo ? getPhotosForTattoo(tattoo.id) : [];
-  const selectedPhotoData = photos.find(p => p.id === selectedPhoto);
+  const selectedPhotoData = photos.find((p) => p.id === selectedPhoto);
 
   // Group photos by day
   const photosByDay = photos.reduce((acc, photo) => {
@@ -81,16 +83,68 @@ export default function PhotosScreen() {
     const dayNumber = getDayNumber(tattooDate);
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageData = e.target?.result as string;
+    reader.onload = async (e) => {
+      const originalDataUrl = e.target?.result as string;
+
+      // Downscale to reduce local storage usage (prevents silent failures on some devices)
+      const toStoredDataUrl = async () => {
+        try {
+          const img = new Image();
+          img.decoding = 'async';
+          img.src = originalDataUrl;
+          await new Promise<void>((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = () => reject(new Error('Image decode failed'));
+          });
+
+          const maxDim = 1280;
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return originalDataUrl;
+          ctx.drawImage(img, 0, 0, w, h);
+
+          // JPEG is much smaller than PNG for photos
+          return canvas.toDataURL('image/jpeg', 0.82);
+        } catch {
+          return originalDataUrl;
+        }
+      };
+
+      const imageData = await toStoredDataUrl();
+      const newPhotoId = generateId();
+
       addPhoto({
-        id: generateId(),
-        tattooId: tattooId,
-        dayNumber: dayNumber,
+        id: newPhotoId,
+        tattooId,
+        dayNumber,
         date: new Date().toISOString().split('T')[0],
         imageData,
         caption: newCaption || undefined,
       });
+
+      // Verify it actually persisted (localStorage can fail silently when full)
+      try {
+        const raw = localStorage.getItem('budder_photos');
+        const parsed = raw ? (JSON.parse(raw) as Array<{ id: string }>) : [];
+        const found = parsed.some((p) => p.id === newPhotoId);
+        if (!found) {
+          toast({
+            title: 'Photo not saved',
+            description:
+              'Your device storage is full for photos. Try deleting older photos or use smaller images.',
+            variant: 'destructive',
+          });
+        }
+      } catch {
+        // ignore
+      }
+
       setIsAddingPhoto(false);
       setNewCaption('');
       pendingTattooIdRef.current = null;
