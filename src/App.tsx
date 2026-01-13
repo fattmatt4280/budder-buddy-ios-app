@@ -62,6 +62,11 @@ function AppRoutes() {
         <Route path="/setup" element={<Navigate to="/" replace />} />
         <Route path="/notifications" element={<NotificationPermissionScreen />} />
         <Route path="/reminder-setup" element={<ReminderSetupScreen />} />
+        {/* Allow Learn to be accessible during onboarding transition */}
+        <Route element={<AppLayout />}>
+          <Route path="/learn" element={<LearnScreen />} />
+          <Route path="/learn/:articleId" element={<ArticleScreen />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
