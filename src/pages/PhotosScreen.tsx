@@ -99,6 +99,16 @@ export default function PhotosScreen() {
   }, {} as Record<number, DisplayPhoto[]>);
 
   const handleQuickCapture = () => {
+    // Require authentication to take photos
+    if (!isAuthenticated) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to save photos securely to the cloud.',
+      });
+      navigate('/auth');
+      return;
+    }
+
     if (!tattoo) {
       // Auto-create a quick tattoo with defaults
       const newId = generateId();
@@ -128,91 +138,32 @@ export default function PhotosScreen() {
 
     setUploading(true);
 
-    // If logged in, upload to cloud storage
-    if (isAuthenticated && user) {
-      const result = await uploadCloudPhoto(file, tattooId, dayNumber, newCaption || undefined);
-      
-      if (result.success) {
-        toast({
-          title: 'Photo saved to cloud ☁️',
-          description: 'Your photo is securely stored online.',
-        });
-      } else {
-        toast({
-          title: 'Upload failed',
-          description: result.error || 'Could not save photo to cloud.',
-          variant: 'destructive',
-        });
-      }
+    // Require authentication
+    if (!isAuthenticated || !user) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to save photos.',
+        variant: 'destructive',
+      });
+      setUploading(false);
+      navigate('/auth');
+      return;
+    }
+
+    // Upload to cloud storage
+    const result = await uploadCloudPhoto(file, tattooId, dayNumber, newCaption || undefined);
+    
+    if (result.success) {
+      toast({
+        title: 'Photo saved to cloud ☁️',
+        description: 'Your photo is securely stored online.',
+      });
     } else {
-      // Fall back to local storage with compression
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const originalDataUrl = e.target?.result as string;
-
-        // Downscale to reduce local storage usage
-        const toStoredDataUrl = async () => {
-          try {
-            const img = new Image();
-            img.decoding = 'async';
-            img.src = originalDataUrl;
-            await new Promise<void>((resolve, reject) => {
-              img.onload = () => resolve();
-              img.onerror = () => reject(new Error('Image decode failed'));
-            });
-
-            const maxDim = 1280;
-            const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-            const w = Math.max(1, Math.round(img.width * scale));
-            const h = Math.max(1, Math.round(img.height * scale));
-
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return originalDataUrl;
-            ctx.drawImage(img, 0, 0, w, h);
-
-            return canvas.toDataURL('image/jpeg', 0.82);
-          } catch {
-            return originalDataUrl;
-          }
-        };
-
-        const imageData = await toStoredDataUrl();
-        const newPhotoId = generateId();
-
-        addLocalPhoto({
-          id: newPhotoId,
-          tattooId,
-          dayNumber,
-          date: new Date().toISOString().split('T')[0],
-          imageData,
-          caption: newCaption || undefined,
-        });
-
-        // Verify it actually persisted
-        try {
-          const raw = localStorage.getItem('budder_photos');
-          const parsed = raw ? (JSON.parse(raw) as Array<{ id: string }>) : [];
-          const found = parsed.some((p) => p.id === newPhotoId);
-          if (!found) {
-            toast({
-              title: 'Photo not saved',
-              description: 'Device storage is full. Sign in to save photos to the cloud instead.',
-              variant: 'destructive',
-            });
-          } else {
-            toast({
-              title: 'Photo saved locally 📱',
-              description: 'Sign in to back up photos to the cloud.',
-            });
-          }
-        } catch {
-          // ignore
-        }
-      };
-      reader.readAsDataURL(file);
+      toast({
+        title: 'Upload failed',
+        description: result.error || 'Could not save photo to cloud.',
+        variant: 'destructive',
+      });
     }
 
     setUploading(false);
@@ -255,20 +206,22 @@ export default function PhotosScreen() {
           <p className="text-muted-foreground text-sm">Track your healing progress</p>
         </div>
         
-        {!isAuthenticated && (
-          <div className="px-6 mb-4">
-            <Alert className="border-primary/30 bg-primary/5">
-              <Cloud className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between">
-                <span className="text-sm">Sign in to save photos to the cloud</span>
+        <div className="px-6 mb-4">
+          <Alert className="border-primary/30 bg-primary/5">
+            <Cloud className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span className="text-sm">
+                {isAuthenticated ? 'Photos are saved securely to the cloud' : 'Sign in to save photos'}
+              </span>
+              {!isAuthenticated && (
                 <Button size="sm" variant="outline" onClick={() => navigate('/auth')} className="ml-2">
                   <LogIn className="w-3 h-3 mr-1" />
                   Sign In
                 </Button>
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
+              )}
+            </AlertDescription>
+          </Alert>
+        </div>
 
         <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
           <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -276,16 +229,28 @@ export default function PhotosScreen() {
           </div>
           <h3 className="font-semibold text-foreground mb-2">Add Your Tattoo</h3>
           <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-            Take a photo to start tracking. You can add details later.
+            {isAuthenticated 
+              ? 'Take a photo to start tracking. You can add details later.'
+              : 'Sign in to start tracking your tattoo healing journey.'}
           </p>
-          <Button
-            onClick={handleQuickCapture}
-            className="gradient-primary rounded-xl"
-            disabled={uploading}
-          >
-            <Camera className="w-4 h-4 mr-2" />
-            {uploading ? 'Saving...' : 'Add Your Tattoo'}
-          </Button>
+          {isAuthenticated ? (
+            <Button
+              onClick={handleQuickCapture}
+              className="gradient-primary rounded-xl"
+              disabled={uploading}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              {uploading ? 'Saving...' : 'Add Your Tattoo'}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate('/auth')}
+              className="gradient-primary rounded-xl"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Sign In to Start
+            </Button>
+          )}
           <input
             ref={fileInputRef}
             type="file"
