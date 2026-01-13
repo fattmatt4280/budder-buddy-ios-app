@@ -59,9 +59,10 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/" element={<WelcomeScreen />} />
-        <Route path="/setup" element={<Navigate to="/" replace />} />
-        <Route path="/notifications" element={<NotificationPermissionScreen />} />
-        <Route path="/reminder-setup" element={<ReminderSetupScreen />} />
+      <Route path="/setup" element={<Navigate to="/" replace />} />
+      <Route path="/notifications" element={<NotificationPermissionScreen />} />
+      <Route path="/reminder-setup" element={<ReminderSetupScreen />} />
+      <Route path="/auth" element={<AuthScreen />} />
         {/* Allow Learn to be accessible during onboarding transition */}
         <Route element={<AppLayout />}>
           <Route path="/learn" element={<LearnScreen />} />
