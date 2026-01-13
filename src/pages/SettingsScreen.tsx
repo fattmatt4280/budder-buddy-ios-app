@@ -229,18 +229,18 @@ export default function SettingsScreen() {
                       { key: 'moisturize' as const, label: 'Moisturize reminders', icon: '🧴' },
                       { key: 'checkin' as const, label: 'Daily check-in', icon: '✨' },
                     ].map((item) => (
-                      <div key={item.key} className="flex items-center justify-between">
+                      <div key={item.key} className="flex items-center justify-between py-1">
                         <span className="text-sm text-foreground">{item.icon} {item.label}</span>
                         <Switch
                           checked={settings.reminderTypesEnabled[item.key]}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) => {
                             updateSettings({ 
                               reminderTypesEnabled: { 
                                 ...settings.reminderTypesEnabled, 
                                 [item.key]: checked 
                               } 
-                            })
-                          }
+                            });
+                          }}
                         />
                       </div>
                     ))}

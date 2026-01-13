@@ -76,13 +76,17 @@ export default function PhotosScreen() {
     const tattooId = tattoo?.id || pendingTattooIdRef.current;
     if (!file || !tattooId) return;
 
+    // Compute day number - use existing tattoo date or today for new quick tattoos
+    const tattooDate = tattoo?.tattooDate || new Date().toISOString().split('T')[0];
+    const dayNumber = getDayNumber(tattooDate);
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const imageData = e.target?.result as string;
       addPhoto({
         id: generateId(),
         tattooId: tattooId,
-        dayNumber: currentDay,
+        dayNumber: dayNumber,
         date: new Date().toISOString().split('T')[0],
         imageData,
         caption: newCaption || undefined,
