@@ -15,8 +15,11 @@ import {
   LogIn,
   LogOut,
   User,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -67,6 +70,9 @@ export default function SettingsScreen() {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const selectedTattoo = tattoos.find(t => t.id === settings.selectedTattooId) || tattoos[0];
 
@@ -118,6 +124,59 @@ export default function SettingsScreen() {
     // In a real app with Capacitor, this would cancel and reschedule notifications
     // For now, we just close the dialog as settings are already saved
     setReminderDialogOpen(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    
+    setDeletingAccount(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: 'Not authenticated',
+          description: 'Please sign in to delete your account.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to delete account');
+      }
+
+      // Clear local storage
+      localStorage.clear();
+      
+      // Sign out
+      await supabase.auth.signOut();
+      
+      toast({
+        title: 'Account deleted',
+        description: 'Your account and all data have been permanently removed.',
+      });
+      
+      navigate('/auth');
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast({
+        title: 'Delete failed',
+        description: error instanceof Error ? error.message : 'Could not delete account.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingAccount(false);
+      setDeleteAccountDialogOpen(false);
+      setDeleteConfirmText('');
+    }
   };
 
   return (
@@ -388,7 +447,7 @@ export default function SettingsScreen() {
                     <p className="text-sm text-muted-foreground">Signed in</p>
                   </div>
                 </div>
-                <button
+              <button
                   onClick={handleSignOut}
                   disabled={signingOut}
                   className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
@@ -398,6 +457,18 @@ export default function SettingsScreen() {
                     <span className="font-medium text-foreground">Sign Out</span>
                   </div>
                   {signingOut && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                </button>
+                <button
+                  onClick={() => setDeleteAccountDialogOpen(true)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-destructive/10 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Trash2 className="w-5 h-5 text-destructive" />
+                    <div className="text-left">
+                      <p className="font-medium text-destructive">Delete Account</p>
+                      <p className="text-xs text-muted-foreground">Permanently remove all data</p>
+                    </div>
+                  </div>
                 </button>
               </>
             ) : (
@@ -544,7 +615,7 @@ export default function SettingsScreen() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
+      {/* Delete Tattoo Confirmation */}
       <AlertDialog open={deleteConfirm !== null} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
@@ -560,6 +631,57 @@ export default function SettingsScreen() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Account Confirmation */}
+      <AlertDialog open={deleteAccountDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setDeleteConfirmText('');
+        }
+        setDeleteAccountDialogOpen(open);
+      }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5" />
+              Delete Your Account?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>This action is <strong>permanent and cannot be undone</strong>. All your data will be deleted:</p>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                <li>All photos stored in the cloud</li>
+                <li>Your profile and account information</li>
+                <li>All tattoo records and check-ins</li>
+              </ul>
+              <p className="pt-2">Type <strong>DELETE</strong> to confirm:</p>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                placeholder="Type DELETE to confirm"
+                className="bg-muted border-border"
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border" disabled={deletingAccount}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmText !== 'DELETE' || deletingAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingAccount ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Account'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
