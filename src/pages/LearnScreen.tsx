@@ -27,7 +27,7 @@ export default function LearnScreen() {
     const timer = setTimeout(() => {
       promptShownRef.current = true;
       setShowSignInPrompt(true);
-    }, 30000); // 30 seconds
+    }, 5000); // 5 seconds for testing
 
     return () => clearTimeout(timer);
   }, [loading, isAuthenticated]);
