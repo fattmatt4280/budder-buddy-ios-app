@@ -8,6 +8,7 @@ import { useSettings, useTattoos } from "@/hooks/useStorage";
 
 // Layouts
 import AppLayout from "@/components/layout/AppLayout";
+import ProtectedRoute from "@/components/layout/ProtectedRoute";
 
 // Onboarding screens
 import WelcomeScreen from "@/pages/onboarding/WelcomeScreen";
@@ -69,14 +70,17 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<TodayScreen />} />
-        <Route path="/timeline" element={<TimelineScreen />} />
-        <Route path="/photos" element={<PhotosScreen />} />
+        {/* Protected routes - require authentication */}
+        <Route path="/" element={<ProtectedRoute><TodayScreen /></ProtectedRoute>} />
+        <Route path="/timeline" element={<ProtectedRoute><TimelineScreen /></ProtectedRoute>} />
+        <Route path="/photos" element={<ProtectedRoute><PhotosScreen /></ProtectedRoute>} />
+        
+        {/* Public routes - no auth required */}
         <Route path="/learn" element={<LearnScreen />} />
         <Route path="/learn/:articleId" element={<ArticleScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
-      <Route path="/setup" element={<Navigate to="/" replace />} />
+      <Route path="/setup" element={<Navigate to="/learn" replace />} />
       <Route path="/auth" element={<AuthScreen />} />
       <Route path="/privacy" element={<PrivacyPolicyScreen />} />
       <Route path="/terms" element={<TermsOfServiceScreen />} />
