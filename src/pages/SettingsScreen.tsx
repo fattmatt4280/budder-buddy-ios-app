@@ -465,14 +465,20 @@ export default function SettingsScreen() {
         <section className="animate-fade-in" style={{ animationDelay: '0.25s' }}>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">LEGAL</h2>
           <div className="bg-card rounded-xl border border-border divide-y divide-border">
-            <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+            <button 
+              onClick={() => navigate('/privacy')}
+              className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            >
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-muted-foreground" />
                 <span className="font-medium text-foreground">Privacy Policy</span>
               </div>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
-            <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+            <button 
+              onClick={() => navigate('/terms')}
+              className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            >
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-muted-foreground" />
                 <span className="font-medium text-foreground">Terms of Service</span>
