@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          day_number: number
+          id: string
+          photo_date: string
+          storage_path: string
+          tattoo_id: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          day_number: number
+          id?: string
+          photo_date?: string
+          storage_path: string
+          tattoo_id: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          day_number?: number
+          id?: string
+          photo_date?: string
+          storage_path?: string
+          tattoo_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

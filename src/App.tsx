@@ -22,6 +22,8 @@ import LearnScreen from "@/pages/LearnScreen";
 import SettingsScreen from "@/pages/SettingsScreen";
 import ArticleScreen from "@/pages/ArticleScreen";
 import AuthScreen from "@/pages/AuthScreen";
+import PrivacyPolicyScreen from "@/pages/PrivacyPolicyScreen";
+import TermsOfServiceScreen from "@/pages/TermsOfServiceScreen";
 
 import NotFound from "@/pages/NotFound";
 
@@ -74,8 +76,10 @@ function AppRoutes() {
         <Route path="/learn/:articleId" element={<ArticleScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
-    <Route path="/setup" element={<Navigate to="/" replace />} />
-    <Route path="/auth" element={<AuthScreen />} />
+      <Route path="/setup" element={<Navigate to="/" replace />} />
+      <Route path="/auth" element={<AuthScreen />} />
+      <Route path="/privacy" element={<PrivacyPolicyScreen />} />
+      <Route path="/terms" element={<TermsOfServiceScreen />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
