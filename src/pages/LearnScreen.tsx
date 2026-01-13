@@ -1,16 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { EDUCATION_CATEGORIES, searchArticles } from '@/data/educationContent';
 import { cn } from '@/lib/utils';
 import mascotImage from '@/assets/mascot.png';
+import { useAuth } from '@/hooks/useAuth';
+import SignInPromptModal from '@/components/auth/SignInPromptModal';
 
 export default function LearnScreen() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const { isAuthenticated, loading } = useAuth();
+  const promptShownRef = useRef(false);
 
   const searchResults = searchQuery.length > 1 ? searchArticles(searchQuery) : null;
+
+  // Show sign-in prompt after 30 seconds for unauthenticated users
+  useEffect(() => {
+    // Don't run if still loading auth state or already authenticated
+    if (loading || isAuthenticated) return;
+    // Only show once per session
+    if (promptShownRef.current) return;
+
+    const timer = setTimeout(() => {
+      promptShownRef.current = true;
+      setShowSignInPrompt(true);
+    }, 30000); // 30 seconds
+
+    return () => clearTimeout(timer);
+  }, [loading, isAuthenticated]);
 
   return (
     <div className="min-h-screen bg-background safe-area-top">
@@ -130,6 +150,12 @@ export default function LearnScreen() {
           ))}
         </div>
       )}
+
+      {/* Sign-in prompt modal */}
+      <SignInPromptModal 
+        open={showSignInPrompt} 
+        onOpenChange={setShowSignInPrompt} 
+      />
     </div>
   );
 }
