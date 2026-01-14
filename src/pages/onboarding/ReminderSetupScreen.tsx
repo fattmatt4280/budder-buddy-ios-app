@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Moon, Sun, Sparkles } from 'lucide-react';
+import { Clock, Moon, Sun, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useSettings, useTattoos, useCheckins, generateId } from '@/hooks/useStorage';
 import { cn } from '@/lib/utils';
-import type { FrequencyPreset } from '@/types';
+import type { FrequencyPreset, AppSettings } from '@/types';
 import { getDayNumber } from '@/types';
 import { generateReminderTimes, formatTimeForDisplay } from '@/lib/reminderScheduler';
+import { notificationService } from '@/lib/notificationService';
 import ReminderSuccessModal from '@/components/reminders/ReminderSuccessModal';
 import mascotImage from '@/assets/mascot.png';
 
@@ -31,6 +32,7 @@ export default function ReminderSetupScreen() {
     settings.notifSchedule.frequencyPreset
   );
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [scheduling, setScheduling] = useState(false);
 
   // Preview scheduled times
   const scheduledReminders = generateReminderTimes(
@@ -73,26 +75,43 @@ export default function ReminderSetupScreen() {
     }
   };
 
-  const handleSave = () => {
-    // Save settings (but NOT hasCompletedOnboarding yet - that happens on Continue)
-    updateSettings({
-      wakeTime,
-      bedTime,
-      quietHoursEnabled,
-      notificationsEnabled: true,
-      notifSchedule: {
-        ...settings.notifSchedule,
-        frequencyPreset,
-      },
-      hasCompletedReminderSetup: true,
-      remindersJustSaved: true,
-    });
+  const handleSave = async () => {
+    setScheduling(true);
     
-    // Ensure today's checkin exists
-    ensureTodayCheckinExists();
-    
-    // Show success modal
-    setShowSuccessModal(true);
+    try {
+      // Build the new settings object
+      const newSettings: Partial<AppSettings> = {
+        wakeTime,
+        bedTime,
+        quietHoursEnabled,
+        notificationsEnabled: true,
+        notifSchedule: {
+          ...settings.notifSchedule,
+          frequencyPreset,
+        },
+        hasCompletedReminderSetup: true,
+        remindersJustSaved: true,
+      };
+      
+      // Save settings first
+      updateSettings(newSettings);
+      
+      // Schedule native notifications
+      const fullSettings: AppSettings = { ...settings, ...newSettings };
+      await notificationService.scheduleReminders(fullSettings);
+      
+      // Ensure today's checkin exists
+      ensureTodayCheckinExists();
+      
+      // Show success modal
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('[ReminderSetup] Failed to schedule:', error);
+      // Still show success - scheduling may work on native
+      setShowSuccessModal(true);
+    } finally {
+      setScheduling(false);
+    }
   };
 
   const handleContinue = () => {
@@ -252,14 +271,25 @@ export default function ReminderSetupScreen() {
       <div className="px-6 pb-8 pt-4 space-y-3">
         <Button
           onClick={handleSave}
+          disabled={scheduling}
           size="lg"
           className="w-full h-14 text-lg font-semibold rounded-xl gradient-primary hover:opacity-90 transition-opacity"
         >
-          <Clock className="w-5 h-5 mr-2" />
-          Save & Schedule Reminders
+          {scheduling ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Scheduling...
+            </>
+          ) : (
+            <>
+              <Clock className="w-5 h-5 mr-2" />
+              Save & Schedule Reminders
+            </>
+          )}
         </Button>
         <Button
           onClick={handleSkip}
+          disabled={scheduling}
           variant="ghost"
           size="lg"
           className="w-full h-12 text-muted-foreground hover:text-foreground"

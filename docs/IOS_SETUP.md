@@ -20,14 +20,17 @@ After running `npx cap add ios`, open `ios/App/App/Info.plist` in Xcode and add 
 <string>Budder Buddy saves tattoo photos to your library for backup.</string>
 ```
 
-### Future: Push Notifications
+## Local Notifications
 
-When implementing native push notifications, add:
+The app uses **local notifications** via `@capacitor/local-notifications`. These don't require push notification entitlements or APNS setup - they're scheduled directly on the device.
 
-```xml
-<key>NSUserNotificationsUsageDescription</key>
-<string>Budder Buddy sends reminders to help you care for your healing tattoo on schedule.</string>
-```
+**Note**: The `NSUserNotificationsUsageDescription` key is NOT required for local notifications on iOS. It's only needed for push notifications via APNS. The permission dialog will still appear when the app requests notification permission.
+
+After building, notifications will:
+- Request permission during onboarding
+- Schedule 7 days of reminders based on user's wake/bed times
+- Reschedule automatically when settings change
+- Work offline (no server required)
 
 ## App Icons & Splash Screen
 

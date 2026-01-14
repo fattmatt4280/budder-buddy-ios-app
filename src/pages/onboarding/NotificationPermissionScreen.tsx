@@ -1,25 +1,54 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, BellOff, Clock } from 'lucide-react';
+import { Bell, BellOff, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSettings } from '@/hooks/useStorage';
-import { cn } from '@/lib/utils';
+import { notificationService } from '@/lib/notificationService';
 
 export default function NotificationPermissionScreen() {
   const navigate = useNavigate();
-  const { settings, updateSettings } = useSettings();
+  const { updateSettings } = useSettings();
+  const [requesting, setRequesting] = useState(false);
 
   const handleEnableNotifications = async () => {
-    // In a native app, this would request permission
-    // For now, we just update settings and proceed to reminder setup
-    updateSettings({ 
-      notificationsEnabled: true,
-    });
-    navigate('/reminder-setup');
+    setRequesting(true);
+    
+    try {
+      // Request native notification permission
+      const result = await notificationService.requestPermission();
+      const granted = result.display === 'granted';
+      
+      // Update settings with actual permission status
+      updateSettings({ 
+        notificationsEnabled: granted,
+        notificationPermissionStatus: granted ? 'granted' : 'denied',
+      });
+      
+      if (granted) {
+        // Permission granted - proceed to reminder setup
+        navigate('/reminder-setup');
+      } else {
+        // Permission denied - still proceed to reminder setup
+        // User can configure schedule but won't get native notifications
+        navigate('/reminder-setup');
+      }
+    } catch (error) {
+      console.error('[Notifications] Permission request failed:', error);
+      // Proceed anyway, notifications will work on web
+      updateSettings({ 
+        notificationsEnabled: true,
+        notificationPermissionStatus: 'denied',
+      });
+      navigate('/reminder-setup');
+    } finally {
+      setRequesting(false);
+    }
   };
 
   const handleSkip = () => {
     updateSettings({ 
       notificationsEnabled: false,
+      notificationPermissionStatus: 'denied',
       hasCompletedOnboarding: true 
     });
     navigate('/');
@@ -82,13 +111,22 @@ export default function NotificationPermissionScreen() {
       <div className="px-6 pb-8 space-y-3">
         <Button
           onClick={handleEnableNotifications}
+          disabled={requesting}
           size="lg"
           className="w-full h-14 text-lg font-semibold rounded-xl gradient-primary hover:opacity-90 transition-opacity"
         >
-          Enable Reminders
+          {requesting ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Requesting...
+            </>
+          ) : (
+            'Enable Reminders'
+          )}
         </Button>
         <Button
           onClick={handleSkip}
+          disabled={requesting}
           variant="ghost"
           size="lg"
           className="w-full h-12 text-muted-foreground hover:text-foreground"
