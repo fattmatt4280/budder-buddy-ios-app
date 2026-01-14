@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { logger } from '@/lib/logger';
 
 export interface CloudPhoto {
   id: string;
@@ -54,7 +55,7 @@ export function useCloudPhotos() {
 
       setPhotos(photosWithUrls);
     } catch (err) {
-      console.error('Error fetching photos:', err);
+      logger.error('Error fetching photos:', err);
     } finally {
       setLoading(false);
     }
@@ -127,7 +128,7 @@ export function useCloudPhotos() {
 
         return { success: true };
       } catch (err) {
-        console.error('Error uploading photo:', err);
+        logger.error('Error uploading photo:', err);
         return {
           success: false,
           error: err instanceof Error ? err.message : 'Failed to upload photo',
@@ -170,7 +171,7 @@ export function useCloudPhotos() {
 
         return { success: true };
       } catch (err) {
-        console.error('Error deleting photo:', err);
+        logger.error('Error deleting photo:', err);
         return {
           success: false,
           error: err instanceof Error ? err.message : 'Failed to delete photo',

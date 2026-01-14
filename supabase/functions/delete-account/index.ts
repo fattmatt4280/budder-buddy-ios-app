@@ -59,13 +59,11 @@ Deno.serve(async (req) => {
     }
 
     const userId = user.id;
-    console.log(`Deleting account for user: ${userId}`);
 
     // Service role client for admin operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // 1. List and delete all files in storage for this user
-    console.log('Deleting storage files...');
     const { data: files, error: listError } = await supabaseAdmin.storage
       .from('tattoo-photos')
       .list(userId);
@@ -95,7 +93,6 @@ Deno.serve(async (req) => {
     }
 
     // 2. Delete all photos from database
-    console.log('Deleting photo records...');
     const { error: photosError } = await supabaseAdmin
       .from('photos')
       .delete()
@@ -106,7 +103,6 @@ Deno.serve(async (req) => {
     }
 
     // 3. Delete profile
-    console.log('Deleting profile...');
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .delete()
@@ -117,7 +113,6 @@ Deno.serve(async (req) => {
     }
 
     // 4. Delete the user from auth
-    console.log('Deleting auth user...');
     const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteUserError) {
@@ -127,8 +122,6 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log(`Successfully deleted account for user: ${userId}`);
 
     return new Response(
       JSON.stringify({ success: true, message: 'Account deleted successfully' }),

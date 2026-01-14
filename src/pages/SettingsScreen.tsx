@@ -32,6 +32,7 @@ import mascotImage from '@/assets/mascot.png';
 import { generateReminderTimes, formatTimeForDisplay, getFrequencyLabel } from '@/lib/reminderScheduler';
 import { notificationService } from '@/lib/notificationService';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -131,7 +132,7 @@ export default function SettingsScreen() {
         description: 'Your notification schedule has been updated.',
       });
     } catch (error) {
-      console.error('[Settings] Failed to reschedule:', error);
+      logger.error('[Settings] Failed to reschedule:', error);
       toast({
         title: 'Schedule updated',
         description: 'Settings saved. Native notifications will update on next app launch.',
@@ -200,7 +201,7 @@ export default function SettingsScreen() {
       
       navigate('/auth');
     } catch (error) {
-      console.error('Delete account error:', error);
+      logger.error('Delete account error:', error);
       toast({
         title: 'Delete failed',
         description: error instanceof Error ? error.message : 'Could not delete account.',

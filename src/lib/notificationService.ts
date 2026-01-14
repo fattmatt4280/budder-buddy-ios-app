@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications, PermissionStatus } from '@capacitor/local-notifications';
 import { generateReminderTimes, NOTIFICATION_MESSAGES } from './reminderScheduler';
 import type { AppSettings } from '@/types';
+import { logger } from './logger';
 
 /**
  * NotificationService handles all native local notification operations.
@@ -28,10 +29,10 @@ class NotificationService {
 
     try {
       const result = await LocalNotifications.requestPermissions();
-      console.log('[NotificationService] Permission result:', result);
+      logger.log('[NotificationService] Permission result:', result);
       return result;
     } catch (error) {
-      console.error('[NotificationService] Failed to request permission:', error);
+      logger.error('[NotificationService] Failed to request permission:', error);
       return { display: 'denied' };
     }
   }
@@ -47,7 +48,7 @@ class NotificationService {
     try {
       return await LocalNotifications.checkPermissions();
     } catch (error) {
-      console.error('[NotificationService] Failed to check permission:', error);
+      logger.error('[NotificationService] Failed to check permission:', error);
       return { display: 'denied' };
     }
   }
@@ -58,12 +59,12 @@ class NotificationService {
    */
   async scheduleReminders(settings: AppSettings): Promise<void> {
     if (!this.isNative) {
-      console.log('[NotificationService] Web platform - skipping native scheduling');
+      logger.log('[NotificationService] Web platform - skipping native scheduling');
       return;
     }
 
     if (!settings.notificationsEnabled) {
-      console.log('[NotificationService] Notifications disabled - cancelling all');
+      logger.log('[NotificationService] Notifications disabled - cancelling all');
       await this.cancelAllReminders();
       return;
     }
@@ -71,7 +72,7 @@ class NotificationService {
     // Check permission first
     const permission = await this.checkPermission();
     if (permission.display !== 'granted') {
-      console.log('[NotificationService] Permission not granted - skipping');
+      logger.log('[NotificationService] Permission not granted - skipping');
       return;
     }
 
@@ -89,7 +90,7 @@ class NotificationService {
       );
 
       if (reminders.times.length === 0) {
-        console.log('[NotificationService] No reminders to schedule');
+        logger.log('[NotificationService] No reminders to schedule');
         return;
       }
 
@@ -127,10 +128,10 @@ class NotificationService {
 
       if (notifications.length > 0) {
         await LocalNotifications.schedule({ notifications });
-        console.log(`[NotificationService] Scheduled ${notifications.length} notifications`);
+        logger.log(`[NotificationService] Scheduled ${notifications.length} notifications`);
       }
     } catch (error) {
-      console.error('[NotificationService] Failed to schedule reminders:', error);
+      logger.error('[NotificationService] Failed to schedule reminders:', error);
     }
   }
 
@@ -148,10 +149,10 @@ class NotificationService {
         await LocalNotifications.cancel({
           notifications: pending.notifications.map((n) => ({ id: n.id })),
         });
-        console.log(`[NotificationService] Cancelled ${pending.notifications.length} notifications`);
+        logger.log(`[NotificationService] Cancelled ${pending.notifications.length} notifications`);
       }
     } catch (error) {
-      console.error('[NotificationService] Failed to cancel reminders:', error);
+      logger.error('[NotificationService] Failed to cancel reminders:', error);
     }
   }
 
@@ -167,7 +168,7 @@ class NotificationService {
       const pending = await LocalNotifications.getPending();
       return pending.notifications.length;
     } catch (error) {
-      console.error('[NotificationService] Failed to get pending count:', error);
+      logger.error('[NotificationService] Failed to get pending count:', error);
       return 0;
     }
   }
@@ -184,20 +185,20 @@ class NotificationService {
     try {
       // Handle notification received while app is in foreground
       await LocalNotifications.addListener('localNotificationReceived', (notification) => {
-        console.log('[NotificationService] Received:', notification);
+        logger.log('[NotificationService] Received:', notification);
       });
 
       // Handle notification tap (action performed)
       await LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
-        console.log('[NotificationService] Action performed:', action);
+        logger.log('[NotificationService] Action performed:', action);
         const type = action.notification.extra?.type || 'checkin';
         onNotificationTap(type);
       });
 
       this.initialized = true;
-      console.log('[NotificationService] Listeners registered');
+      logger.log('[NotificationService] Listeners registered');
     } catch (error) {
-      console.error('[NotificationService] Failed to register listeners:', error);
+      logger.error('[NotificationService] Failed to register listeners:', error);
     }
   }
 
@@ -212,9 +213,9 @@ class NotificationService {
     try {
       await LocalNotifications.removeAllListeners();
       this.initialized = false;
-      console.log('[NotificationService] Listeners removed');
+      logger.log('[NotificationService] Listeners removed');
     } catch (error) {
-      console.error('[NotificationService] Failed to remove listeners:', error);
+      logger.error('[NotificationService] Failed to remove listeners:', error);
     }
   }
 
