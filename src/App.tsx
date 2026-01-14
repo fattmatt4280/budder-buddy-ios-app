@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useSettings, useTattoos } from "@/hooks/useStorage";
+import { useAuth } from "@/hooks/useAuth";
 
 // Layouts
 import AppLayout from "@/components/layout/AppLayout";
@@ -33,6 +34,7 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   const { settings, updateSettings } = useSettings();
   const { tattoos } = useTattoos();
+  const { isAuthenticated } = useAuth();
 
   // Self-heal onboarding state so users don't get stuck on the welcome screen
   // if they already have enough state to use the app.
@@ -40,6 +42,7 @@ function AppRoutes() {
     if (settings.hasCompletedOnboarding) return;
 
     const shouldUnlock =
+      isAuthenticated ||
       settings.selectedTattooId !== null ||
       tattoos.length > 0;
 
@@ -48,9 +51,9 @@ function AppRoutes() {
     }
   }, [
     settings.hasCompletedOnboarding,
-    settings.hasCompletedReminderSetup,
     settings.selectedTattooId,
     tattoos.length,
+    isAuthenticated,
     updateSettings,
   ]);
 
