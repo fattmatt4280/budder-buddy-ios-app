@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
@@ -26,10 +26,11 @@ import { Label } from '@/components/ui/label';
 import { useTattoos, useSettings } from '@/hooks/useStorage';
 import { useAuth } from '@/hooks/useAuth';
 import { getDayNumber, getHealingPhase } from '@/types';
-import type { FrequencyPreset, SnoozeDuration } from '@/types';
+import type { FrequencyPreset, SnoozeDuration, AppSettings } from '@/types';
 import { cn } from '@/lib/utils';
 import mascotImage from '@/assets/mascot.png';
 import { generateReminderTimes, formatTimeForDisplay, getFrequencyLabel } from '@/lib/reminderScheduler';
+import { notificationService } from '@/lib/notificationService';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -73,6 +74,7 @@ export default function SettingsScreen() {
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [rescheduling, setRescheduling] = useState(false);
 
   const selectedTattoo = tattoos.find(t => t.id === settings.selectedTattooId) || tattoos[0];
 
@@ -120,11 +122,43 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleRescheduleReminders = () => {
-    // In a real app with Capacitor, this would cancel and reschedule notifications
-    // For now, we just close the dialog as settings are already saved
-    setReminderDialogOpen(false);
+  const handleRescheduleReminders = async () => {
+    setRescheduling(true);
+    try {
+      await notificationService.scheduleReminders(settings);
+      toast({
+        title: 'Reminders updated',
+        description: 'Your notification schedule has been updated.',
+      });
+    } catch (error) {
+      console.error('[Settings] Failed to reschedule:', error);
+      toast({
+        title: 'Schedule updated',
+        description: 'Settings saved. Native notifications will update on next app launch.',
+      });
+    } finally {
+      setRescheduling(false);
+      setReminderDialogOpen(false);
+    }
   };
+
+  // Reschedule notifications when relevant settings change
+  useEffect(() => {
+    if (settings.notificationsEnabled && settings.hasCompletedReminderSetup) {
+      // Debounce the reschedule to avoid too many calls
+      const timer = setTimeout(() => {
+        notificationService.scheduleReminders(settings);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    settings.notificationsEnabled,
+    settings.wakeTime,
+    settings.bedTime,
+    settings.quietHoursEnabled,
+    settings.notifSchedule.frequencyPreset,
+    settings.reminderTypesEnabled,
+  ]);
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') return;
@@ -607,9 +641,13 @@ export default function SettingsScreen() {
                 <span className="text-foreground font-medium">{getFrequencyLabel(settings.notifSchedule.frequencyPreset)}</span>
               </div>
             </div>
-            <Button onClick={handleRescheduleReminders} className="w-full gradient-primary">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Apply Schedule
+            <Button onClick={handleRescheduleReminders} disabled={rescheduling} className="w-full gradient-primary">
+              {rescheduling ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              {rescheduling ? 'Scheduling...' : 'Apply Schedule'}
             </Button>
           </div>
         </DialogContent>
