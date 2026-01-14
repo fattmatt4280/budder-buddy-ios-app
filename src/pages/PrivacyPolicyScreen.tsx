@@ -95,8 +95,7 @@ export default function PrivacyPolicyScreen() {
               <p className="text-sm text-muted-foreground mb-3">We collect limited, non-identifying technical data:</p>
               <ul className="text-sm text-muted-foreground space-y-1 ml-4">
                 <li>• Device type and operating system</li>
-                <li>• App version</li>
-                <li>• Anonymous crash and performance data</li>
+                <li>• App version and basic device information (for troubleshooting if you contact support)</li>
               </ul>
               <p className="text-sm text-muted-foreground mt-4 mb-2 font-medium">We do not collect:</p>
               <ul className="text-sm text-muted-foreground space-y-1 ml-4">
