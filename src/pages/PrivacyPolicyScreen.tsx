@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield, Lock, Cloud, Trash2, Mail } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, Mail, Database, Eye, Trash2, UserX, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function PrivacyPolicyScreen() {
@@ -18,168 +18,271 @@ export default function PrivacyPolicyScreen() {
       </div>
 
       <div className="px-6 py-6 space-y-8 pb-24">
-        {/* Last Updated */}
-        <p className="text-sm text-muted-foreground">Last updated: January 2025</p>
+        {/* Dates */}
+        <div className="space-y-1">
+          <p className="text-sm text-muted-foreground">Effective Date: January 14, 2026</p>
+          <p className="text-sm text-muted-foreground">Last Updated: January 14, 2026</p>
+        </div>
 
-        {/* Health Data Notice - HIPAA-style */}
-        <section className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <Shield className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-            <div>
-              <h2 className="font-semibold text-foreground mb-2">Health Information Privacy Notice</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Budder Buddy collects and stores health-related information about your tattoo healing process. 
-                We treat this information with the same care and security standards used for protected health information (PHI) 
-                under HIPAA guidelines, even though tattoo aftercare tracking may not be classified as PHI under federal law.
-              </p>
-            </div>
+        {/* Introduction */}
+        <section className="bg-card rounded-xl border border-border p-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Budder Buddy ("Budder Buddy," "we," "us," or "our") is a tattoo aftercare and wellness application 
+            provided by Blue Dream Budder. This Privacy Policy explains how we collect, use, store, and protect 
+            information when you use the Budder Buddy mobile application and related services (the "Services").
+          </p>
+          <p className="text-sm text-muted-foreground mt-3 font-medium">
+            By using Budder Buddy, you agree to this Privacy Policy.
+          </p>
+        </section>
+
+        {/* Section 1: App Purpose and Scope */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4">1. App Purpose and Scope</h2>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Budder Buddy is a wellness and educational app designed to help users track tattoo aftercare routines and healing progress.
+            </p>
+            <p className="text-sm text-muted-foreground font-medium mb-2">Budder Buddy:</p>
+            <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+              <li>• Is not a medical device</li>
+              <li>• Is not a healthcare provider</li>
+              <li>• Does not provide medical advice</li>
+              <li>• Does not diagnose, treat, or prevent disease</li>
+            </ul>
           </div>
         </section>
 
-        {/* What We Collect */}
+        {/* Section 2: Information We Collect */}
         <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Information We Collect</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">2. Information We Collect</h2>
+          
+          {/* 2A */}
           <div className="space-y-4">
+            <h3 className="font-medium text-foreground">A. Information You Provide</h3>
+            
             <div className="bg-card rounded-lg border border-border p-4">
-              <h3 className="font-medium text-foreground mb-2">Account Information</h3>
-              <p className="text-sm text-muted-foreground">
-                Email address and password (encrypted) when you create an account.
-              </p>
+              <h4 className="font-medium text-foreground mb-2">Account Information (Optional)</h4>
+              <p className="text-sm text-muted-foreground mb-2">If you create an account, we collect:</p>
+              <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                <li>• Email address</li>
+                <li>• Encrypted authentication credentials</li>
+              </ul>
             </div>
+
             <div className="bg-card rounded-lg border border-border p-4">
-              <h3 className="font-medium text-foreground mb-2">Tattoo Details</h3>
-              <p className="text-sm text-muted-foreground">
-                Information about your tattoos including date, body location, size, and ink type. 
-                This helps us provide personalized aftercare guidance.
-              </p>
+              <h4 className="font-medium text-foreground mb-2">Tattoo Aftercare Information</h4>
+              <p className="text-sm text-muted-foreground mb-2">You may voluntarily provide:</p>
+              <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                <li>• Tattoo date and body location</li>
+                <li>• Size or style notes</li>
+                <li>• Aftercare logs (washing, moisturizing, reminders)</li>
+              </ul>
             </div>
+
             <div className="bg-card rounded-lg border border-border p-4">
-              <h3 className="font-medium text-foreground mb-2">Photos</h3>
-              <p className="text-sm text-muted-foreground">
-                Photos you take of your healing tattoo. These are stored securely and are only accessible by you.
-              </p>
+              <h4 className="font-medium text-foreground mb-2">Photos</h4>
+              <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                <li>• Images of your tattoo uploaded or captured by you</li>
+                <li>• Photos are private and visible only to you</li>
+              </ul>
             </div>
+
+            {/* 2B */}
+            <h3 className="font-medium text-foreground mt-6">B. Information Collected Automatically</h3>
+            
             <div className="bg-card rounded-lg border border-border p-4">
-              <h3 className="font-medium text-foreground mb-2">Daily Check-ins</h3>
-              <p className="text-sm text-muted-foreground">
-                Your aftercare tracking data including washing, moisturizing, and any notes about your healing progress.
-              </p>
+              <p className="text-sm text-muted-foreground mb-3">We collect limited, non-identifying technical data:</p>
+              <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                <li>• Device type and operating system</li>
+                <li>• App version</li>
+                <li>• Anonymous crash and performance data</li>
+              </ul>
+              <p className="text-sm text-muted-foreground mt-4 mb-2 font-medium">We do not collect:</p>
+              <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                <li>• Precise location data</li>
+                <li>• Contacts</li>
+                <li>• Biometric identifiers</li>
+                <li>• Advertising identifiers</li>
+              </ul>
+            </div>
+
+            {/* 2C */}
+            <h3 className="font-medium text-foreground mt-6">C. Local-Only Use Option</h3>
+            
+            <div className="bg-card rounded-lg border border-border p-4">
+              <p className="text-sm text-muted-foreground mb-3">You may use Budder Buddy without creating an account.</p>
+              <p className="text-sm text-muted-foreground mb-2 font-medium">In local-only mode:</p>
+              <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                <li>• All data is stored solely on your device</li>
+                <li>• No data is transmitted to our servers</li>
+                <li>• Data cannot be recovered if the app is deleted or device data is cleared</li>
+              </ul>
             </div>
           </div>
         </section>
 
-        {/* How We Protect Your Data */}
+        {/* Section 3: How We Use Information */}
         <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">How We Protect Your Data</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">3. How We Use Information</h2>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-sm text-muted-foreground mb-2 font-medium">We use information solely to:</p>
+            <ul className="text-sm text-muted-foreground space-y-1 ml-4 mb-4">
+              <li>• Provide and operate app functionality</li>
+              <li>• Display healing timelines and reminders</li>
+              <li>• Improve app stability and user experience</li>
+              <li>• Respond to user support requests</li>
+            </ul>
+            <p className="text-sm text-muted-foreground mb-2 font-medium">We do not use your data for:</p>
+            <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+              <li>• Advertising</li>
+              <li>• Marketing</li>
+              <li>• Cross-app tracking</li>
+              <li>• Data brokerage</li>
+            </ul>
+          </div>
+        </section>
+
+        {/* Section 4: Data Protection and Security */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4">4. Data Protection and Security</h2>
           <div className="space-y-3">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 bg-card rounded-lg border border-border p-4">
               <Lock className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-foreground">Encryption</h3>
-                <p className="text-sm text-muted-foreground">
-                  All data is encrypted in transit (TLS 1.3) and at rest (AES-256).
-                </p>
+                <h3 className="font-medium text-foreground">Encryption in Transit</h3>
+                <p className="text-sm text-muted-foreground">TLS 1.3</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Cloud className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 bg-card rounded-lg border border-border p-4">
+              <Database className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-foreground">Secure Cloud Storage</h3>
-                <p className="text-sm text-muted-foreground">
-                  Photos and data are stored in SOC 2 Type II compliant cloud infrastructure.
-                </p>
+                <h3 className="font-medium text-foreground">Encryption at Rest</h3>
+                <p className="text-sm text-muted-foreground">AES-256</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 bg-card rounded-lg border border-border p-4">
               <Shield className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-foreground">Access Controls</h3>
-                <p className="text-sm text-muted-foreground">
-                  Row-level security ensures only you can access your own data. We cannot view your photos.
-                </p>
+                <h3 className="font-medium text-foreground">Secure Cloud Infrastructure</h3>
+                <p className="text-sm text-muted-foreground">With access controls and user-level data isolation</p>
               </div>
             </div>
           </div>
+          <p className="text-sm text-muted-foreground mt-4 italic">
+            We do not view or access your tattoo photos or aftercare logs.
+          </p>
         </section>
 
-        {/* Data Sharing */}
+        {/* Section 5: Data Sharing */}
         <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Data Sharing</h2>
-          <div className="bg-card rounded-lg border border-border p-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">We do not sell, share, or disclose your health information to third parties.</strong>
-              {' '}Your tattoo photos, healing progress, and personal information are never shared with advertisers, 
-              data brokers, or any external parties. We do not use your data for marketing purposes.
+          <h2 className="text-lg font-semibold text-foreground mb-4">5. Data Sharing</h2>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              <strong className="text-foreground">Budder Buddy does not sell, rent, or share personal or health-related data.</strong>
             </p>
+            <p className="text-sm text-muted-foreground mb-2">Data is disclosed only if legally required, such as:</p>
+            <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+              <li>• Compliance with lawful court orders</li>
+              <li>• Government requests where legally mandated</li>
+              <li>• Protection of user safety or legal rights</li>
+            </ul>
           </div>
         </section>
 
-        {/* Your Rights */}
+        {/* Section 6: Data Retention and Deletion */}
         <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Your Rights</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">6. Data Retention and Deletion</h2>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <ul className="text-sm text-muted-foreground space-y-2">
+              <li className="flex items-start gap-2">
+                <span>•</span>
+                <span>Data is retained only while your account is active</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span>•</span>
+                <span>You may delete photos, logs, or your account at any time</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span>•</span>
+                <span>Account deletion permanently removes all associated data</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        {/* Section 7: Your Rights */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4">7. Your Rights</h2>
           <div className="space-y-3">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 bg-card rounded-lg border border-border p-4">
+              <Eye className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-medium text-foreground">Access Your Data</h3>
+                <p className="text-sm text-muted-foreground">View all information we have about you</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-card rounded-lg border border-border p-4">
               <Trash2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-foreground">Right to Delete</h3>
-                <p className="text-sm text-muted-foreground">
-                  You can delete your photos and data at any time. Deleted data is permanently removed from our servers.
-                </p>
+                <h3 className="font-medium text-foreground">Request Deletion</h3>
+                <p className="text-sm text-muted-foreground">Have your data permanently removed</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Cloud className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 bg-card rounded-lg border border-border p-4">
+              <FileText className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-foreground">Data Portability</h3>
-                <p className="text-sm text-muted-foreground">
-                  You can request a copy of all your data in a standard format.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Lock className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-medium text-foreground">Account Deletion</h3>
-                <p className="text-sm text-muted-foreground">
-                  You can delete your account at any time, which will permanently remove all associated data.
-                </p>
+                <h3 className="font-medium text-foreground">Request a Copy</h3>
+                <p className="text-sm text-muted-foreground">Receive a copy of your data</p>
               </div>
             </div>
           </div>
+          <p className="text-sm text-muted-foreground mt-4">
+            Requests can be submitted using the contact information below.
+          </p>
         </section>
 
-        {/* Local Storage */}
+        {/* Section 8: Children's Privacy */}
         <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Local Storage Option</h2>
-          <div className="bg-card rounded-lg border border-border p-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              You can use Budder Buddy without creating an account. In this case, your data is stored 
-              only on your device and never transmitted to our servers. However, local-only data cannot 
-              be recovered if you clear your browser data or switch devices.
-            </p>
-          </div>
-        </section>
-
-        {/* Contact */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Contact Us</h2>
-          <div className="bg-card rounded-lg border border-border p-4">
-            <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                For privacy inquiries: <span className="text-primary">privacy@budderbuddy.app</span>
+          <h2 className="text-lg font-semibold text-foreground mb-4">8. Children's Privacy</h2>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <div className="flex items-start gap-3">
+              <UserX className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Budder Buddy is not intended for children under 13. We do not knowingly collect personal information from children.
               </p>
             </div>
           </div>
         </section>
 
-        {/* HIPAA-style Disclaimer */}
-        <section className="bg-muted/50 rounded-xl p-4">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">Important:</strong> While we implement security practices 
-            aligned with HIPAA standards, Budder Buddy is a wellness and educational app, not a healthcare provider. 
-            The app is not intended to diagnose, treat, or prevent any medical condition. Always consult with 
-            your tattoo artist or a healthcare professional for medical concerns about your tattoo.
+        {/* Section 9: Changes to This Policy */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4">9. Changes to This Policy</h2>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We may update this Privacy Policy periodically. Material changes will be communicated through the app or by email when required.
+            </p>
+          </div>
+        </section>
+
+        {/* Section 10: Contact Us */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4">10. Contact Us</h2>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-sm text-muted-foreground mb-3">For privacy questions or requests:</p>
+            <div className="flex items-center gap-3">
+              <Mail className="w-5 h-5 text-primary" />
+              <span className="text-sm text-primary font-medium">privacy@budderbuddy.app</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 11: Medical Disclaimer */}
+        <section className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+          <h2 className="text-lg font-semibold text-foreground mb-3">11. Medical Disclaimer</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Budder Buddy provides general aftercare tracking and educational information only. 
+            Always consult a tattoo professional or licensed healthcare provider for medical concerns.
           </p>
         </section>
       </div>
