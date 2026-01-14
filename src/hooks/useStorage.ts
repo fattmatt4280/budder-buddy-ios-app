@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Tattoo, DailyCheckin, PhotoEntry, AppSettings } from '@/types';
+import { logger } from '@/lib/logger';
 
 const STORAGE_KEYS = {
   TATTOOS: 'budder_tattoos',
@@ -58,7 +59,7 @@ function setToStorage<T>(key: string, value: T): void {
       })
     );
   } catch (error) {
-    console.error('Failed to save to storage:', error);
+    logger.error('Failed to save to storage:', error);
   }
 }
 

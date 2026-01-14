@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { secureStorageAdapter } from './secureStorageAdapter';
+import { logger } from './logger';
 
 const SUPABASE_PROJECT_ID = 'ahakqntfpkbeblmljeib';
 const AUTH_TOKEN_KEY = `sb-${SUPABASE_PROJECT_ID}-auth-token`;
@@ -30,15 +31,15 @@ async function migrateExistingTokens(): Promise<void> {
       if (!secureSession) {
         // Move to secure storage
         await secureStorageAdapter.setItem(AUTH_TOKEN_KEY, existingSession);
-        console.log('[SecureAuth] Migrated auth tokens to secure storage');
+        logger.log('[SecureAuth] Migrated auth tokens to secure storage');
       }
       
       // Remove from insecure storage
       localStorage.removeItem(AUTH_TOKEN_KEY);
-      console.log('[SecureAuth] Removed tokens from insecure storage');
+      logger.log('[SecureAuth] Removed tokens from insecure storage');
     }
   } catch (error) {
-    console.error('[SecureAuth] Migration failed:', error);
+    logger.error('[SecureAuth] Migration failed:', error);
     // Don't throw - allow app to continue even if migration fails
   }
 }
@@ -52,6 +53,6 @@ export async function clearAuthStorage(): Promise<void> {
     await secureStorageAdapter.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_TOKEN_KEY);
   } catch (error) {
-    console.error('[SecureAuth] Failed to clear auth storage:', error);
+    logger.error('[SecureAuth] Failed to clear auth storage:', error);
   }
 }

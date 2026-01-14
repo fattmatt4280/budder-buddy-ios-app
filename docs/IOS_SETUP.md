@@ -100,4 +100,32 @@ npx cap run ios
 
 - Auth tokens are stored in iOS Keychain (not localStorage)
 - All network traffic uses HTTPS (ATS compliant)
-- No sensitive data is written to logs in production
+- Debug logging is disabled in production builds (via `src/lib/logger.ts`)
+- No sensitive data is written to user-visible logs
+
+## Release Build Checklist
+
+Before submitting to App Store, verify these Xcode settings:
+
+### Build Settings (Release Scheme)
+- [ ] "Strip Debug Symbols During Copy" = YES
+- [ ] "Debug Information Format" = DWARF (not DWARF with dSYM for public builds)
+- [ ] "Enable Testability" = NO
+- [ ] "Validate Built Product" = YES
+
+### Entitlements
+Verify only required entitlements are enabled:
+- [ ] Remove any unused entitlements
+- [ ] App Groups (only if using shared data between extensions)
+
+**Note**: Local notifications do NOT require the Push Notifications entitlement.
+
+### Archive Validation
+- [ ] Product > Archive produces a valid archive
+- [ ] Organizer > Validate App passes all checks
+- [ ] Test on a real device before submission
+
+### Privacy Manifest (iOS 17+)
+For iOS 17 and later, Apple may require a privacy manifest. Capacitor handles this automatically in most cases, but verify:
+- [ ] No third-party SDKs require additional privacy manifest entries
+- [ ] Required reason APIs are properly documented if used
