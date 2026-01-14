@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { clearAuthStorage } from '@/lib/supabaseClientInit';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -55,6 +56,8 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
+    // Clear tokens from both secure and insecure storage
+    await clearAuthStorage();
     return { error };
   }, []);
 
