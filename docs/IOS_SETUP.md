@@ -103,6 +103,20 @@ npx cap run ios
 - Debug logging is disabled in production builds (via `src/lib/logger.ts`)
 - No sensitive data is written to user-visible logs
 
+## Crash Reporting (Future Consideration)
+
+The app currently does not include crash reporting. If implementing in the future:
+
+1. **Recommended Services**: Sentry (`@sentry/react`) or Firebase Crashlytics
+2. **Privacy Requirements**:
+   - Enable PII scrubbing before sending reports
+   - Ensure no user photos or tattoo data appear in crash logs
+   - Update Privacy Policy Section 2B to reflect data collection
+3. **Implementation Notes**:
+   - Wrap app in React error boundary
+   - Initialize crash reporting only in production
+   - Test that sensitive local storage data is not included in reports
+
 ## Release Build Checklist
 
 Before submitting to App Store, verify these Xcode settings:
