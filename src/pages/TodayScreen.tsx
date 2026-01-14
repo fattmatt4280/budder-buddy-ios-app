@@ -465,25 +465,6 @@ export default function TodayScreen() {
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-3 pt-2">
-          <Button
-            onClick={() => navigate('/photos')}
-            variant="outline"
-            className="flex-1 h-12 rounded-xl border-border"
-          >
-            <Camera className="w-4 h-4 mr-2" />
-            Add Photo
-          </Button>
-          <Button
-            onClick={() => setNoteDialogOpen(true)}
-            variant="outline"
-            className="flex-1 h-12 rounded-xl border-border"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Note
-          </Button>
-        </div>
       </div>
 
       {/* Note Dialog */}
