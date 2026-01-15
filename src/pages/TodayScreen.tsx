@@ -12,6 +12,9 @@ import mascotImage from '@/assets/mascot.png';
 import StartHereCard from '@/components/reminders/StartHereCard';
 import EnableNotificationsBanner from '@/components/reminders/EnableNotificationsBanner';
 import { generateReminderTimes, formatTimeForDisplay } from '@/lib/reminderScheduler';
+import SafeToSubmergeCard from '@/components/environment/SafeToSubmergeCard';
+import SunGuardCard from '@/components/environment/SunGuardCard';
+import { environmentService } from '@/lib/environmentService';
 import {
   Dialog,
   DialogContent,
@@ -187,6 +190,9 @@ export default function TodayScreen() {
   // Show notifications banner if permission denied
   const showNotificationsBanner = settings.notificationPermissionStatus === 'denied';
 
+  // Show safe to submerge countdown if within 14 days and activity reminders enabled
+  const showSubmergeCountdown = settings.activityRemindersEnabled && dayNumber < 14;
+
   const [checklist, setChecklist] = useState<DailyChecklist>({
     washed: false,
     moisturized: false,
@@ -323,6 +329,14 @@ export default function TodayScreen() {
               isHighlighted={showStartHereHighlight}
             />
           </div>
+        )}
+
+        {/* Sun Guard Card */}
+        <SunGuardCard />
+
+        {/* Safe to Submerge Countdown */}
+        {showSubmergeCountdown && (
+          <SafeToSubmergeCard tattooDate={tattoo.tattooDate} />
         )}
 
         {/* Today's Reminders Card */}

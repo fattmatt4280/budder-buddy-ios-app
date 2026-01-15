@@ -18,6 +18,10 @@ After running `npx cap add ios`, open `ios/App/App/Info.plist` in Xcode and add 
 <!-- Photo Library Write Access - Required for saving photos -->
 <key>NSPhotoLibraryAddUsageDescription</key>
 <string>Budder Buddy saves tattoo photos to your library for backup.</string>
+
+<!-- Location Access - Required for Sun Guard UV monitoring -->
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Budder Buddy uses your location to check local UV levels and protect your healing tattoo from sun damage.</string>
 ```
 
 ## Local Notifications
@@ -31,6 +35,18 @@ After building, notifications will:
 - Schedule 7 days of reminders based on user's wake/bed times
 - Reschedule automatically when settings change
 - Work offline (no server required)
+
+## Environment Features
+
+### Sun Guard (UV Monitoring)
+The app includes a "Sun Guard" feature that checks local UV levels using the Open-Meteo API (free, no API key required). When enabled:
+- Uses `@capacitor/geolocation` to get the user's position
+- Fetches UV index from Open-Meteo forecast API
+- Sends local notifications when UV is high (index > 5)
+- Checks on app open and can be manually refreshed
+
+### Safe to Submerge Countdown
+A 14-day countdown timer shows users when it's safe to swim or visit the gym. A celebration notification is scheduled for day 14.
 
 ## App Icons & Splash Screen
 

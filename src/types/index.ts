@@ -76,6 +76,9 @@ export interface AppSettings {
   remindersJustSaved: boolean;
   todayStartHereDismissed: boolean;
   notificationPermissionStatus: 'granted' | 'denied' | 'default' | null;
+  // Environment notifications
+  sunGuardEnabled: boolean;
+  activityRemindersEnabled: boolean;
 }
 
 export interface HealingPhase {

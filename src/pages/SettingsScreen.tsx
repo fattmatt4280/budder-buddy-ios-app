@@ -16,7 +16,9 @@ import {
   LogOut,
   User,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  MapPin,
+  Waves
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -460,6 +462,42 @@ export default function SettingsScreen() {
                 </div>
               </>
             )}
+          </div>
+        </section>
+
+        {/* Environment Notifications */}
+        <section className="animate-fade-in" style={{ animationDelay: '0.12s' }}>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">ENVIRONMENT</h2>
+          <div className="bg-card rounded-xl border border-border divide-y divide-border">
+            {/* Sun Guard */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Sun className="w-5 h-5 text-amber-500" />
+                <div>
+                  <span className="font-medium text-foreground">Sun Guard</span>
+                  <p className="text-xs text-muted-foreground">UV alerts based on your location</p>
+                </div>
+              </div>
+              <Switch
+                checked={settings.sunGuardEnabled}
+                onCheckedChange={(checked) => updateSettings({ sunGuardEnabled: checked })}
+              />
+            </div>
+
+            {/* Activity Reminders */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Waves className="w-5 h-5 text-cyan-500" />
+                <div>
+                  <span className="font-medium text-foreground">Activity Reminders</span>
+                  <p className="text-xs text-muted-foreground">Countdown until safe to swim/gym</p>
+                </div>
+              </div>
+              <Switch
+                checked={settings.activityRemindersEnabled}
+                onCheckedChange={(checked) => updateSettings({ activityRemindersEnabled: checked })}
+              />
+            </div>
           </div>
         </section>
 
