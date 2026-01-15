@@ -37,6 +37,9 @@ const DEFAULT_SETTINGS: AppSettings = {
   remindersJustSaved: false,
   todayStartHereDismissed: false,
   notificationPermissionStatus: null,
+  // Environment notifications
+  sunGuardEnabled: false,
+  activityRemindersEnabled: true,
 };
 
 function getFromStorage<T>(key: string, defaultValue: T): T {
