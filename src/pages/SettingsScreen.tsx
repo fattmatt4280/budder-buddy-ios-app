@@ -18,7 +18,8 @@ import {
   Loader2,
   AlertTriangle,
   MapPin,
-  Waves
+  Waves,
+  Archive
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -231,10 +232,31 @@ export default function SettingsScreen() {
       </div>
 
       <div className="px-6 pb-8 space-y-6">
+        {/* Ink Vault Quick Access */}
+        <section className="animate-fade-in">
+          <button
+            onClick={() => navigate('/ink-vault')}
+            className="w-full bg-gradient-to-r from-success/20 via-success/10 to-accent/10 rounded-xl p-4 border border-success/30 text-left hover:border-success/50 transition-all group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center">
+                <Archive className="w-6 h-6 text-success" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground">Ink Vault</h3>
+                <p className="text-sm text-muted-foreground">
+                  {tattoos.length} tattoo{tattoos.length !== 1 ? 's' : ''} • Healing history & diaries
+                </p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-success group-hover:translate-x-1 transition-transform" />
+            </div>
+          </button>
+        </section>
+
         {/* Current Tattoo */}
         {selectedTattoo && (
-          <section className="animate-fade-in">
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">CURRENT TATTOO</h2>
+          <section className="animate-fade-in" style={{ animationDelay: '0.05s' }}>
+            <h2 className="text-sm font-medium text-muted-foreground mb-3">ACTIVE TATTOO</h2>
             <div className="bg-card rounded-xl border border-border p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -248,6 +270,12 @@ export default function SettingsScreen() {
                     </p>
                   </div>
                 </div>
+                <button
+                  onClick={() => navigate('/ink-vault')}
+                  className="text-primary hover:text-primary/80 transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
               <div className="mt-4 pt-4 border-t border-border flex flex-wrap gap-2 text-xs text-muted-foreground">
                 <span className="px-2 py-1 bg-muted rounded-md">{selectedTattoo.sizeTier}</span>

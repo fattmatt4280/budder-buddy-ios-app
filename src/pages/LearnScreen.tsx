@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronRight, ExternalLink, Sparkles, BookOpen } from 'lucide-react';
+import { Search, ChevronRight, ExternalLink, Sparkles, BookOpen, Archive } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EDUCATION_CATEGORIES, searchArticles } from '@/data/educationContent';
@@ -63,8 +63,9 @@ export default function LearnScreen() {
         </div>
       </div>
 
-      {/* Healing Guide Feature Card */}
-      <div className="px-6 mb-4">
+      {/* Feature Cards */}
+      <div className="px-6 mb-4 space-y-3">
+        {/* Healing Guide Feature Card */}
         <button
           onClick={() => navigate('/healing-guide')}
           className="w-full bg-gradient-to-r from-primary/20 via-primary/10 to-accent/10 rounded-2xl p-4 border border-primary/30 text-left hover:border-primary/50 transition-all group"
@@ -85,6 +86,30 @@ export default function LearnScreen() {
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+          </div>
+        </button>
+
+        {/* Ink Vault Feature Card */}
+        <button
+          onClick={() => navigate('/ink-vault')}
+          className="w-full bg-gradient-to-r from-success/20 via-success/10 to-accent/10 rounded-2xl p-4 border border-success/30 text-left hover:border-success/50 transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center">
+              <Archive className="w-6 h-6 text-success" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-foreground">Ink Vault</h3>
+                <span className="text-xs bg-success/20 text-success px-2 py-0.5 rounded-full font-medium">
+                  Archive
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Your complete tattoo history & healing diaries
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-success group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
       </div>

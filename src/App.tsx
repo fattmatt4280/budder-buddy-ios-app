@@ -22,6 +22,7 @@ import TimelineScreen from "@/pages/TimelineScreen";
 import PhotosScreen from "@/pages/PhotosScreen";
 import GhostCameraScreen from "@/pages/GhostCameraScreen";
 import HealingGuideScreen from "@/pages/HealingGuideScreen";
+import InkVaultScreen from "@/pages/InkVaultScreen";
 import LearnScreen from "@/pages/LearnScreen";
 import SettingsScreen from "@/pages/SettingsScreen";
 import ArticleScreen from "@/pages/ArticleScreen";
@@ -90,6 +91,7 @@ function AppRoutes() {
         <Route path="/learn" element={<LearnScreen />} />
         <Route path="/learn/:articleId" element={<ArticleScreen />} />
         <Route path="/healing-guide" element={<HealingGuideScreen />} />
+        <Route path="/ink-vault" element={<ProtectedRoute><InkVaultScreen /></ProtectedRoute>} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
       
