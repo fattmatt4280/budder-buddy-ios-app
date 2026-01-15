@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronRight, ExternalLink } from 'lucide-react';
+import { Search, ChevronRight, ExternalLink, Sparkles, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { EDUCATION_CATEGORIES, searchArticles } from '@/data/educationContent';
 import { cn } from '@/lib/utils';
 import mascotImage from '@/assets/mascot.png';
@@ -60,6 +61,32 @@ export default function LearnScreen() {
             className="pl-10 h-11 bg-card border-border rounded-xl"
           />
         </div>
+      </div>
+
+      {/* Healing Guide Feature Card */}
+      <div className="px-6 mb-4">
+        <button
+          onClick={() => navigate('/healing-guide')}
+          className="w-full bg-gradient-to-r from-primary/20 via-primary/10 to-accent/10 rounded-2xl p-4 border border-primary/30 text-left hover:border-primary/50 transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-foreground">Healing Stage Guide</h3>
+                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">
+                  AI-Powered
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Identify what you're seeing + get 2 AM reassurance
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+          </div>
+        </button>
       </div>
 
       {/* Search results */}

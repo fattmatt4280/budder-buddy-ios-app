@@ -21,6 +21,7 @@ import TodayScreen from "@/pages/TodayScreen";
 import TimelineScreen from "@/pages/TimelineScreen";
 import PhotosScreen from "@/pages/PhotosScreen";
 import GhostCameraScreen from "@/pages/GhostCameraScreen";
+import HealingGuideScreen from "@/pages/HealingGuideScreen";
 import LearnScreen from "@/pages/LearnScreen";
 import SettingsScreen from "@/pages/SettingsScreen";
 import ArticleScreen from "@/pages/ArticleScreen";
@@ -88,6 +89,7 @@ function AppRoutes() {
         {/* Public routes - no auth required */}
         <Route path="/learn" element={<LearnScreen />} />
         <Route path="/learn/:articleId" element={<ArticleScreen />} />
+        <Route path="/healing-guide" element={<HealingGuideScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
       
