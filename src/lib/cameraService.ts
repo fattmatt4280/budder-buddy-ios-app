@@ -37,10 +37,18 @@ export const cameraService = {
       return;
     }
 
+    console.log('[CameraService] Starting camera with dimensions:', window.innerWidth, 'x', window.innerHeight);
+
     const defaultOptions: CameraPreviewOptions = {
       position: 'rear',
       // Render camera behind the webview - required for overlay functionality
       toBack: true,
+      // Explicit full-screen positioning - required for camera to fill screen
+      x: 0,
+      y: 0,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      paddingBottom: 0,
       storeToFile: false,
       disableExifHeaderStripping: false,
       enableHighResolution: true,

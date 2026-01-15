@@ -11,6 +11,8 @@ const config: CapacitorConfig = {
     // so the camera preview (which renders behind the webview) can show through.
     // The Ghost Overlay feature requires this transparency to work correctly.
     preferredContentMode: 'mobile',
+    // Enable debugging for development - helps verify webview transparency
+    webContentsDebuggingEnabled: true,
   },
   android: {
     // Transparent background allows camera preview to show through webview

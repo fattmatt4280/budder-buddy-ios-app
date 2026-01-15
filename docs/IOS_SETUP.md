@@ -116,15 +116,44 @@ The app uses `@capacitor-community/camera-preview` which renders the camera **be
 2. The webview must be transparent (no opaque backgroundColor in capacitor.config.ts)
 3. UI elements on top of the camera use GPU compositing (`transform: translateZ(0)`) to remain visible
 
+**CRITICAL: Native iOS Code Changes Required**
+
+After running `npx cap sync ios`, you MUST modify the native iOS code for webview transparency:
+
+1. Open `ios/App/App/AppDelegate.swift` in Xcode
+2. Find the `application(_:didFinishLaunchingWithOptions:)` method
+3. Add these lines AFTER the window is created:
+
+```swift
+// Enable transparent webview for camera preview overlay
+self.window?.isOpaque = false
+self.window?.backgroundColor = UIColor.clear
+```
+
+**Full example:**
+```swift
+func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    // ... existing code ...
+    
+    // Add transparency for camera preview
+    self.window?.isOpaque = false
+    self.window?.backgroundColor = UIColor.clear
+    
+    return true
+}
+```
+
 **Troubleshooting checklist:**
 - [ ] `capacitor.config.ts` does NOT set `backgroundColor` for iOS (must be omitted for transparency)
+- [ ] **AppDelegate.swift** has `window?.isOpaque = false` and `window?.backgroundColor = UIColor.clear`
 - [ ] After changing capacitor.config.ts, run `npx cap sync ios` to apply changes
 - [ ] Test on a **real device** - camera preview does not work on iOS Simulator
 - [ ] Ghost overlay elements must have `transform: translateZ(0)` style for GPU layer promotion
 - [ ] Check that `toBack: true` is set when starting the camera preview
 
 **Common issues:**
-- Blank black screen: Usually means webview has an opaque background
+- Blank black screen: Usually means webview has an opaque background OR missing AppDelegate changes
+- Camera shows iOS native UI: Camera preview plugin not starting - check console logs for errors
 - Ghost overlay disappears: Missing GPU compositing hints on overlay elements
 - Camera freezes: Permission denied or another app using the camera
 
