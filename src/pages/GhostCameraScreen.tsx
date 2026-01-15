@@ -57,6 +57,10 @@ export default function GhostCameraScreen() {
     let mounted = true;
 
     const initCamera = async () => {
+      console.log('[GhostCamera] Initializing...');
+      console.log('[GhostCamera] Platform:', isNative ? 'Native' : 'Web');
+      console.log('[GhostCamera] Window dimensions:', window.innerWidth, 'x', window.innerHeight);
+      
       if (!isNative) {
         console.log('[GhostCamera] Web environment detected, using fallback');
         setIsWebFallback(true);
@@ -65,7 +69,9 @@ export default function GhostCameraScreen() {
       }
 
       try {
+        console.log('[GhostCamera] Starting native camera preview...');
         await cameraService.start();
+        console.log('[GhostCamera] Camera started successfully');
         if (mounted) {
           setCameraReady(true);
         }
