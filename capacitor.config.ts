@@ -7,8 +7,14 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     allowsLinkPreview: false,
-    backgroundColor: '#1a1a2e',
+    // Note: No backgroundColor set here - this allows the webview to be transparent
+    // so the camera preview (which renders behind the webview) can show through.
+    // The Ghost Overlay feature requires this transparency to work correctly.
     preferredContentMode: 'mobile',
+  },
+  android: {
+    // Transparent background allows camera preview to show through webview
+    backgroundColor: '#00000000',
   },
   plugins: {
     SplashScreen: {

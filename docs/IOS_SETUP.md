@@ -109,9 +109,24 @@ npx cap run ios
 - Verify the app has the required permissions in Settings > Privacy
 
 ### Ghost Camera Preview Not Visible
-- The app uses `@capacitor-community/camera-preview` which renders the camera behind a transparent webview
-- Ensure no opaque backgrounds are covering the camera preview
-- On simulators, camera preview may not work - test on a real device
+The app uses `@capacitor-community/camera-preview` which renders the camera **behind** a transparent webview.
+
+**How it works:**
+1. The native camera preview is rendered as a layer behind the iOS webview
+2. The webview must be transparent (no opaque backgroundColor in capacitor.config.ts)
+3. UI elements on top of the camera use GPU compositing (`transform: translateZ(0)`) to remain visible
+
+**Troubleshooting checklist:**
+- [ ] `capacitor.config.ts` does NOT set `backgroundColor` for iOS (must be omitted for transparency)
+- [ ] After changing capacitor.config.ts, run `npx cap sync ios` to apply changes
+- [ ] Test on a **real device** - camera preview does not work on iOS Simulator
+- [ ] Ghost overlay elements must have `transform: translateZ(0)` style for GPU layer promotion
+- [ ] Check that `toBack: true` is set when starting the camera preview
+
+**Common issues:**
+- Blank black screen: Usually means webview has an opaque background
+- Ghost overlay disappears: Missing GPU compositing hints on overlay elements
+- Camera freezes: Permission denied or another app using the camera
 
 ### Secure Storage Issues
 - The app uses Keychain for credential storage via `capacitor-secure-storage-plugin`

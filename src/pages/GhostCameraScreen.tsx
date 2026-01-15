@@ -254,17 +254,40 @@ export default function GhostCameraScreen() {
   }
 
   // Native camera UI (camera renders behind transparent webview)
+  // The camera-preview plugin renders the camera BEHIND the webview.
+  // We must ensure the webview is transparent and use GPU compositing
+  // to keep overlay elements visible on top of the camera feed.
   return (
-    <div className="fixed inset-0 z-50" style={{ backgroundColor: 'transparent' }}>
-      {/* Ghost overlay */}
-      <GhostOverlay
-        imageUrl={ghostImageUrl}
-        opacity={ghostOpacity}
-        visible={showGhost}
-      />
+    <div 
+      className="fixed inset-0 z-50" 
+      style={{ 
+        backgroundColor: 'transparent',
+        // Force GPU compositing for the entire container
+        transform: 'translateZ(0)',
+        // Ensure proper layer stacking
+        isolation: 'isolate',
+      }}
+    >
+      {/* Ghost overlay layer - sits above the camera */}
+      <div 
+        className="absolute inset-0 z-10"
+        style={{
+          transform: 'translateZ(0)',
+          pointerEvents: 'none',
+        }}
+      >
+        <GhostOverlay
+          imageUrl={ghostImageUrl}
+          opacity={ghostOpacity}
+          visible={showGhost}
+        />
+      </div>
 
-      {/* Day indicator */}
-      <div className="absolute top-safe-area-inset-top left-0 right-0 p-4 pt-12 z-20">
+      {/* Day indicator layer */}
+      <div 
+        className="absolute top-safe-area-inset-top left-0 right-0 p-4 pt-12 z-20"
+        style={{ transform: 'translateZ(0)' }}
+      >
         <div className="flex justify-center">
           <span className="bg-black/50 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm">
             Day {currentDayNumber}
@@ -272,7 +295,7 @@ export default function GhostCameraScreen() {
         </div>
       </div>
 
-      {/* Camera controls */}
+      {/* Camera controls layer */}
       <CameraControls
         ghostOpacity={ghostOpacity}
         onOpacityChange={setGhostOpacity}
@@ -287,7 +310,10 @@ export default function GhostCameraScreen() {
 
       {/* No ghost image hint */}
       {!ghostImageUrl && (
-        <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 text-center px-8 z-10">
+        <div 
+          className="absolute top-1/2 left-0 right-0 -translate-y-1/2 text-center px-8 z-10"
+          style={{ transform: 'translateZ(0)' }}
+        >
           <div className="bg-black/50 text-white p-4 rounded-xl backdrop-blur-sm">
             <Camera className="h-8 w-8 mx-auto mb-2" />
             <p className="text-sm">This is your first photo for this tattoo!</p>

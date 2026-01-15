@@ -18,6 +18,18 @@ export const cameraService = {
 
   /**
    * Start the camera preview (renders behind the webview)
+   * 
+   * IMPORTANT: The camera preview renders BEHIND the webview, not inside it.
+   * This means:
+   * 1. The webview background must be transparent (set in capacitor.config.ts)
+   * 2. Any overlay elements (like GhostOverlay) must use GPU compositing
+   *    (transform: translateZ(0)) to remain visible above the camera
+   * 3. toBack: true is required for this behavior
+   * 
+   * On iOS, if you see a blank screen instead of the camera, check:
+   * - capacitor.config.ts doesn't set an opaque backgroundColor for iOS
+   * - The GhostCameraScreen uses transparent backgrounds
+   * - Elements use transform: translateZ(0) for GPU layer promotion
    */
   async start(options?: Partial<CameraPreviewOptions>): Promise<void> {
     if (!isNative) {
@@ -27,6 +39,7 @@ export const cameraService = {
 
     const defaultOptions: CameraPreviewOptions = {
       position: 'rear',
+      // Render camera behind the webview - required for overlay functionality
       toBack: true,
       storeToFile: false,
       disableExifHeaderStripping: false,
