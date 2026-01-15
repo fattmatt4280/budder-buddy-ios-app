@@ -109,6 +109,8 @@ export default function PhotosScreen() {
       return;
     }
 
+    let targetTattooId = tattoo?.id;
+    
     if (!tattoo) {
       // Auto-create a quick tattoo with defaults
       const newId = generateId();
@@ -123,9 +125,15 @@ export default function PhotosScreen() {
       });
       updateSettings({ selectedTattooId: newId });
       pendingTattooIdRef.current = newId;
+      targetTattooId = newId;
     }
-    // Open camera
-    fileInputRef.current?.click();
+    
+    // Navigate to ghost camera with tattoo context
+    navigate('/ghost-camera', { 
+      state: { 
+        tattooId: targetTattooId,
+      } 
+    });
   };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -276,7 +284,7 @@ export default function PhotosScreen() {
             </p>
           </div>
           <Button
-            onClick={() => setIsAddingPhoto(true)}
+            onClick={handleQuickCapture}
             size="sm"
             className="gradient-primary rounded-xl"
             disabled={uploading}
@@ -388,12 +396,17 @@ export default function PhotosScreen() {
             />
             <div className="flex gap-3">
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  setIsAddingPhoto(false);
+                  navigate('/ghost-camera', { 
+                    state: { tattooId: tattoo?.id } 
+                  });
+                }}
                 className="flex-1 gradient-primary"
                 disabled={uploading}
               >
                 <Camera className="w-4 h-4 mr-2" />
-                {uploading ? 'Saving...' : 'Take Photo'}
+                Ghost Camera
               </Button>
               <Button
                 onClick={() => {
@@ -410,6 +423,9 @@ export default function PhotosScreen() {
                 Gallery
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Ghost Camera overlays your previous photo for alignment
+            </p>
             {isAuthenticated ? (
               <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
                 <Cloud className="w-3 h-3" /> Saves to secure cloud

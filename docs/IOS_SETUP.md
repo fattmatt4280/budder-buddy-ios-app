@@ -92,6 +92,11 @@ npx cap run ios
 - Check that the privacy strings match the keys exactly
 - Verify the app has the required permissions in Settings > Privacy
 
+### Ghost Camera Preview Not Visible
+- The app uses `@capacitor-community/camera-preview` which renders the camera behind a transparent webview
+- Ensure no opaque backgrounds are covering the camera preview
+- On simulators, camera preview may not work - test on a real device
+
 ### Secure Storage Issues
 - The app uses Keychain for credential storage via `capacitor-secure-storage-plugin`
 - Keychain access is automatically configured by Capacitor

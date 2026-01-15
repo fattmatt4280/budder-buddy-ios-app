@@ -20,6 +20,7 @@ import ReminderSetupScreen from "@/pages/onboarding/ReminderSetupScreen";
 import TodayScreen from "@/pages/TodayScreen";
 import TimelineScreen from "@/pages/TimelineScreen";
 import PhotosScreen from "@/pages/PhotosScreen";
+import GhostCameraScreen from "@/pages/GhostCameraScreen";
 import LearnScreen from "@/pages/LearnScreen";
 import SettingsScreen from "@/pages/SettingsScreen";
 import ArticleScreen from "@/pages/ArticleScreen";
@@ -89,6 +90,9 @@ function AppRoutes() {
         <Route path="/learn/:articleId" element={<ArticleScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>
+      
+      {/* Full-screen camera (outside AppLayout for immersive experience) */}
+      <Route path="/ghost-camera" element={<ProtectedRoute><GhostCameraScreen /></ProtectedRoute>} />
       <Route path="/setup" element={<Navigate to="/learn" replace />} />
       <Route path="/auth" element={<AuthScreen />} />
       <Route path="/privacy" element={<PrivacyPolicyScreen />} />
