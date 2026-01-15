@@ -283,13 +283,23 @@ export default function GhostCameraScreen() {
         />
       </div>
 
-      {/* Day indicator layer */}
+      {/* Budder Buddy title - transparent header */}
       <div 
-        className="absolute top-safe-area-inset-top left-0 right-0 p-4 pt-12 z-20"
+        className="absolute top-0 left-0 right-0 pt-safe-area-inset-top z-20 pointer-events-none"
         style={{ transform: 'translateZ(0)' }}
       >
-        <div className="flex justify-center">
-          <span className="bg-black/50 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm">
+        <div className="flex flex-col items-center pt-3">
+          <h1 
+            className="text-white/70 text-xl font-semibold tracking-wide"
+            style={{ 
+              textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+              transform: 'translateZ(0)',
+            }}
+          >
+            Budder Buddy
+          </h1>
+          {/* Day indicator below title */}
+          <span className="bg-black/50 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm mt-2">
             Day {currentDayNumber}
           </span>
         </div>
