@@ -74,7 +74,7 @@ export default function WelcomeScreen() {
         <Button 
           onClick={handleStart}
           size="lg"
-          className="w-full h-12 text-lg font-semibold rounded-xl gradient-primary hover:opacity-90 transition-opacity"
+          className="w-full h-12 text-lg font-semibold rounded-xl liquid-glass-primary text-white"
         >
           Get Started
         </Button>
