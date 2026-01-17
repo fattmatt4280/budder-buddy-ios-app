@@ -81,7 +81,7 @@ export default function AddTattooDialog({ open, onOpenChange }: AddTattooDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="liquid-glass-card border-0 max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Tattoo</DialogTitle>
         </DialogHeader>
@@ -216,7 +216,7 @@ export default function AddTattooDialog({ open, onOpenChange }: AddTattooDialogP
           <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} className="flex-1">
+          <Button onClick={handleSubmit} className="flex-1 liquid-glass-primary text-white">
             Add to Vault
           </Button>
         </div>

@@ -13,10 +13,10 @@ export default function SafeToSubmergeCard({ tattooDate, compact = false }: Safe
   if (compact) {
     return (
       <div className={cn(
-        "flex items-center gap-3 p-3 rounded-xl border",
+        "flex items-center gap-3 p-3 rounded-xl liquid-glass-light",
         countdown.isSafe 
-          ? "bg-success/10 border-success/30" 
-          : "bg-cyan-500/10 border-cyan-500/30"
+          ? "border-success/30" 
+          : "border-cyan-500/30"
       )}>
         <div className={cn(
           "w-10 h-10 rounded-lg flex items-center justify-center",
@@ -45,10 +45,10 @@ export default function SafeToSubmergeCard({ tattooDate, compact = false }: Safe
 
   return (
     <div className={cn(
-      "rounded-2xl p-5 border animate-fade-in",
+      "liquid-glass-card rounded-2xl p-5 animate-fade-in",
       countdown.isSafe 
-        ? "bg-gradient-to-br from-success/10 to-emerald-500/10 border-success/30" 
-        : "bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/30"
+        ? "border-success/30" 
+        : "border-cyan-500/30"
     )}>
       <div className="flex items-start gap-4">
         <div className={cn(

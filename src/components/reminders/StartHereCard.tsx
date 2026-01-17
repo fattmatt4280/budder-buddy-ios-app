@@ -24,10 +24,10 @@ export default function StartHereCard({
   return (
     <div 
       className={cn(
-        "relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-2xl p-5 border-2 transition-all duration-500",
+        "relative liquid-glass-card rounded-2xl p-5 transition-all duration-500",
         isHighlighted 
-          ? "border-primary shadow-lg shadow-primary/20 animate-pulse-subtle" 
-          : "border-primary/30"
+          ? "shadow-lg shadow-primary/30 animate-pulse-subtle" 
+          : ""
       )}
     >
       {/* Dismiss button */}

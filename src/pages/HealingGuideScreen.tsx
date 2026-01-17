@@ -27,7 +27,7 @@ export default function HealingGuideScreen() {
 
       {/* Disclaimer */}
       <div className="px-6 mb-4">
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+        <div className="liquid-glass-card rounded-xl p-3">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-amber-200">

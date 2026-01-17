@@ -106,15 +106,15 @@ export default function InkVaultScreen() {
         {/* Stats Overview */}
         {tattoos.length > 0 && (
           <div className="grid grid-cols-3 gap-3 animate-fade-in">
-            <div className="bg-card rounded-xl border border-border p-4 text-center">
+            <div className="liquid-glass-card rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-primary">{tattoos.length}</p>
               <p className="text-xs text-muted-foreground">Total Tattoos</p>
             </div>
-            <div className="bg-card rounded-xl border border-border p-4 text-center">
+            <div className="liquid-glass-card rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-success">{archivedTattoos.length}</p>
               <p className="text-xs text-muted-foreground">Fully Healed</p>
             </div>
-            <div className="bg-card rounded-xl border border-border p-4 text-center">
+            <div className="liquid-glass-card rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-warning">{activeTattoos.length}</p>
               <p className="text-xs text-muted-foreground">Healing Now</p>
             </div>

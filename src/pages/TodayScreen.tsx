@@ -128,7 +128,7 @@ export default function TodayScreen() {
 
         {/* Today's Reminders Card (even without tattoo) */}
         {settings.notificationsEnabled && scheduledReminders.times.length > 0 && (
-          <div className="bg-card rounded-2xl p-5 border border-border animate-fade-in">
+          <div className="liquid-glass-card rounded-2xl p-5 animate-fade-in">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Bell className="w-4 h-4 text-primary" />
@@ -158,7 +158,7 @@ export default function TodayScreen() {
         )}
 
         {/* Daily Tip Card (even without tattoo) */}
-        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl p-5 border border-amber-500/20 animate-fade-in">
+        <div className="liquid-glass-card rounded-2xl p-5 animate-fade-in">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <Lightbulb className="w-4 h-4 text-amber-500" />
@@ -341,7 +341,7 @@ export default function TodayScreen() {
 
         {/* Today's Reminders Card */}
         {settings.notificationsEnabled && scheduledReminders.times.length > 0 && (
-          <div className="bg-card rounded-2xl p-5 border border-border animate-fade-in">
+          <div className="liquid-glass-card rounded-2xl p-5 animate-fade-in">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Bell className="w-4 h-4 text-primary" />
@@ -371,7 +371,7 @@ export default function TodayScreen() {
         )}
 
         {/* Daily Tip Card */}
-        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl p-5 border border-amber-500/20 animate-fade-in">
+        <div className="liquid-glass-card rounded-2xl p-5 animate-fade-in">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <Lightbulb className="w-4 h-4 text-amber-500" />
@@ -384,7 +384,7 @@ export default function TodayScreen() {
         {/* What's Normal */}
         <div 
           ref={whatsNormalRef}
-          className="bg-card rounded-2xl p-5 border border-border animate-fade-in"
+          className="liquid-glass-card rounded-2xl p-5 animate-fade-in"
         >
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
@@ -403,7 +403,7 @@ export default function TodayScreen() {
         </div>
 
         {/* What To Do */}
-        <div className="bg-card rounded-2xl p-5 border border-border animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <div className="liquid-glass-card rounded-2xl p-5 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Droplet className="w-4 h-4 text-primary" />
@@ -421,7 +421,7 @@ export default function TodayScreen() {
         </div>
 
         {/* What To Avoid */}
-        <div className="bg-card rounded-2xl p-5 border border-border animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <div className="liquid-glass-card rounded-2xl p-5 animate-fade-in" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
               <Hand className="w-4 h-4 text-destructive" />
@@ -441,7 +441,7 @@ export default function TodayScreen() {
         {/* Daily Checklist */}
         <div 
           ref={checklistRef}
-          className="bg-card rounded-2xl p-5 border border-border animate-fade-in" 
+          className="liquid-glass-card rounded-2xl p-5 animate-fade-in" 
           style={{ animationDelay: '0.3s' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -483,7 +483,7 @@ export default function TodayScreen() {
 
       {/* Note Dialog */}
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent className="bg-card border-border">
+        <DialogContent className="liquid-glass-card border-0">
           <DialogHeader>
             <DialogTitle>Add a Note</DialogTitle>
           </DialogHeader>
@@ -493,7 +493,7 @@ export default function TodayScreen() {
             onChange={(e) => setNoteText(e.target.value)}
             className="min-h-[120px] bg-muted border-border"
           />
-          <Button onClick={handleSaveNote} className="gradient-primary">
+          <Button onClick={handleSaveNote} className="liquid-glass-primary text-white">
             Save Note
           </Button>
         </DialogContent>
