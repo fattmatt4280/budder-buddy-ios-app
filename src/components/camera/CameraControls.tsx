@@ -32,7 +32,7 @@ export function CameraControls({
     <div className={cn("absolute bottom-0 left-0 right-0 z-20", className)}>
       {/* Opacity slider - only show if ghost image exists */}
       {hasGhostImage && (
-        <div className="px-6 py-3 bg-black/40 backdrop-blur-sm">
+        <div className="px-6 py-3 liquid-glass-light">
           <div className="flex items-center gap-3">
             <span className="text-white/70 text-xs font-medium min-w-[60px]">
               Ghost: {ghostOpacity}%
@@ -50,15 +50,15 @@ export function CameraControls({
         </div>
       )}
 
-      {/* Main controls */}
-      <div className="px-6 py-6 bg-black/60 backdrop-blur-md">
+      {/* Main controls - Liquid Glass */}
+      <div className="px-6 py-6 liquid-glass">
         <div className="flex items-center justify-between">
           {/* Left: Close button */}
           <Button
-            variant="ghost"
+            variant="glass"
             size="icon"
             onClick={onClose}
-            className="h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white"
+            className="h-12 w-12 rounded-full text-white"
             disabled={isCapturing}
           >
             <X className="h-6 w-6" />
@@ -68,7 +68,10 @@ export function CameraControls({
           <Button
             onClick={onCapture}
             disabled={isCapturing}
-            className="h-20 w-20 rounded-full bg-white hover:bg-white/90 text-black shadow-lg"
+            className="h-20 w-20 rounded-full bg-white hover:bg-white/90 text-black shadow-lg border border-white/20"
+            style={{
+              boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3), 0 8px 32px rgba(0,0,0,0.3)'
+            }}
           >
             {isCapturing ? (
               <Loader2 className="h-8 w-8 animate-spin" />
@@ -81,12 +84,12 @@ export function CameraControls({
           <div className="flex gap-2">
             {hasGhostImage && (
               <Button
-                variant="ghost"
+                variant="glass"
                 size="icon"
                 onClick={onToggleGhost}
                 className={cn(
                   "h-12 w-12 rounded-full text-white",
-                  showGhost ? "bg-primary/50 hover:bg-primary/60" : "bg-white/10 hover:bg-white/20"
+                  showGhost && "bg-primary/40 border-primary/30"
                 )}
                 disabled={isCapturing}
               >
@@ -95,10 +98,10 @@ export function CameraControls({
             )}
             {onFlip && (
               <Button
-                variant="ghost"
+                variant="glass"
                 size="icon"
                 onClick={onFlip}
-                className="h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                className="h-12 w-12 rounded-full text-white"
                 disabled={isCapturing}
               >
                 <FlipHorizontal className="h-5 w-5" />

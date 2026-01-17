@@ -65,19 +65,19 @@ export default function LearnScreen() {
 
       {/* Feature Cards */}
       <div className="px-6 mb-4 space-y-3">
-        {/* Healing Guide Feature Card */}
+        {/* Healing Guide Feature Card - Liquid Glass */}
         <button
           onClick={() => navigate('/healing-guide')}
-          className="w-full bg-gradient-to-r from-primary/20 via-primary/10 to-accent/10 rounded-2xl p-4 border border-primary/30 text-left hover:border-primary/50 transition-all group"
+          className="w-full liquid-glass-card bg-gradient-to-r from-primary/15 via-primary/5 to-transparent rounded-2xl p-4 border border-primary/20 text-left hover:border-primary/40 transition-all duration-200 group"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center backdrop-blur-sm">
               <Sparkles className="w-6 h-6 text-primary" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold text-foreground">Healing Stage Guide</h3>
-                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs liquid-glass-light text-primary px-2 py-0.5 rounded-full font-medium">
                   AI-Powered
                 </span>
               </div>
@@ -89,19 +89,19 @@ export default function LearnScreen() {
           </div>
         </button>
 
-        {/* Ink Vault Feature Card */}
+        {/* Ink Vault Feature Card - Liquid Glass */}
         <button
           onClick={() => navigate('/ink-vault')}
-          className="w-full bg-gradient-to-r from-success/20 via-success/10 to-accent/10 rounded-2xl p-4 border border-success/30 text-left hover:border-success/50 transition-all group"
+          className="w-full liquid-glass-card bg-gradient-to-r from-success/15 via-success/5 to-transparent rounded-2xl p-4 border border-success/20 text-left hover:border-success/40 transition-all duration-200 group"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center backdrop-blur-sm">
               <Archive className="w-6 h-6 text-success" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold text-foreground">Ink Vault</h3>
-                <span className="text-xs bg-success/20 text-success px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs liquid-glass-light text-success px-2 py-0.5 rounded-full font-medium">
                   Archive
                 </span>
               </div>
