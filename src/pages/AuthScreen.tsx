@@ -223,7 +223,7 @@ export default function AuthScreen() {
 
           <Button 
             type="submit" 
-            className="w-full h-12 text-base font-semibold"
+            className="w-full h-12 text-base font-semibold liquid-glass-primary text-white"
             disabled={loading}
           >
             {loading ? (
