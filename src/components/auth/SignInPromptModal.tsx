@@ -24,7 +24,7 @@ export default function SignInPromptModal({ open, onOpenChange }: SignInPromptMo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm mx-auto rounded-2xl border-border">
+      <DialogContent className="max-w-sm mx-auto rounded-2xl liquid-glass-card border-white/10">
         <button
           onClick={() => onOpenChange(false)}
           className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -75,7 +75,7 @@ export default function SignInPromptModal({ open, onOpenChange }: SignInPromptMo
           <div className="w-full mt-6 space-y-3">
             <Button
               onClick={handleSignIn}
-              className="w-full h-12 text-base font-semibold rounded-xl gradient-primary hover:opacity-90 transition-opacity"
+              className="w-full h-12 text-base font-semibold rounded-xl liquid-glass-primary text-white"
             >
               <User className="w-4 h-4 mr-2" />
               Sign Up — It's Free
