@@ -26,8 +26,8 @@ export default function AppLayout() {
         <Outlet />
       </main>
 
-      {/* Bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 glass border-t border-border safe-area-bottom">
+      {/* Bottom tab bar - iOS 26 Liquid Glass */}
+      <nav className="fixed bottom-0 left-0 right-0 liquid-glass border-t border-white/10 safe-area-bottom">
         <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
           {tabs.map((tab) => {
             const active = isActive(tab.path);
@@ -36,10 +36,10 @@ export default function AppLayout() {
                 key={tab.id}
                 onClick={() => navigate(tab.path)}
                 className={cn(
-                  "flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all duration-200",
+                  "flex flex-col items-center justify-center w-16 h-12 rounded-2xl transition-all duration-200",
                   active 
-                    ? "text-primary" 
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "liquid-glass-tab-active text-primary" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                 )}
               >
                 <tab.icon 

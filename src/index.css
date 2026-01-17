@@ -147,11 +147,82 @@
     background-clip: text;
   }
 
-  /* Glassmorphism effect */
-  .glass {
-    background: hsl(220 25% 12% / 0.8);
+  /* iOS 26 Liquid Glass Effects */
+  .liquid-glass {
+    background: hsl(220 25% 15% / 0.6);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    box-shadow: 
+      inset 0 1px 1px hsl(0 0% 100% / 0.1),
+      0 4px 24px hsl(0 0% 0% / 0.2);
+  }
+
+  .liquid-glass-light {
+    background: hsl(0 0% 100% / 0.08);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.12);
+    box-shadow: 
+      inset 0 1px 1px hsl(0 0% 100% / 0.08),
+      0 2px 16px hsl(0 0% 0% / 0.1);
+  }
+
+  .liquid-glass-button {
+    background: hsl(220 25% 18% / 0.7);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border: 1px solid hsl(0 0% 100% / 0.12);
+    box-shadow: 
+      inset 0 1px 0 hsl(0 0% 100% / 0.1),
+      0 2px 8px hsl(0 0% 0% / 0.15);
+    transition: all 0.2s ease;
+  }
+
+  .liquid-glass-button:hover {
+    background: hsl(220 25% 22% / 0.8);
+    border-color: hsl(0 0% 100% / 0.18);
+    box-shadow: 
+      inset 0 1px 0 hsl(0 0% 100% / 0.15),
+      0 4px 12px hsl(0 0% 0% / 0.2);
+  }
+
+  .liquid-glass-button:active {
+    transform: scale(0.98);
+    background: hsl(220 25% 15% / 0.9);
+  }
+
+  .liquid-glass-tab {
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.25s ease;
+  }
+
+  .liquid-glass-tab-active {
+    background: hsl(0 0% 100% / 0.12);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(0 0% 100% / 0.15);
+    box-shadow: 
+      inset 0 1px 0 hsl(0 0% 100% / 0.1),
+      0 2px 8px hsl(0 0% 0% / 0.1);
+  }
+
+  .liquid-glass-card {
+    background: hsl(220 25% 12% / 0.6);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    box-shadow: 
+      inset 0 1px 0 hsl(0 0% 100% / 0.05),
+      0 4px 20px hsl(0 0% 0% / 0.15);
+  }
+
+  /* Legacy glass class - now uses liquid glass */
+  .glass {
+    background: hsl(220 25% 15% / 0.6);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
   }
 
   /* Hide scrollbar but allow scrolling */
