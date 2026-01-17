@@ -144,7 +144,7 @@ export function HealingGuideChat() {
   return (
     <div className="flex flex-col h-full">
       {/* Disclaimer Banner */}
-      <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-4">
+      <div className="liquid-glass-card rounded-lg p-3 mb-4">
         <div className="flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
           <p className="text-xs text-amber-200">
@@ -270,7 +270,7 @@ export function HealingGuideChat() {
           <Button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || isLoading}
-            className="h-[44px] w-[44px] rounded-xl gradient-primary"
+            className="h-[44px] w-[44px] rounded-xl liquid-glass-primary text-white"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />

@@ -257,7 +257,7 @@ export default function SettingsScreen() {
         {selectedTattoo && (
           <section className="animate-fade-in" style={{ animationDelay: '0.05s' }}>
             <h2 className="text-sm font-medium text-muted-foreground mb-3">ACTIVE TATTOO</h2>
-            <div className="bg-card rounded-xl border border-border p-4">
+            <div className="liquid-glass-card rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
@@ -329,7 +329,7 @@ export default function SettingsScreen() {
         {/* Reminders Section */}
         <section className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">REMINDERS</h2>
-          <div className="bg-card rounded-xl border border-border divide-y divide-border">
+          <div className="liquid-glass-card rounded-xl divide-y divide-border/50">
             {/* Enable Notifications */}
             <div className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">

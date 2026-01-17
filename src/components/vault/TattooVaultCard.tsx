@@ -83,8 +83,8 @@ export default function TattooVaultCard({
     <>
       <div 
         className={cn(
-          "bg-card rounded-xl border overflow-hidden transition-all",
-          isSelected ? "border-primary shadow-md" : "border-border",
+          "liquid-glass-card rounded-xl overflow-hidden transition-all",
+          isSelected && "shadow-lg shadow-primary/20",
           isExpanded && "shadow-lg"
         )}
       >
@@ -196,22 +196,22 @@ export default function TattooVaultCard({
                 Healing Diary
               </h4>
               <div className="grid grid-cols-4 gap-2">
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
+                <div className="liquid-glass-light rounded-lg p-2 text-center">
                   <CheckCircle2 className="w-4 h-4 mx-auto mb-1 text-success" />
                   <p className="text-sm font-semibold text-foreground">{healingSummary.completedDays}</p>
                   <p className="text-[10px] text-muted-foreground">Check-ins</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
+                <div className="liquid-glass-light rounded-lg p-2 text-center">
                   <Camera className="w-4 h-4 mx-auto mb-1 text-primary" />
                   <p className="text-sm font-semibold text-foreground">{healingSummary.totalPhotos}</p>
                   <p className="text-[10px] text-muted-foreground">Photos</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
+                <div className="liquid-glass-light rounded-lg p-2 text-center">
                   <Flame className="w-4 h-4 mx-auto mb-1 text-warning" />
                   <p className="text-sm font-semibold text-foreground">{healingSummary.streak}</p>
                   <p className="text-[10px] text-muted-foreground">Best Streak</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
+                <div className="liquid-glass-light rounded-lg p-2 text-center">
                   <BarChart3 className="w-4 h-4 mx-auto mb-1 text-info" />
                   <p className="text-sm font-semibold text-foreground">{healingSummary.avgCompletion}%</p>
                   <p className="text-[10px] text-muted-foreground">Avg Care</p>
@@ -224,9 +224,8 @@ export default function TattooVaultCard({
               {!isSelected && (
                 <Button 
                   onClick={onSelect}
-                  variant="default"
+                  className="flex-1 liquid-glass-primary text-white"
                   size="sm"
-                  className="flex-1"
                 >
                   Set as Active
                 </Button>

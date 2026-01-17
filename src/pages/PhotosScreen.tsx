@@ -244,7 +244,7 @@ export default function PhotosScreen() {
           {isAuthenticated ? (
             <Button
               onClick={handleQuickCapture}
-              className="gradient-primary rounded-xl"
+              className="liquid-glass-primary text-white rounded-xl"
               disabled={uploading}
             >
               <Camera className="w-4 h-4 mr-2" />
@@ -253,7 +253,7 @@ export default function PhotosScreen() {
           ) : (
             <Button
               onClick={() => navigate('/auth')}
-              className="gradient-primary rounded-xl"
+              className="liquid-glass-primary text-white rounded-xl"
             >
               <LogIn className="w-4 h-4 mr-2" />
               Sign In to Start
@@ -286,7 +286,7 @@ export default function PhotosScreen() {
           <Button
             onClick={handleQuickCapture}
             size="sm"
-            className="gradient-primary rounded-xl"
+            className="liquid-glass-primary text-white rounded-xl"
             disabled={uploading}
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -330,7 +330,7 @@ export default function PhotosScreen() {
           </p>
           <Button
             onClick={() => setIsAddingPhoto(true)}
-            className="gradient-primary rounded-xl"
+            className="liquid-glass-primary text-white rounded-xl"
             disabled={uploading}
           >
             <Camera className="w-4 h-4 mr-2" />
@@ -383,7 +383,7 @@ export default function PhotosScreen() {
 
       {/* Add photo dialog */}
       <Dialog open={isAddingPhoto} onOpenChange={setIsAddingPhoto}>
-        <DialogContent className="bg-card border-border">
+        <DialogContent className="liquid-glass-card border-0">
           <DialogHeader>
             <DialogTitle>Add Photo</DialogTitle>
           </DialogHeader>
@@ -402,7 +402,7 @@ export default function PhotosScreen() {
                     state: { tattooId: tattoo?.id } 
                   });
                 }}
-                className="flex-1 gradient-primary"
+                className="flex-1 liquid-glass-primary text-white"
                 disabled={uploading}
               >
                 <Camera className="w-4 h-4 mr-2" />
@@ -441,7 +441,7 @@ export default function PhotosScreen() {
 
       {/* Photo detail dialog */}
       <Dialog open={selectedPhoto !== null} onOpenChange={() => setSelectedPhoto(null)}>
-        <DialogContent className="bg-card border-border max-w-lg p-0 overflow-hidden">
+        <DialogContent className="liquid-glass-card border-0 max-w-lg p-0 overflow-hidden">
           {selectedPhotoData && (
             <>
               <div className="relative">

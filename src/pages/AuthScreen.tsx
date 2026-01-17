@@ -123,7 +123,7 @@ export default function AuthScreen() {
       <div className="flex items-center gap-3 px-4 pt-4">
         <button
           onClick={() => navigate(-1)}
-          className="w-10 h-10 rounded-full bg-card/50 backdrop-blur-sm flex items-center justify-center"
+          className="w-10 h-10 rounded-full liquid-glass-light flex items-center justify-center"
         >
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -163,7 +163,7 @@ export default function AuthScreen() {
                   placeholder="Your name"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="pl-10 bg-card/50 border-border"
+                  className="pl-10 liquid-glass-input border-0 text-foreground"
                   maxLength={50}
                 />
               </div>
@@ -183,7 +183,7 @@ export default function AuthScreen() {
                   setEmail(e.target.value);
                   if (errors.email) setErrors({ ...errors, email: undefined });
                 }}
-                className="pl-10 bg-card/50 border-border"
+                className="pl-10 liquid-glass-input border-0 text-foreground"
                 maxLength={255}
               />
             </div>
@@ -205,7 +205,7 @@ export default function AuthScreen() {
                   setPassword(e.target.value);
                   if (errors.password) setErrors({ ...errors, password: undefined });
                 }}
-                className="pl-10 pr-10 bg-card/50 border-border"
+                className="pl-10 pr-10 liquid-glass-input border-0 text-foreground"
                 maxLength={128}
               />
               <button

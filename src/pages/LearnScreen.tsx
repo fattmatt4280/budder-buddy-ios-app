@@ -122,11 +122,11 @@ export default function LearnScreen() {
           </p>
           <div className="space-y-2">
             {searchResults.map((article) => (
-              <button
-                key={article.id}
-                onClick={() => navigate(`/learn/${article.id}`)}
-                className="w-full bg-card rounded-xl p-4 border border-border text-left hover:border-primary/50 transition-colors"
-              >
+                <button
+                  key={article.id}
+                  onClick={() => navigate(`/learn/${article.id}`)}
+                  className="w-full liquid-glass-card rounded-xl p-4 text-left hover:border-primary/50 transition-colors"
+                >
                 <h3 className="font-medium text-foreground mb-1">{article.title}</h3>
                 <p className="text-sm text-muted-foreground line-clamp-2">{article.summary}</p>
               </button>
