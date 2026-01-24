@@ -29,6 +29,7 @@ import ArticleScreen from "@/pages/ArticleScreen";
 import AuthScreen from "@/pages/AuthScreen";
 import PrivacyPolicyScreen from "@/pages/PrivacyPolicyScreen";
 import TermsOfServiceScreen from "@/pages/TermsOfServiceScreen";
+import SupportScreen from "@/pages/SupportScreen";
 
 import NotFound from "@/pages/NotFound";
 
@@ -101,6 +102,7 @@ function AppRoutes() {
       <Route path="/auth" element={<AuthScreen />} />
       <Route path="/privacy" element={<PrivacyPolicyScreen />} />
       <Route path="/terms" element={<TermsOfServiceScreen />} />
+      <Route path="/support" element={<SupportScreen />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
