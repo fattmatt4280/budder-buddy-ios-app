@@ -20,9 +20,9 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Main content area */}
-      <main className="flex-1 overflow-y-auto pb-20">
+    <div className="fixed inset-0 flex flex-col bg-background">
+      {/* Main content area - scrollable */}
+      <main className="flex-1 overflow-y-auto pb-20 safe-area-top">
         <Outlet />
       </main>
 
