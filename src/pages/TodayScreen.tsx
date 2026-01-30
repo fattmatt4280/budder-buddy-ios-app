@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Camera, Plus, Check, Droplet, Sun, Hand, GlassWater, Sparkles, Bell, Lightbulb } from 'lucide-react';
+import { Camera, Plus, Check, Droplet, Sun, Hand, GlassWater, Sparkles, Bell, Lightbulb, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useTattoos, useSettings, useCheckins, usePhotos, generateId } from '@/hooks/useStorage';
 import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist, HEALING_PHASES } from '@/types';
 import { getDayContent, getAdjustedContent } from '@/data/healingTimeline';
+import { getDailyTip, getGenericTip } from '@/data/dailyTips';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import mascotImage from '@/assets/mascot.png';
@@ -22,17 +23,22 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-const DAILY_TIPS = [
-  "Drink plenty of water to keep your skin hydrated from within.",
-  "Avoid tight clothing that rubs against your new tattoo.",
-  "Pat dry after washing – never rub your healing tattoo.",
-  "Use fragrance-free moisturizer to avoid irritation.",
-  "Keep your tattoo out of direct sunlight for at least 2 weeks.",
-  "Don't submerge your tattoo in water (pools, baths) while healing.",
-  "Clean hands before touching your tattoo to prevent infection.",
-  "Light peeling is normal – resist the urge to pick at it!",
-  "Apply a very thin layer of moisturizer – less is more.",
-  "Wear loose, breathable fabrics over your healing tattoo.",
+// Observation tags for user to log symptoms
+const OBSERVATION_TAGS = [
+  { key: 'sore', label: 'Sore', emoji: '😣' },
+  { key: 'really_sore', label: 'Really sore', emoji: '😖' },
+  { key: 'hot', label: 'Hot to touch', emoji: '🔥' },
+  { key: 'swelling', label: 'Swelling', emoji: '🫧' },
+  { key: 'redness', label: 'Redness', emoji: '🔴' },
+  { key: 'tight', label: 'Tight skin', emoji: '🤏' },
+  { key: 'itchy', label: 'Itchy', emoji: '🐜' },
+  { key: 'hard_scab', label: 'Hard scabbing', emoji: '🪨' },
+  { key: 'light_peel', label: 'Light peeling', emoji: '🍂' },
+  { key: 'heavy_peel', label: 'Heavy peeling', emoji: '🍁' },
+  { key: 'cloudy', label: 'Cloudy/milky', emoji: '☁️' },
+  { key: 'dry_flaky', label: 'Dry/flaky', emoji: '🏜️' },
+  { key: 'looks_great', label: 'Looks great!', emoji: '✨' },
+  { key: 'healing_well', label: 'Healing nicely', emoji: '💚' },
 ];
 
 const CHECKLIST_ITEMS = [
@@ -89,12 +95,14 @@ export default function TodayScreen() {
     );
   }, [settings]);
 
-  // Get a random daily tip (stable for the day)
+  // Get day-specific tip (or generic if no tattoo)
   const dailyTip = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const seed = today.split('-').reduce((acc, val) => acc + parseInt(val), 0);
-    return DAILY_TIPS[seed % DAILY_TIPS.length];
-  }, []);
+    if (!tattoo) {
+      return getGenericTip();
+    }
+    const day = getDayNumber(tattoo.tattooDate);
+    return getDailyTip(day);
+  }, [tattoo]);
 
   // Check if we just saved reminders
   useEffect(() => {
@@ -240,6 +248,27 @@ export default function TodayScreen() {
       });
     }
     setNoteDialogOpen(false);
+  };
+
+  // Handle observation tag toggle
+  const handleObservationToggle = (tagKey: string) => {
+    const currentObs = existingCheckin?.observations || [];
+    const newObs = currentObs.includes(tagKey)
+      ? currentObs.filter((t) => t !== tagKey)
+      : [...currentObs, tagKey];
+
+    if (existingCheckin) {
+      updateCheckin(existingCheckin.id, { observations: newObs });
+    } else {
+      addCheckin({
+        id: generateId(),
+        tattooId: tattoo.id,
+        dayNumber,
+        date: todayDate,
+        checklist,
+        observations: newObs,
+      });
+    }
   };
 
   const handleDismissStartHere = () => {
@@ -477,6 +506,70 @@ export default function TodayScreen() {
               </label>
             ))}
           </div>
+        </div>
+
+        {/* My Observations Card */}
+        <div 
+          className="liquid-glass-card rounded-2xl p-5 animate-fade-in" 
+          style={{ animationDelay: '0.4s' }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                <MessageCircle className="w-4 h-4 text-violet-500" />
+              </div>
+              <h3 className="font-semibold text-foreground">My Observations</h3>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setNoteDialogOpen(true)}
+              className="text-xs text-muted-foreground"
+            >
+              + Add Note
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">How does your tattoo feel today?</p>
+          
+          {/* Observation Tags */}
+          <div className="flex flex-wrap gap-2">
+            {OBSERVATION_TAGS.map((tag) => {
+              const isSelected = existingCheckin?.observations?.includes(tag.key) || false;
+              return (
+                <button
+                  key={tag.key}
+                  onClick={() => handleObservationToggle(tag.key)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+                    isSelected
+                      ? "bg-primary/20 text-primary border border-primary/40"
+                      : "bg-muted/50 text-muted-foreground border border-transparent hover:border-border"
+                  )}
+                >
+                  <span className="mr-1">{tag.emoji}</span>
+                  {tag.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Show selected observations summary */}
+          {existingCheckin?.observations && existingCheckin.observations.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-border/50">
+              <p className="text-xs text-muted-foreground">
+                Today: {existingCheckin.observations.map(key => 
+                  OBSERVATION_TAGS.find(t => t.key === key)?.label
+                ).filter(Boolean).join(', ')}
+              </p>
+            </div>
+          )}
+
+          {/* Show existing note if any */}
+          {existingCheckin?.userNotes && (
+            <div className="mt-3 pt-3 border-t border-border/50">
+              <p className="text-xs text-muted-foreground italic">"{existingCheckin.userNotes}"</p>
+            </div>
+          )}
         </div>
 
       </div>

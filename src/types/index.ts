@@ -33,6 +33,7 @@ export interface DailyCheckin {
   date: string; // ISO date string
   checklist: DailyChecklist;
   userNotes?: string;
+  observations?: string[]; // Array of symptom tags from user observations
 }
 
 export interface PhotoEntry {
