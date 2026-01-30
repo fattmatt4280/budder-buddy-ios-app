@@ -229,6 +229,47 @@ class NotificationService {
     date.setHours(hours, minutes, 0, 0);
     return date;
   }
+
+  /**
+   * Send a welcome notification for new signups.
+   * Schedules a notification 5 seconds in the future.
+   */
+  async sendWelcomeNotification(): Promise<void> {
+    if (!this.isNative) {
+      logger.log('[NotificationService] Web platform - skipping welcome notification');
+      return;
+    }
+
+    // Check permission first
+    const permission = await this.checkPermission();
+    if (permission.display !== 'granted') {
+      logger.log('[NotificationService] Permission not granted - skipping welcome notification');
+      return;
+    }
+
+    try {
+      const scheduleDate = new Date();
+      scheduleDate.setSeconds(scheduleDate.getSeconds() + 5); // 5 seconds delay
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: 99999, // Unique ID for welcome notification
+            title: '🎉 Congrats on your new ink!',
+            body: "We're excited to be part of your healing journey. We'll be with you every step of the way!",
+            schedule: { at: scheduleDate },
+            sound: 'default',
+            extra: {
+              type: 'welcome',
+            },
+          },
+        ],
+      });
+      logger.log('[NotificationService] Welcome notification scheduled');
+    } catch (error) {
+      logger.error('[NotificationService] Failed to schedule welcome notification:', error);
+    }
+  }
 }
 
 // Export singleton instance
