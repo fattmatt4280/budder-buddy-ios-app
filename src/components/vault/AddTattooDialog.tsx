@@ -1,11 +1,5 @@
 import { useState } from 'react';
 import { Calendar, MapPin, Ruler, Palette, User, Store, FileText } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -79,14 +73,33 @@ export default function AddTattooDialog({ open, onOpenChange }: AddTattooDialogP
     onOpenChange(false);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="liquid-glass-card border-0 max-w-md max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Add New Tattoo</DialogTitle>
-        </DialogHeader>
+  if (!open) return null;
 
-        <div className="space-y-4 py-4">
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={() => onOpenChange(false)}
+      />
+      
+      {/* Dialog Content */}
+      <div className="relative liquid-glass-card border-0 w-full max-w-md max-h-[80vh] overflow-y-auto rounded-xl p-6 animate-fade-in">
+        {/* Close button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <span className="sr-only">Close</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <h2 className="text-lg font-semibold text-foreground mb-4">Add New Tattoo</h2>
+
+        <div className="space-y-4">
           {/* Date */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
@@ -207,12 +220,12 @@ export default function AddTattooDialog({ open, onOpenChange }: AddTattooDialogP
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Any details you want to remember..."
-              rows={3}
+              rows={2}
             />
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-6">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
             Cancel
           </Button>
@@ -220,7 +233,7 @@ export default function AddTattooDialog({ open, onOpenChange }: AddTattooDialogP
             Add to Vault
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
