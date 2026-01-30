@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTattoos, useSettings, useCheckins, usePhotos, generateId } from '@/hooks/useStorage';
 import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist, HEALING_PHASES } from '@/types';
 import { getDayContent, getAdjustedContent } from '@/data/healingTimeline';
-import { getDailyTip, getGenericTip } from '@/data/dailyTips';
+import { getDailyTip, getGenericTip } from '@/data/dailyTips'; // Day-specific tips
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import mascotImage from '@/assets/mascot.png';
