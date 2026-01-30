@@ -1,7 +1,6 @@
 import { 
   ChevronDown, 
   ChevronRight, 
-  Calendar, 
   User, 
   MapPin, 
   Palette, 
@@ -11,7 +10,10 @@ import {
   Flame,
   BarChart3,
   Edit2,
-  Trash2
+  Trash2,
+  Download,
+  Heart,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tattoo, getDayNumber, getHealingPhase, getHealingProgress } from '@/types';
@@ -20,7 +22,12 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { useTattoos, useSettings } from '@/hooks/useStorage';
+import { useCloudPhotos } from '@/hooks/useCloudPhotos';
 import EditTattooDialog from './EditTattooDialog';
+import { generateTimelapse } from '@/lib/timelapseService';
+import { notificationService } from '@/lib/notificationService';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,18 +65,20 @@ export default function TattooVaultCard({
   healingSummary,
   isActive,
 }: TattooVaultCardProps) {
-  const { deleteTattoo } = useTattoos();
+  const { deleteTattoo, updateTattoo } = useTattoos();
   const { settings, updateSettings } = useSettings();
+  const { photos: cloudPhotos } = useCloudPhotos();
   
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [healedConfirmOpen, setHealedConfirmOpen] = useState(false);
+  const [isGeneratingTimelapse, setIsGeneratingTimelapse] = useState(false);
 
   const dayNumber = getDayNumber(tattoo.tattooDate);
   const phase = getHealingPhase(dayNumber);
   const progress = getHealingProgress(dayNumber);
   
   const formattedDate = format(new Date(tattoo.tattooDate), 'MMM d, yyyy');
-  const daysAgo = dayNumber === 0 ? 'Today' : dayNumber === 1 ? 'Yesterday' : `${dayNumber} days ago`;
 
   const handleDelete = () => {
     deleteTattoo(tattoo.id);
@@ -78,6 +87,75 @@ export default function TattooVaultCard({
     }
     setDeleteConfirmOpen(false);
   };
+
+  const handleMarkHealed = async () => {
+    // Update tattoo with healed status
+    updateTattoo(tattoo.id, {
+      isHealed: true,
+      healedDate: new Date().toISOString().split('T')[0],
+    });
+
+    // If this is the currently selected tattoo, turn off notifications
+    if (settings.selectedTattooId === tattoo.id) {
+      updateSettings({ notificationsEnabled: false });
+      await notificationService.cancelAllReminders();
+    }
+
+    setHealedConfirmOpen(false);
+    toast.success('Tattoo marked as healed! Notifications turned off.');
+  };
+
+  const handleDownloadTimelapse = async () => {
+    // Get photos for this tattoo from cloud storage
+    const tattooPhotos = cloudPhotos.filter(p => p.tattooId === tattoo.id);
+    
+    if (tattooPhotos.length < 2) {
+      toast.error('Need at least 2 photos to create a timelapse');
+      return;
+    }
+
+    setIsGeneratingTimelapse(true);
+    
+    try {
+      // Get signed URLs for all photos
+      const photosWithUrls = await Promise.all(
+        tattooPhotos.map(async (photo) => {
+          const { data } = await supabase.storage
+            .from('tattoo-photos')
+            .createSignedUrl(photo.storagePath, 300); // 5 minute expiry
+          
+          return {
+            imageUrl: data?.signedUrl || '',
+            dayNumber: photo.dayNumber,
+          };
+        })
+      );
+
+      // Filter out any photos that failed to get URLs
+      const validPhotos = photosWithUrls.filter(p => p.imageUrl);
+
+      if (validPhotos.length < 2) {
+        toast.error('Failed to load photos for timelapse');
+        return;
+      }
+
+      const result = await generateTimelapse(validPhotos, tattoo.bodyLocation);
+      
+      if (result.success) {
+        toast.success('Timelapse downloaded!');
+      } else {
+        toast.error(result.error || 'Failed to generate timelapse');
+      }
+    } catch (error) {
+      toast.error('Failed to generate timelapse');
+    } finally {
+      setIsGeneratingTimelapse(false);
+    }
+  };
+
+  // Check if this tattoo is considered healed (manually or 30+ days)
+  const isHealed = tattoo.isHealed || dayNumber > 30;
+  const hasEnoughPhotosForTimelapse = healingSummary.totalPhotos >= 2;
 
   return (
     <>
@@ -220,33 +298,72 @@ export default function TattooVaultCard({
             </div>
 
             {/* Actions */}
-            <div className="px-4 pb-4 flex gap-2">
-              {!isSelected && (
-                <Button 
-                  onClick={onSelect}
-                  className="flex-1 liquid-glass-primary text-white"
+            <div className="px-4 pb-4 space-y-2">
+              {/* Primary row: Set Active, Edit, Delete */}
+              <div className="flex gap-2">
+                {!isSelected && (
+                  <Button 
+                    onClick={onSelect}
+                    className="flex-1 liquid-glass-primary text-white"
+                    size="sm"
+                  >
+                    Set as Active
+                  </Button>
+                )}
+                <Button
+                  onClick={() => setEditDialogOpen(true)}
+                  variant="outline"
                   size="sm"
+                  className="gap-1"
                 >
-                  Set as Active
+                  <Edit2 className="w-3.5 h-3.5" />
+                  Edit
                 </Button>
-              )}
-              <Button
-                onClick={() => setEditDialogOpen(true)}
-                variant="outline"
-                size="sm"
-                className="gap-1"
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-                Edit
-              </Button>
-              <Button
-                onClick={() => setDeleteConfirmOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
+                <Button
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+
+              {/* Secondary row: Mark Healed or Download Timelapse */}
+              <div className="flex gap-2">
+                {isActive && !tattoo.isHealed && (
+                  <Button
+                    onClick={() => setHealedConfirmOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-1.5 text-success border-success/30 hover:bg-success/10"
+                  >
+                    <Heart className="w-3.5 h-3.5" />
+                    Mark as Healed
+                  </Button>
+                )}
+                {isHealed && hasEnoughPhotosForTimelapse && (
+                  <Button
+                    onClick={handleDownloadTimelapse}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-1.5"
+                    disabled={isGeneratingTimelapse}
+                  >
+                    {isGeneratingTimelapse ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3.5 h-3.5" />
+                        Download Timelapse
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -275,6 +392,27 @@ export default function TattooVaultCard({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Mark as Healed Confirmation */}
+      <AlertDialog open={healedConfirmOpen} onOpenChange={setHealedConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark as Healed?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will move your tattoo to the Healed Archive and turn off all reminders. You can still view your healing journey and download a timelapse.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Healing</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleMarkHealed}
+              className="bg-success text-success-foreground hover:bg-success/90"
+            >
+              Yes, It's Healed
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

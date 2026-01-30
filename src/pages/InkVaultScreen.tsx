@@ -27,8 +27,13 @@ export default function InkVaultScreen() {
   );
 
   // Separate into active (healing) and archived (healed) tattoos
-  const activeTattoos = sortedTattoos.filter(t => getDayNumber(t.tattooDate) <= 30);
-  const archivedTattoos = sortedTattoos.filter(t => getDayNumber(t.tattooDate) > 30);
+  // A tattoo is "active" if NOT manually marked healed AND less than 30 days
+  const activeTattoos = sortedTattoos.filter(t => 
+    !t.isHealed && getDayNumber(t.tattooDate) <= 30
+  );
+  const archivedTattoos = sortedTattoos.filter(t => 
+    t.isHealed || getDayNumber(t.tattooDate) > 30
+  );
 
   // Get healing summary for a tattoo
   const getHealingSummary = (tattooId: string) => {
