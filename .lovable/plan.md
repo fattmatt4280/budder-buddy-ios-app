@@ -1,57 +1,68 @@
 
 
-# Add Support Page URL
+# Update Activity Reminders Messaging
 
 ## Summary
-Create a dedicated Support page at `/support` so you have a proper **Support URL** (`https://budderbuddy.lovable.app/support`) for App Store submissions and marketing purposes.
+Update the "Safe to Submerge" countdown messaging to replace "no gym" with "no still water" references, making it clear that users can still work out - they just need to avoid still water (pools, baths, hot tubs) and sun exposure.
 
 ---
 
-## What Will Be Created
+## Changes Overview
 
-### New Support Page
-A dedicated support screen matching the existing legal page styling (Privacy Policy, Terms of Service) that includes:
+### Files to Modify
 
-- **Header** with back navigation and "Support" title
-- **Contact Methods**
-  - Email support: support@budderbuddy.app (or your preferred email)
-  - Links to Privacy Policy and Terms of Service
-- **FAQ Section** covering common questions:
-  - How to reset reminders
-  - Photo sync issues
-  - Account deletion requests
-  - General app usage help
-- **Response Time Expectations** (e.g., "We typically respond within 48 hours")
+| File | Changes |
+|------|---------|
+| `src/components/environment/SafeToSubmergeCard.tsx` | Update badge labels and success messages |
+| `src/lib/environmentService.ts` | Update countdown messages and celebration notification |
 
 ---
 
-## Files to Create/Modify
+## Detailed Changes
 
-| File | Action |
-|------|--------|
-| `src/pages/SupportScreen.tsx` | **Create** - New support page component |
-| `src/App.tsx` | **Modify** - Add `/support` route |
+### 1. SafeToSubmergeCard.tsx
+
+**Compact view (line 39)**
+- Before: `'Swimming & gym OK'`
+- After: `'Swimming & soaking OK'`
+
+**Full view warning badges (lines 82-90)**
+- Keep: `🏊 No swimming`
+- Keep: `🛁 No baths`
+- Change: `🏋️ No gym` → `🛁 No hot tubs`
+
+### 2. environmentService.ts
+
+**Success message (line 73)**
+- Before: `"🎉 You're clear! Your tattoo is healed enough for swimming and gym activities."`
+- After: `"🎉 You're clear! Your tattoo is healed enough for swimming and soaking."`
+
+**Countdown message (line 74)**
+- Before: `"🏊 ${daysRemaining} day(s) until it's safe to swim or hit the gym."`
+- After: `"🏊 ${daysRemaining} day(s) until it's safe to swim or soak."`
+
+**Celebration notification body (line 237)**
+- Before: `"Your tattoo has healed enough for swimming and gym activities. Enjoy!"`
+- After: `"Your tattoo has healed enough for swimming and soaking. Enjoy!"`
 
 ---
 
-## Final URLs
+## Updated Badge Display
 
-After implementation, your complete set of URLs will be:
+The warning badges during the countdown will now show:
 
-| Purpose | URL |
-|---------|-----|
-| **Marketing** | `https://www.budderbuddy.app` |
-| **Privacy Policy** | `https://budderbuddy.lovable.app/privacy` |
-| **Terms of Service** | `https://budderbuddy.lovable.app/terms` |
-| **Support** | `https://budderbuddy.lovable.app/support` |
+| Before | After |
+|--------|-------|
+| 🏊 No swimming | 🏊 No swimming |
+| 🛁 No baths | 🛁 No baths |
+| 🏋️ No gym | 🛁 No hot tubs |
 
 ---
 
-## Technical Details
+## Result
 
-The Support page will:
-- Follow the same design pattern as `PrivacyPolicyScreen.tsx` and `TermsOfServiceScreen.tsx`
-- Use the liquid glass card styling for visual consistency
-- Include `mailto:` links for easy email contact
-- Be publicly accessible (no authentication required)
+Users will understand:
+- Working out is fine
+- Avoid still/stagnant water (pools, baths, hot tubs)
+- The concern is bacterial exposure from soaking, not exercise
 
