@@ -13,6 +13,9 @@ export interface Tattoo {
   artistName?: string;
   shopName?: string;
   notes?: string;
+  // Manual healing control
+  isHealed?: boolean;
+  healedDate?: string; // ISO date when marked healed
 }
 
 export interface DailyChecklist {
