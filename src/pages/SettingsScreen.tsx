@@ -230,8 +230,68 @@ export default function SettingsScreen() {
           <h1 className="text-2xl font-bold text-foreground">Settings</h1>
         </div>
       </div>
-
       <div className="px-6 pb-8 space-y-6">
+        {/* Account - Moved to top */}
+        <section className="animate-fade-in">
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">ACCOUNT</h2>
+          <div className="bg-card rounded-xl border border-border divide-y divide-border">
+            {authLoading ? (
+              <div className="p-4 flex items-center justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : isAuthenticated ? (
+              <>
+                <div className="p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">{user?.email}</p>
+                    <p className="text-sm text-muted-foreground">Signed in</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <LogOut className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-medium text-foreground">Sign Out</span>
+                  </div>
+                  {signingOut && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                </button>
+                <button
+                  onClick={() => setDeleteAccountDialogOpen(true)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-destructive/10 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Trash2 className="w-5 h-5 text-destructive" />
+                    <div className="text-left">
+                      <p className="font-medium text-destructive">Delete Account</p>
+                      <p className="text-xs text-muted-foreground">Permanently remove all data</p>
+                    </div>
+                  </div>
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => navigate('/auth')}
+                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <LogIn className="w-5 h-5 text-muted-foreground" />
+                  <div className="text-left">
+                    <p className="font-medium text-foreground">Sign In</p>
+                    <p className="text-sm text-muted-foreground">Sync your progress across devices</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+        </section>
+
         {/* Ink Vault Quick Access */}
         <section className="animate-fade-in">
           <button
@@ -529,66 +589,6 @@ export default function SettingsScreen() {
           </div>
         </section>
 
-        {/* Account */}
-        <section className="animate-fade-in" style={{ animationDelay: '0.15s' }}>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">ACCOUNT</h2>
-          <div className="bg-card rounded-xl border border-border divide-y divide-border">
-            {authLoading ? (
-              <div className="p-4 flex items-center justify-center">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : isAuthenticated ? (
-              <>
-                <div className="p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">{user?.email}</p>
-                    <p className="text-sm text-muted-foreground">Signed in</p>
-                  </div>
-                </div>
-              <button
-                  onClick={handleSignOut}
-                  disabled={signingOut}
-                  className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <LogOut className="w-5 h-5 text-muted-foreground" />
-                    <span className="font-medium text-foreground">Sign Out</span>
-                  </div>
-                  {signingOut && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-                </button>
-                <button
-                  onClick={() => setDeleteAccountDialogOpen(true)}
-                  className="w-full p-4 flex items-center justify-between hover:bg-destructive/10 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Trash2 className="w-5 h-5 text-destructive" />
-                    <div className="text-left">
-                      <p className="font-medium text-destructive">Delete Account</p>
-                      <p className="text-xs text-muted-foreground">Permanently remove all data</p>
-                    </div>
-                  </div>
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => navigate('/auth')}
-                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <LogIn className="w-5 h-5 text-muted-foreground" />
-                  <div className="text-left">
-                    <p className="font-medium text-foreground">Sign In</p>
-                    <p className="text-sm text-muted-foreground">Sync your progress across devices</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </button>
-            )}
-          </div>
-        </section>
 
         {/* Privacy */}
         <section className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
