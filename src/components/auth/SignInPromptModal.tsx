@@ -1,12 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { X, User, Sparkles } from 'lucide-react';
+import { User, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import mascotImage from '@/assets/mascot.png';
 
 interface SignInPromptModalProps {
@@ -22,18 +16,25 @@ export default function SignInPromptModal({ open, onOpenChange }: SignInPromptMo
     navigate('/auth');
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm mx-auto rounded-2xl liquid-glass-card border-white/10">
-        <button
-          onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-        >
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </button>
+  if (!open) return null;
 
-        <div className="flex flex-col items-center text-center pt-2">
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ touchAction: 'none' }}
+    >
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/80 animate-in fade-in-0"
+        onClick={() => onOpenChange(false)}
+      />
+
+      {/* Modal Content - using absolute centering that works on iOS */}
+      <div 
+        className="relative w-full max-w-sm bg-background rounded-2xl border border-white/10 p-6 shadow-xl animate-in zoom-in-95 fade-in-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col items-center text-center">
           {/* Mascot */}
           <div className="relative mb-4">
             <img
@@ -46,17 +47,15 @@ export default function SignInPromptModal({ open, onOpenChange }: SignInPromptMo
             </div>
           </div>
 
-          <DialogHeader className="space-y-2">
-            <DialogTitle className="text-xl font-bold text-foreground">
-              Unlock Your Healing Journey
-            </DialogTitle>
-            <p className="text-sm text-muted-foreground px-2">
-              Create a free account to track your tattoo's progress, get personalized reminders, and save photos of your healing journey.
-            </p>
-          </DialogHeader>
+          <h2 className="text-xl font-bold text-foreground mb-2">
+            Unlock Your Healing Journey
+          </h2>
+          <p className="text-sm text-muted-foreground px-2 mb-4">
+            Create a free account to track your tattoo's progress, get personalized reminders, and save photos of your healing journey.
+          </p>
 
           {/* Benefits list */}
-          <div className="w-full mt-4 space-y-2 text-left">
+          <div className="w-full space-y-2 text-left mb-6">
             {[
               'Track your tattoo healing day by day',
               'Set custom aftercare reminders',
@@ -72,7 +71,7 @@ export default function SignInPromptModal({ open, onOpenChange }: SignInPromptMo
           </div>
 
           {/* CTA Buttons */}
-          <div className="w-full mt-6 space-y-3">
+          <div className="w-full space-y-3">
             <Button
               onClick={handleSignIn}
               className="w-full h-12 text-base font-semibold rounded-xl liquid-glass-primary text-white"
@@ -82,13 +81,13 @@ export default function SignInPromptModal({ open, onOpenChange }: SignInPromptMo
             </Button>
             <button
               onClick={() => onOpenChange(false)}
-              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
             >
               Maybe later
             </button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
