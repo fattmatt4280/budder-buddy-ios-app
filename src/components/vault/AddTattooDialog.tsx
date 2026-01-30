@@ -18,9 +18,10 @@ import { useToast } from '@/hooks/use-toast';
 interface AddTattooDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onTattooAdded?: (tattooId: string, bodyLocation: string, tattooDate: string) => void;
 }
 
-export default function AddTattooDialog({ open, onOpenChange }: AddTattooDialogProps) {
+export default function AddTattooDialog({ open, onOpenChange, onTattooAdded }: AddTattooDialogProps) {
   const { addTattoo } = useTattoos();
   const { updateSettings } = useSettings();
   const { toast } = useToast();
@@ -59,6 +60,12 @@ export default function AddTattooDialog({ open, onOpenChange }: AddTattooDialogP
       description: `${formData.bodyLocation} tattoo added to your vault.`,
     });
 
+    // Close dialog first
+    onOpenChange(false);
+
+    // Trigger callback with new tattoo info
+    onTattooAdded?.(newTattoo.id, formData.bodyLocation, formData.tattooDate);
+
     // Reset form
     setFormData({
       tattooDate: new Date().toISOString().split('T')[0],
@@ -69,8 +76,6 @@ export default function AddTattooDialog({ open, onOpenChange }: AddTattooDialogP
       shopName: '',
       notes: '',
     });
-
-    onOpenChange(false);
   };
 
   if (!open) return null;
