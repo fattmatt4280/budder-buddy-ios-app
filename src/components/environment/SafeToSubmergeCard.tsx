@@ -36,7 +36,7 @@ export default function SafeToSubmergeCard({ tattooDate, compact = false }: Safe
             {countdown.isSafe ? 'Safe to Submerge!' : `${countdown.daysRemaining} days until safe`}
           </p>
           <p className="text-xs text-muted-foreground truncate">
-            {countdown.isSafe ? 'Swimming & gym OK' : 'No swimming, pools, or baths'}
+            {countdown.isSafe ? 'Swimming & soaking OK' : 'No swimming, pools, or baths'}
           </p>
         </div>
       </div>
@@ -86,7 +86,7 @@ export default function SafeToSubmergeCard({ tattooDate, compact = false }: Safe
                 🛁 No baths
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-muted rounded-md text-xs text-muted-foreground">
-                🏋️ No gym
+                🛁 No hot tubs
               </span>
             </div>
           )}
