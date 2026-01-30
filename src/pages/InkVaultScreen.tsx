@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import mascotImage from '@/assets/mascot.png';
 import TattooVaultCard from '@/components/vault/TattooVaultCard';
 import AddTattooDialog from '@/components/vault/AddTattooDialog';
+import FirstPhotoPromptDialog from '@/components/vault/FirstPhotoPromptDialog';
 
 export default function InkVaultScreen() {
   const navigate = useNavigate();
@@ -20,6 +21,15 @@ export default function InkVaultScreen() {
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [expandedTattooId, setExpandedTattooId] = useState<string | null>(null);
+  const [firstPhotoPrompt, setFirstPhotoPrompt] = useState<{
+    tattooId: string;
+    bodyLocation: string;
+    tattooDate: string;
+  } | null>(null);
+
+  const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string) => {
+    setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate });
+  };
 
   // Combine and sort tattoos - newest first
   const sortedTattoos = [...tattoos].sort((a, b) => 
@@ -201,7 +211,17 @@ export default function InkVaultScreen() {
       {/* Add Tattoo Dialog */}
       <AddTattooDialog 
         open={addDialogOpen} 
-        onOpenChange={setAddDialogOpen} 
+        onOpenChange={setAddDialogOpen}
+        onTattooAdded={handleTattooAdded}
+      />
+
+      {/* First Photo Prompt Dialog */}
+      <FirstPhotoPromptDialog
+        open={firstPhotoPrompt !== null}
+        onOpenChange={(open) => !open && setFirstPhotoPrompt(null)}
+        tattooId={firstPhotoPrompt?.tattooId}
+        tattooLocation={firstPhotoPrompt?.bodyLocation}
+        tattooDate={firstPhotoPrompt?.tattooDate}
       />
     </div>
   );
