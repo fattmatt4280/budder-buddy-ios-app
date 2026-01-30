@@ -398,7 +398,10 @@ export default function SettingsScreen() {
               </div>
               <Switch
                 checked={settings.notificationsEnabled}
-                onCheckedChange={(checked) => updateSettings({ notificationsEnabled: checked })}
+                onCheckedChange={(checked) => updateSettings({ 
+                  notificationsEnabled: checked,
+                  ...(checked && { sunGuardEnabled: true })
+                })}
               />
             </div>
 
