@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Loader2, Bell } from 'lucide-react';
 import { z } from 'zod';
 import mascotImage from '@/assets/mascot.png';
+import { notificationService } from '@/lib/notificationService';
 
 const emailSchema = z.string().email('Please enter a valid email');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -97,9 +98,13 @@ export default function AuthScreen() {
             });
           }
         } else {
+          // Send welcome push notification
+          notificationService.sendWelcomeNotification();
+          
+          // Show toast pointing to notifications
           toast({
-            title: 'Account created!',
-            description: 'Welcome to Budder Buddy!',
+            title: '🎉 Welcome to Budder Buddy!',
+            description: 'Check your notifications for a special welcome message!',
           });
           navigate('/', { replace: true });
         }
