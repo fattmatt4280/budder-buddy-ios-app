@@ -70,8 +70,8 @@ export function calculateSubmergeCountdown(tattooDate: string): SubmergeCountdow
 
   const isSafe = daysRemaining === 0;
   const message = isSafe
-    ? "🎉 You're clear! Your tattoo is healed enough for swimming and gym activities."
-    : `🏊 ${daysRemaining} day${daysRemaining === 1 ? '' : 's'} until it's safe to swim or hit the gym.`;
+    ? "🎉 You're clear! Your tattoo is healed enough for swimming and soaking."
+    : `🏊 ${daysRemaining} day${daysRemaining === 1 ? '' : 's'} until it's safe to swim or soak.`;
 
   return {
     daysRemaining,
@@ -234,7 +234,7 @@ class EnvironmentService {
           notifications: [{
             id: CELEBRATION_NOTIFICATION_ID,
             title: '🎉 Safe to Submerge!',
-            body: "Your tattoo has healed enough for swimming and gym activities. Enjoy!",
+            body: "Your tattoo has healed enough for swimming and soaking. Enjoy!",
             schedule: { at: celebrationDate },
             sound: 'default',
             extra: { type: 'celebration' },
