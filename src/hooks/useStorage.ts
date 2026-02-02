@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Tattoo, DailyCheckin, PhotoEntry, AppSettings } from '@/types';
 import { logger } from '@/lib/logger';
 
@@ -181,15 +181,25 @@ export function useSettings() {
   const [settings, setSettings] = useState<AppSettings>(() =>
     getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   );
+  
+  // Track if we're the source of the change to prevent sync loops
+  const isLocalUpdate = useRef(false);
 
   // Persist local changes
   useEffect(() => {
+    isLocalUpdate.current = true;
     setToStorage(STORAGE_KEYS.SETTINGS, settings);
+    // Reset flag after a microtask to allow the event to be processed
+    Promise.resolve().then(() => {
+      isLocalUpdate.current = false;
+    });
   }, [settings]);
 
   // Sync across multiple hook instances (same tab) + other tabs
   useEffect(() => {
     const syncFromStorage = () => {
+      // Skip if this was triggered by our own update
+      if (isLocalUpdate.current) return;
       setSettings(getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS));
     };
 
