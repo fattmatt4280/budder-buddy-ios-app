@@ -80,8 +80,19 @@ export default function TodayScreen() {
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [showStartHereHighlight, setShowStartHereHighlight] = useState(false);
+  const [checklist, setChecklist] = useState<DailyChecklist>({
+    washed: false,
+    moisturized: false,
+    avoidedSun: false,
+    didNotScratch: false,
+    drankWater: false,
+  });
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
+
+  // Get existing checkin for this tattoo/day (needed before early return)
+  const dayNumberForCheckin = tattoo ? getDayNumber(tattoo.tattooDate) : 0;
+  const existingCheckinForHook = tattoo ? getCheckinForDay(tattoo.id, dayNumberForCheckin) : undefined;
 
   // Generate scheduled reminders based on settings
   const scheduledReminders = useMemo(() => {
@@ -103,6 +114,14 @@ export default function TodayScreen() {
     const day = getDayNumber(tattoo.tattooDate);
     return getDailyTip(day);
   }, [tattoo]);
+
+  // Sync checklist state when existing checkin changes
+  useEffect(() => {
+    if (existingCheckinForHook) {
+      setChecklist(existingCheckinForHook.checklist);
+      setNoteText(existingCheckinForHook.userNotes || '');
+    }
+  }, [existingCheckinForHook]);
 
   // Check if we just saved reminders
   useEffect(() => {
@@ -187,7 +206,8 @@ export default function TodayScreen() {
   const phaseOneLiner = getPhaseOneLiner(phase.name);
 
   const todayDate = new Date().toISOString().split('T')[0];
-  const existingCheckin = getCheckinForDay(tattoo.id, dayNumber);
+  // Use the checkin already fetched before early return
+  const existingCheckin = existingCheckinForHook;
   const photos = getPhotosForTattoo(tattoo.id);
   const hasPhotos = photos.length > 0;
 
@@ -200,22 +220,6 @@ export default function TodayScreen() {
 
   // Show safe to submerge countdown if within 14 days and activity reminders enabled
   const showSubmergeCountdown = settings.activityRemindersEnabled && dayNumber < 14;
-
-  const [checklist, setChecklist] = useState<DailyChecklist>({
-    washed: false,
-    moisturized: false,
-    avoidedSun: false,
-    didNotScratch: false,
-    drankWater: false,
-    ...existingCheckin?.checklist,
-  });
-
-  useEffect(() => {
-    if (existingCheckin) {
-      setChecklist(existingCheckin.checklist);
-      setNoteText(existingCheckin.userNotes || '');
-    }
-  }, [existingCheckin]);
 
   const handleChecklistChange = (key: keyof DailyChecklist, checked: boolean) => {
     const newChecklist = { ...checklist, [key]: checked };
