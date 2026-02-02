@@ -1,45 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import type { Tattoo, DailyCheckin, PhotoEntry, AppSettings } from '@/types';
 import { logger } from '@/lib/logger';
 
-const STORAGE_KEYS = {
-  TATTOOS: 'budder_tattoos',
-  CHECKINS: 'budder_checkins',
-  PHOTOS: 'budder_photos',
-  SETTINGS: 'budder_settings',
-};
+// Re-export context hooks for use in components
+export { 
+  useAppData,
+  useTattoosContext as useTattoos,
+  useSettingsContext as useSettings,
+  useCheckinsContext as useCheckins,
+} from '@/contexts/AppDataContext';
 
-const DEFAULT_SETTINGS: AppSettings = {
-  notificationsEnabled: false,
-  notifSchedule: {
-    morningTime: '09:00',
-    eveningTime: '20:00',
-    frequencyPreset: '2_per_day',
-  },
-  // Smart Reminders defaults
-  quietHoursEnabled: true,
-  wakeTime: '09:00',
-  bedTime: '23:00',
-  reminderTypesEnabled: {
-    wash: true,
-    moisturize: true,
-    checkin: true,
-  },
-  snoozeMinutes: '60',
-  pausedUntil: null,
-  // Existing settings
-  cloudSyncEnabled: false,
-  selectedTattooId: null,
-  hasCompletedOnboarding: false,
-  hasAcknowledgedDisclaimer: false,
-  hasCompletedReminderSetup: false,
-  // Post-reminder UX flags
-  remindersJustSaved: false,
-  todayStartHereDismissed: false,
-  notificationPermissionStatus: null,
-  // Environment notifications
-  sunGuardEnabled: false,
-  activityRemindersEnabled: true,
+// Re-export cloud hooks for direct usage
+export { useCloudTattoos } from './useCloudTattoos';
+export { useCloudSettings } from './useCloudSettings';
+export { useCloudCheckins } from './useCloudCheckins';
+
+const STORAGE_KEYS = {
+  PHOTOS: 'budder_photos',
 };
 
 function getFromStorage<T>(key: string, defaultValue: T): T {
@@ -59,106 +36,7 @@ function setToStorage<T>(key: string, value: T): void {
   }
 }
 
-// Tattoos Hook
-export function useTattoos() {
-  const [tattoos, setTattoos] = useState<Tattoo[]>(() =>
-    getFromStorage(STORAGE_KEYS.TATTOOS, [])
-  );
-
-  useEffect(() => {
-    setToStorage(STORAGE_KEYS.TATTOOS, tattoos);
-  }, [tattoos]);
-
-  // Sync from other tabs
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.TATTOOS && e.newValue) {
-        try {
-          setTattoos(JSON.parse(e.newValue));
-        } catch {
-          // ignore parse errors
-        }
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  const addTattoo = useCallback((tattoo: Tattoo) => {
-    setTattoos((prev) => [...prev, tattoo]);
-  }, []);
-
-  const updateTattoo = useCallback((id: string, updates: Partial<Tattoo>) => {
-    setTattoos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
-    );
-  }, []);
-
-  const deleteTattoo = useCallback((id: string) => {
-    setTattoos((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
-  const getTattoo = useCallback(
-    (id: string) => tattoos.find((t) => t.id === id),
-    [tattoos]
-  );
-
-  return { tattoos, addTattoo, updateTattoo, deleteTattoo, getTattoo };
-}
-
-// Check-ins Hook
-export function useCheckins() {
-  const [checkins, setCheckins] = useState<DailyCheckin[]>(() =>
-    getFromStorage(STORAGE_KEYS.CHECKINS, [])
-  );
-
-  useEffect(() => {
-    setToStorage(STORAGE_KEYS.CHECKINS, checkins);
-  }, [checkins]);
-
-  // Sync from other tabs
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.CHECKINS && e.newValue) {
-        try {
-          setCheckins(JSON.parse(e.newValue));
-        } catch {
-          // ignore parse errors
-        }
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  const addCheckin = useCallback((checkin: DailyCheckin) => {
-    setCheckins((prev) => [...prev, checkin]);
-  }, []);
-
-  const updateCheckin = useCallback(
-    (id: string, updates: Partial<DailyCheckin>) => {
-      setCheckins((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
-      );
-    },
-    []
-  );
-
-  const getCheckinForDay = useCallback(
-    (tattooId: string, dayNumber: number) =>
-      checkins.find((c) => c.tattooId === tattooId && c.dayNumber === dayNumber),
-    [checkins]
-  );
-
-  const getCheckinsForTattoo = useCallback(
-    (tattooId: string) => checkins.filter((c) => c.tattooId === tattooId),
-    [checkins]
-  );
-
-  return { checkins, addCheckin, updateCheckin, getCheckinForDay, getCheckinsForTattoo };
-}
-
-// Photos Hook
+// Photos Hook (local only, cloud photos use useCloudPhotos)
 export function usePhotos() {
   const [photos, setPhotos] = useState<PhotoEntry[]>(() =>
     getFromStorage(STORAGE_KEYS.PHOTOS, [])
@@ -212,42 +90,6 @@ export function usePhotos() {
   );
 
   return { photos, addPhoto, updatePhoto, deletePhoto, getPhotosForTattoo, getPhotosForDay };
-}
-
-// Settings Hook
-export function useSettings() {
-  const [settings, setSettings] = useState<AppSettings>(() =>
-    getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
-  );
-
-  useEffect(() => {
-    setToStorage(STORAGE_KEYS.SETTINGS, settings);
-  }, [settings]);
-
-  // Sync from other tabs only
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.SETTINGS && e.newValue) {
-        try {
-          setSettings(JSON.parse(e.newValue));
-        } catch {
-          // ignore parse errors
-        }
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  const updateSettings = useCallback((updates: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...updates }));
-  }, []);
-
-  const resetSettings = useCallback(() => {
-    setSettings(DEFAULT_SETTINGS);
-  }, []);
-
-  return { settings, updateSettings, resetSettings };
 }
 
 // Generate unique ID
