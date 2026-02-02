@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { GhostOverlay } from "@/components/camera/GhostOverlay";
 import { CameraControls } from "@/components/camera/CameraControls";
-import { cameraService } from "@/lib/cameraService";
+import { cameraService, PermissionStatus } from "@/lib/cameraService";
 import { useCloudPhotos } from "@/hooks/useCloudPhotos";
 import { useTattoos, useSettings } from "@/hooks/useStorage";
 import { useToast } from "@/hooks/use-toast";
 import { getDayNumber } from "@/types";
-import { Loader2, Camera, ImageOff } from "lucide-react";
+import { Loader2, Camera, ImageOff, Settings, ShieldAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LocationState {
   tattooId?: string;
@@ -36,6 +37,7 @@ export default function GhostCameraScreen() {
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isWebFallback, setIsWebFallback] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus | 'loading'>('loading');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isNative = cameraService.isNativeCamera();
@@ -52,48 +54,78 @@ export default function GhostCameraScreen() {
     }
   }, [tattooId, ghostImageUrl, getPhotosForTattoo]);
 
-  // Initialize camera on mount
+  // Check permission status on mount
   useEffect(() => {
     let mounted = true;
 
-    const initCamera = async () => {
-      console.log('[GhostCamera] Initializing...');
-      console.log('[GhostCamera] Platform:', isNative ? 'Native' : 'Web');
-      console.log('[GhostCamera] Window dimensions:', window.innerWidth, 'x', window.innerHeight);
-      
+    const checkPermission = async () => {
       if (!isNative) {
-        console.log('[GhostCamera] Web environment detected, using fallback');
+        // Web doesn't need native permissions
+        setPermissionStatus('granted');
         setIsWebFallback(true);
         setCameraReady(true);
         return;
       }
 
-      try {
-        console.log('[GhostCamera] Starting native camera preview...');
-        await cameraService.start();
-        console.log('[GhostCamera] Camera started successfully');
-        if (mounted) {
-          setCameraReady(true);
-        }
-      } catch (error) {
-        console.error('[GhostCamera] Failed to initialize camera:', error);
-        if (mounted) {
-          setCameraError('Unable to access camera. Please check permissions.');
-          setIsWebFallback(true);
-          setCameraReady(true);
+      const status = await cameraService.checkCameraPermission();
+      if (mounted) {
+        setPermissionStatus(status);
+        
+        // If already granted, start the camera
+        if (status === 'granted') {
+          startCamera();
         }
       }
     };
 
-    initCamera();
+    checkPermission();
 
     return () => {
       mounted = false;
-      if (isNative) {
+    };
+  }, [isNative]);
+
+  const startCamera = async () => {
+    console.log('[GhostCamera] Starting native camera preview...');
+    try {
+      await cameraService.start();
+      console.log('[GhostCamera] Camera started successfully');
+      setCameraReady(true);
+    } catch (error) {
+      console.error('[GhostCamera] Failed to start camera:', error);
+      setCameraError('Unable to start camera. Please try again.');
+      setIsWebFallback(true);
+      setCameraReady(true);
+    }
+  };
+
+  const handleRequestPermission = async () => {
+    setPermissionStatus('loading');
+    const status = await cameraService.requestCameraPermission();
+    setPermissionStatus(status);
+    
+    if (status === 'granted') {
+      await startCamera();
+    }
+  };
+
+  const handleOpenSettings = () => {
+    // On iOS, we can't directly open settings from the app
+    // But we can show instructions
+    toast({
+      title: "Open Settings",
+      description: "Go to Settings > Budder Buddy > Camera and enable access",
+    });
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (isNative && cameraReady) {
         cameraService.stop();
       }
     };
-  }, [isNative]);
+  }, [isNative, cameraReady]);
 
   const handleCapture = useCallback(async () => {
     if (!tattooId) {
@@ -178,13 +210,97 @@ export default function GhostCameraScreen() {
   }, [isNative, isWebFallback]);
 
   const handleClose = useCallback(async () => {
-    if (isNative) {
+    if (isNative && cameraReady) {
       await cameraService.stop();
     }
     navigate(-1);
-  }, [isNative, navigate]);
+  }, [isNative, cameraReady, navigate]);
 
-  // Loading state
+  // Permission checking state
+  if (permissionStatus === 'loading') {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-center text-white">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" />
+          <p>Checking camera access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Permission needs to be requested (first time)
+  if (permissionStatus === 'prompt' && isNative) {
+    return (
+      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-8">
+        <div className="text-center text-white max-w-sm">
+          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
+            <Camera className="h-10 w-10 text-primary" />
+          </div>
+          <h1 className="text-2xl font-semibold mb-3">Camera Access Needed</h1>
+          <p className="text-white/70 mb-8">
+            To take photos of your healing tattoo, Budder Buddy needs access to your camera.
+          </p>
+          <Button
+            onClick={handleRequestPermission}
+            className="w-full mb-4"
+            size="lg"
+          >
+            Allow Camera Access
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleClose}
+            className="w-full text-white/60"
+          >
+            Maybe Later
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Permission was denied - show settings prompt
+  if (permissionStatus === 'denied' && isNative) {
+    return (
+      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-8">
+        <div className="text-center text-white max-w-sm">
+          <div className="w-20 h-20 rounded-full bg-destructive/20 flex items-center justify-center mx-auto mb-6">
+            <ShieldAlert className="h-10 w-10 text-destructive" />
+          </div>
+          <h1 className="text-2xl font-semibold mb-3">Camera Access Denied</h1>
+          <p className="text-white/70 mb-4">
+            Camera access was previously denied. To take photos, you'll need to enable it in your device settings.
+          </p>
+          <div className="bg-white/10 rounded-xl p-4 mb-8 text-left">
+            <p className="text-sm text-white/80 font-medium mb-2">How to enable:</p>
+            <ol className="text-sm text-white/60 space-y-1 list-decimal list-inside">
+              <li>Open the <strong>Settings</strong> app</li>
+              <li>Scroll down and tap <strong>Budder Buddy</strong></li>
+              <li>Enable <strong>Camera</strong> access</li>
+              <li>Return here and try again</li>
+            </ol>
+          </div>
+          <Button
+            onClick={handleOpenSettings}
+            className="w-full mb-4 gap-2"
+            size="lg"
+          >
+            <Settings className="h-5 w-5" />
+            Open Settings Guide
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleClose}
+            className="w-full text-white/60"
+          >
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state (starting camera after permission granted)
   if (!cameraReady) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
