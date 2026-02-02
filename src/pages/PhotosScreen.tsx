@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Plus, Trash2, X, Image as ImageIcon, Cloud, HardDrive, LogIn } from 'lucide-react';
+import { Camera, Plus, Trash2, X, Image as ImageIcon, Cloud, HardDrive, LogIn, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { useTattoos, useSettings, usePhotos as useLocalPhotos, generateId } from '@/hooks/useStorage';
 import { useCloudPhotos, CloudPhoto } from '@/hooks/useCloudPhotos';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +26,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import AddTattooDialog from '@/components/vault/AddTattooDialog';
+import FirstPhotoPromptDialog from '@/components/vault/FirstPhotoPromptDialog';
 
 // Unified photo type for display
 interface DisplayPhoto {
@@ -57,8 +60,21 @@ export default function PhotosScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingTattooIdRef = useRef<string | null>(null);
 
+  // Dialog states for new flow
+  const [addTattooDialogOpen, setAddTattooDialogOpen] = useState(false);
+  const [firstPhotoPrompt, setFirstPhotoPrompt] = useState<{
+    tattooId: string;
+    bodyLocation: string;
+    tattooDate: string;
+  } | null>(null);
+
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
   const currentDay = tattoo ? getDayNumber(tattoo.tattooDate) : 1;
+
+  // Calculate stats
+  const totalTattoos = tattoos.length;
+  const healedTattoos = tattoos.filter(t => t.isHealed).length;
+  const healingNow = totalTattoos - healedTattoos;
 
   // Merge local and cloud photos for display
   const getDisplayPhotos = (): DisplayPhoto[] => {
@@ -98,6 +114,26 @@ export default function PhotosScreen() {
     return acc;
   }, {} as Record<number, DisplayPhoto[]>);
 
+  // Handle tattoo added callback - show first photo prompt
+  const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string) => {
+    setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate });
+  };
+
+  const handleAddTattooClick = () => {
+    // Require authentication
+    if (!isAuthenticated) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to save photos securely to the cloud.',
+      });
+      navigate('/auth');
+      return;
+    }
+    
+    // Open the full AddTattooDialog
+    setAddTattooDialogOpen(true);
+  };
+
   const handleQuickCapture = () => {
     // Require authentication to take photos
     if (!isAuthenticated) {
@@ -109,29 +145,16 @@ export default function PhotosScreen() {
       return;
     }
 
-    let targetTattooId = tattoo?.id;
-    
+    // If no tattoo exists, show the AddTattooDialog first
     if (!tattoo) {
-      // Auto-create a quick tattoo with defaults
-      const newId = generateId();
-      const today = new Date().toISOString().split('T')[0];
-      addTattoo({
-        id: newId,
-        createdAt: new Date().toISOString(),
-        tattooDate: today,
-        bodyLocation: 'Other',
-        sizeTier: 'Medium',
-        inkType: 'BlackGrey',
-      });
-      updateSettings({ selectedTattooId: newId });
-      pendingTattooIdRef.current = newId;
-      targetTattooId = newId;
+      setAddTattooDialogOpen(true);
+      return;
     }
     
-    // Navigate to ghost camera with tattoo context
+    // Navigate to ghost camera with existing tattoo
     navigate('/ghost-camera', { 
       state: { 
-        tattooId: targetTattooId,
+        tattooId: tattoo.id,
       } 
     });
   };
@@ -206,6 +229,32 @@ export default function PhotosScreen() {
     setSelectedPhoto(null);
   };
 
+  // Stats Overview Component
+  const StatsOverview = () => (
+    <div className="px-6 mb-6">
+      <div className="grid grid-cols-3 gap-3">
+        <Card variant="glass" className="text-center">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-foreground">{totalTattoos}</div>
+            <div className="text-xs text-muted-foreground">Total Tattoos</div>
+          </CardContent>
+        </Card>
+        <Card variant="glass" className="text-center">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-primary">{healedTattoos}</div>
+            <div className="text-xs text-muted-foreground">Fully Healed</div>
+          </CardContent>
+        </Card>
+        <Card variant="glass" className="text-center">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-amber-500">{healingNow}</div>
+            <div className="text-xs text-muted-foreground">Healing Now</div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
   if (!tattoo) {
     return (
       <div className="min-h-screen bg-background safe-area-top">
@@ -213,6 +262,9 @@ export default function PhotosScreen() {
           <h1 className="text-2xl font-bold text-foreground mb-1">Photo Log</h1>
           <p className="text-muted-foreground text-sm">Track your healing progress</p>
         </div>
+        
+        {/* Stats Overview - always show */}
+        <StatsOverview />
         
         <div className="px-6 mb-4">
           <Alert className="border-primary/30 bg-primary/5">
@@ -238,16 +290,16 @@ export default function PhotosScreen() {
           <h3 className="font-semibold text-foreground mb-2">Add Your Tattoo</h3>
           <p className="text-sm text-muted-foreground mb-6 max-w-xs">
             {isAuthenticated 
-              ? 'Take a photo to start tracking. You can add details later.'
+              ? 'Add your tattoo details to start tracking your healing journey.'
               : 'Sign in to start tracking your tattoo healing journey.'}
           </p>
           {isAuthenticated ? (
             <Button
-              onClick={handleQuickCapture}
+              onClick={handleAddTattooClick}
               className="liquid-glass-primary text-white rounded-xl"
               disabled={uploading}
             >
-              <Camera className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 mr-2" />
               {uploading ? 'Saving...' : 'Add Your Tattoo'}
             </Button>
           ) : (
@@ -268,6 +320,22 @@ export default function PhotosScreen() {
             className="hidden"
           />
         </div>
+
+        {/* AddTattooDialog */}
+        <AddTattooDialog
+          open={addTattooDialogOpen}
+          onOpenChange={setAddTattooDialogOpen}
+          onTattooAdded={handleTattooAdded}
+        />
+
+        {/* FirstPhotoPromptDialog */}
+        <FirstPhotoPromptDialog
+          open={firstPhotoPrompt !== null}
+          onOpenChange={(open) => !open && setFirstPhotoPrompt(null)}
+          tattooId={firstPhotoPrompt?.tattooId}
+          tattooLocation={firstPhotoPrompt?.bodyLocation}
+          tattooDate={firstPhotoPrompt?.tattooDate}
+        />
       </div>
     );
   }
@@ -294,6 +362,9 @@ export default function PhotosScreen() {
           </Button>
         </div>
       </div>
+
+      {/* Stats Overview */}
+      <StatsOverview />
 
       {/* Storage indicator */}
       {isAuthenticated ? (
@@ -488,7 +559,7 @@ export default function PhotosScreen() {
 
       {/* Delete confirmation */}
       <AlertDialog open={deleteConfirm !== null} onOpenChange={() => setDeleteConfirm(null)}>
-        <AlertDialogContent className="bg-card border-border">
+        <AlertDialogContent className="liquid-glass-card border-0">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Photo?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -506,6 +577,22 @@ export default function PhotosScreen() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* AddTattooDialog */}
+      <AddTattooDialog
+        open={addTattooDialogOpen}
+        onOpenChange={setAddTattooDialogOpen}
+        onTattooAdded={handleTattooAdded}
+      />
+
+      {/* FirstPhotoPromptDialog */}
+      <FirstPhotoPromptDialog
+        open={firstPhotoPrompt !== null}
+        onOpenChange={(open) => !open && setFirstPhotoPrompt(null)}
+        tattooId={firstPhotoPrompt?.tattooId}
+        tattooLocation={firstPhotoPrompt?.bodyLocation}
+        tattooDate={firstPhotoPrompt?.tattooDate}
+      />
     </div>
   );
 }
