@@ -4,8 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useSettings, useTattoos } from "@/hooks/useStorage";
-import { useAuth } from "@/hooks/useAuth";
+import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
 
 // Layouts
 import AppLayout from "@/components/layout/AppLayout";
@@ -36,9 +35,7 @@ import NotFound from "@/pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { settings, updateSettings } = useSettings();
-  const { tattoos } = useTattoos();
-  const { isAuthenticated } = useAuth();
+  const { settings, updateSettings, tattoos, isAuthenticated } = useAppData();
 
   // Self-heal onboarding state so users don't get stuck on the welcome screen
   // if they already have enough state to use the app.
@@ -117,7 +114,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppRoutes />
+        <AppDataProvider>
+          <AppRoutes />
+        </AppDataProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

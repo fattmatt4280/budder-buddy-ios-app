@@ -71,6 +71,117 @@ export type Database = {
         }
         Relationships: []
       }
+      user_checkins: {
+        Row: {
+          checkin_date: string
+          checklist: Json
+          created_at: string | null
+          day_number: number
+          id: string
+          observations: string[] | null
+          tattoo_local_id: string
+          user_id: string
+          user_notes: string | null
+        }
+        Insert: {
+          checkin_date: string
+          checklist: Json
+          created_at?: string | null
+          day_number: number
+          id?: string
+          observations?: string[] | null
+          tattoo_local_id: string
+          user_id: string
+          user_notes?: string | null
+        }
+        Update: {
+          checkin_date?: string
+          checklist?: Json
+          created_at?: string | null
+          day_number?: number
+          id?: string
+          observations?: string[] | null
+          tattoo_local_id?: string
+          user_id?: string
+          user_notes?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          settings: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          settings?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          settings?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_tattoos: {
+        Row: {
+          artist_name: string | null
+          body_location: string
+          created_at: string | null
+          healed_date: string | null
+          id: string
+          ink_type: string
+          is_healed: boolean | null
+          local_id: string
+          notes: string | null
+          shop_name: string | null
+          size_tier: string
+          tattoo_date: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          artist_name?: string | null
+          body_location: string
+          created_at?: string | null
+          healed_date?: string | null
+          id?: string
+          ink_type: string
+          is_healed?: boolean | null
+          local_id: string
+          notes?: string | null
+          shop_name?: string | null
+          size_tier: string
+          tattoo_date: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          artist_name?: string | null
+          body_location?: string
+          created_at?: string | null
+          healed_date?: string | null
+          id?: string
+          ink_type?: string
+          is_healed?: boolean | null
+          local_id?: string
+          notes?: string | null
+          shop_name?: string | null
+          size_tier?: string
+          tattoo_date?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
