@@ -140,7 +140,7 @@ export default function AuthScreen() {
         <img 
           src={mascotImage} 
           alt="Budder Buddy mascot" 
-          className="w-44 h-44 mb-6 drop-shadow-2xl"
+          className="w-44 h-44 mb-6 rounded-3xl drop-shadow-2xl"
         />
         
         <h1 className="text-2xl font-bold text-foreground mb-1">
