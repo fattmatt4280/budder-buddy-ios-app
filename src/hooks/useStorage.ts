@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Tattoo, DailyCheckin, PhotoEntry, AppSettings } from '@/types';
 import { logger } from '@/lib/logger';
 
@@ -51,21 +51,9 @@ function getFromStorage<T>(key: string, defaultValue: T): T {
   }
 }
 
-// Module-level update counter to track which hook instance made the change
-let updateId = 0;
-const lastUpdateBy: Record<string, number> = {};
-
-function setToStorage<T>(key: string, value: T, instanceId: number): void {
+function setToStorage<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-    lastUpdateBy[key] = instanceId;
-
-    // Dispatch event for other hook instances in the same tab
-    window.dispatchEvent(
-      new CustomEvent('budder-storage', {
-        detail: { key, instanceId },
-      })
-    );
   } catch (error) {
     logger.error('Failed to save to storage:', error);
   }
@@ -78,8 +66,23 @@ export function useTattoos() {
   );
 
   useEffect(() => {
-    setToStorage(STORAGE_KEYS.TATTOOS, tattoos, 0);
+    setToStorage(STORAGE_KEYS.TATTOOS, tattoos);
   }, [tattoos]);
+
+  // Sync from other tabs
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.TATTOOS && e.newValue) {
+        try {
+          setTattoos(JSON.parse(e.newValue));
+        } catch {
+          // ignore parse errors
+        }
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const addTattoo = useCallback((tattoo: Tattoo) => {
     setTattoos((prev) => [...prev, tattoo]);
@@ -110,8 +113,23 @@ export function useCheckins() {
   );
 
   useEffect(() => {
-    setToStorage(STORAGE_KEYS.CHECKINS, checkins, 0);
+    setToStorage(STORAGE_KEYS.CHECKINS, checkins);
   }, [checkins]);
+
+  // Sync from other tabs
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.CHECKINS && e.newValue) {
+        try {
+          setCheckins(JSON.parse(e.newValue));
+        } catch {
+          // ignore parse errors
+        }
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const addCheckin = useCallback((checkin: DailyCheckin) => {
     setCheckins((prev) => [...prev, checkin]);
@@ -147,8 +165,23 @@ export function usePhotos() {
   );
 
   useEffect(() => {
-    setToStorage(STORAGE_KEYS.PHOTOS, photos, 0);
+    setToStorage(STORAGE_KEYS.PHOTOS, photos);
   }, [photos]);
+
+  // Sync from other tabs
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.PHOTOS && e.newValue) {
+        try {
+          setPhotos(JSON.parse(e.newValue));
+        } catch {
+          // ignore parse errors
+        }
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const addPhoto = useCallback((photo: PhotoEntry) => {
     setPhotos((prev) => [...prev, photo]);
@@ -181,48 +214,29 @@ export function usePhotos() {
   return { photos, addPhoto, updatePhoto, deletePhoto, getPhotosForTattoo, getPhotosForDay };
 }
 
-// Settings Hook - with sync across multiple instances
+// Settings Hook
 export function useSettings() {
-  // Each hook instance gets a unique ID
-  const instanceId = useRef(++updateId);
-  
   const [settings, setSettings] = useState<AppSettings>(() =>
     getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   );
 
-  // Persist local changes
   useEffect(() => {
-    setToStorage(STORAGE_KEYS.SETTINGS, settings, instanceId.current);
+    setToStorage(STORAGE_KEYS.SETTINGS, settings);
   }, [settings]);
 
-  // Sync across multiple hook instances (same tab) + other tabs
+  // Sync from other tabs only
   useEffect(() => {
-    const syncFromStorage = (sourceInstanceId?: number) => {
-      // Skip if this was triggered by our own update
-      if (sourceInstanceId === instanceId.current) return;
-      if (lastUpdateBy[STORAGE_KEYS.SETTINGS] === instanceId.current) return;
-      
-      setSettings(getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS));
-    };
-
     const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.SETTINGS) syncFromStorage();
-    };
-
-    const onBudderStorage = (e: Event) => {
-      const ce = e as CustomEvent<{ key: string; instanceId?: number }>;
-      if (ce.detail?.key === STORAGE_KEYS.SETTINGS) {
-        syncFromStorage(ce.detail.instanceId);
+      if (e.key === STORAGE_KEYS.SETTINGS && e.newValue) {
+        try {
+          setSettings(JSON.parse(e.newValue));
+        } catch {
+          // ignore parse errors
+        }
       }
     };
-
     window.addEventListener('storage', onStorage);
-    window.addEventListener('budder-storage', onBudderStorage);
-
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('budder-storage', onBudderStorage);
-    };
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   const updateSettings = useCallback((updates: Partial<AppSettings>) => {
