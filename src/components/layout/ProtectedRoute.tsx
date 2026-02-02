@@ -19,8 +19,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!isAuthenticated) {
-    // Redirect to auth, but save the intended destination
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    // Redirect unauthenticated users to welcome screen
+    return <Navigate to="/welcome" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

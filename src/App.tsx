@@ -82,6 +82,9 @@ function AppRoutes() {
 
   return (
     <Routes>
+      {/* Welcome screen for unauthenticated users */}
+      <Route path="/welcome" element={<WelcomeScreen />} />
+      
       <Route element={<AppLayout />}>
         {/* Protected routes - require authentication */}
         <Route path="/" element={<ProtectedRoute><TodayScreen /></ProtectedRoute>} />
