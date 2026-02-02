@@ -29,8 +29,8 @@ export default function WelcomeScreen() {
   ]);
 
   const handleStart = () => {
-    updateSettings({ hasAcknowledgedDisclaimer: true, hasCompletedOnboarding: true });
-    navigate('/learn', { replace: true });
+    updateSettings({ hasAcknowledgedDisclaimer: true });
+    navigate('/auth', { replace: true });
   };
 
   return (
@@ -76,7 +76,7 @@ export default function WelcomeScreen() {
           size="lg"
           className="w-full h-12 text-lg font-semibold rounded-xl liquid-glass-primary text-white"
         >
-          Get Started
+          Sign Up
         </Button>
       </div>
     </div>
