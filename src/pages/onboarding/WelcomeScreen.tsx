@@ -38,11 +38,11 @@ export default function WelcomeScreen() {
       {/* Hero section */}
       <div className="flex flex-col items-center text-center mb-6">
         {/* Mascot/Logo */}
-        <div className="relative mb-4 animate-fade-in">
+        <div className="relative mb-6 animate-fade-in">
           <img 
             src={mascotImage} 
             alt="Budder Buddy mascot" 
-            className="w-28 h-28 rounded-2xl shadow-2xl"
+            className="w-48 h-48 rounded-3xl shadow-2xl"
           />
         </div>
 
