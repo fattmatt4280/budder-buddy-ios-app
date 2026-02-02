@@ -1,155 +1,110 @@
 
-# Plan: Sync Tattoos, Settings, and Check-ins to Your Account
 
-## The Problem
+# Fix iOS Camera Permissions for Ghost Camera
 
-Right now, your **photos are saved to the cloud** (and they're still there!), but your **tattoos, reminder settings, and daily check-ins are only stored in your browser's local storage**. This means:
+## Problem Summary
+The camera isn't asking for permissions on iOS TestFlight because the `@capacitor-community/camera-preview` plugin doesn't have permission-requesting methods. When you try to start the camera without granted permissions, iOS silently denies access instead of showing the permission prompt.
 
-- When you sign out and back in, the app can't find any tattoo records
-- Without tattoo records, the app doesn't know how to display your photos
-- Your reminder settings and check-in history are also lost
-
-## The Solution
-
-We'll save all your data to your account so it syncs across sessions and devices.
-
-```text
-+------------------+       +------------------+       +------------------+
-|    Browser A     |       |     Backend      |       |    Browser B     |
-|                  |       |                  |       |                  |
-| - Tattoos        | <---> | - tattoos table  | <---> | - Tattoos        |
-| - Settings       |       | - settings table |       | - Settings       |
-| - Check-ins      |       | - checkins table |       | - Check-ins      |
-| - Photos         |       | - photos table   |       | - Photos         |
-+------------------+       +------------------+       +------------------+
-```
+## Solution Overview
+We'll add the official `@capacitor/camera` plugin which provides proper permission methods, then update the camera service to request permissions before starting the camera preview.
 
 ---
 
-## What Will Change
+## Implementation Steps
 
-### 1. New Database Tables
+### Step 1: Install the @capacitor/camera Plugin
+Add the official Capacitor camera plugin which has permission methods:
+- Install `@capacitor/camera` package
+- This plugin provides `checkPermissions()` and `requestPermissions()` methods
 
-**`user_tattoos` table** - Stores your tattoo records
-- Links to your user account
-- Contains: body location, size, ink type, tattoo date, artist name, shop name, notes, healed status
+### Step 2: Update Camera Service with Permission Handling
+Modify `src/lib/cameraService.ts` to:
+- Import `Camera` from `@capacitor/camera`
+- Add a new `requestCameraPermission()` function that:
+  - Checks current permission status
+  - Requests permission if not granted
+  - Returns `true` if granted, `false` if denied
+- Modify the `start()` function to request permission first before starting the preview
+- Add an `openSettings()` function to guide users to app settings if permission was permanently denied
 
-**`user_settings` table** - Stores your app preferences
-- Reminder schedule (wake time, bed time, frequency)
-- Notification preferences
-- Selected tattoo ID
-- Other app settings
+### Step 3: Update Ghost Camera Screen for Permission Flow
+Modify `src/pages/GhostCameraScreen.tsx` to:
+- Check permission status on mount
+- Show a friendly permission request screen if permission hasn't been granted
+- Handle the "permanently denied" case by showing a button to open Settings
+- Only start the camera preview after permission is confirmed
 
-**`user_checkins` table** - Stores your daily check-in history
-- Linked to specific tattoos
-- Contains: day number, checklist completion, notes, observations
-
-### 2. Automatic Data Sync
-
-When you **sign in**:
-1. Fetch your tattoos, settings, and check-ins from the cloud
-2. If the cloud is empty but local data exists, import it to your account
-3. Display your data as before
-
-When you **make changes** (add tattoo, update settings, complete a check-in):
-1. Save to local storage (for fast access)
-2. Save to the cloud (for persistence)
-
-### 3. First-Time Import
-
-Since you already have data from last night, we'll automatically import any locally-stored data to your account when it detects cloud is empty but local isn't.
+### Step 4: Update iOS Documentation
+Update `docs/IOS_SETUP.md` to note that `@capacitor/camera` is now also required and its permissions are shared with camera-preview.
 
 ---
 
 ## Technical Details
 
-### Database Schema
-
-```sql
--- Tattoos table
-CREATE TABLE user_tattoos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  local_id TEXT NOT NULL,  -- Maps to the ID used in photos table
-  tattoo_date DATE NOT NULL,
-  body_location TEXT NOT NULL,
-  size_tier TEXT NOT NULL,
-  ink_type TEXT NOT NULL,
-  artist_name TEXT,
-  shop_name TEXT,
-  notes TEXT,
-  is_healed BOOLEAN DEFAULT FALSE,
-  healed_date DATE,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(user_id, local_id)
-);
-
--- Settings table (one row per user)
-CREATE TABLE user_settings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  settings JSONB NOT NULL DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Check-ins table
-CREATE TABLE user_checkins (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  tattoo_local_id TEXT NOT NULL,
-  day_number INTEGER NOT NULL,
-  checkin_date DATE NOT NULL,
-  checklist JSONB NOT NULL,
-  user_notes TEXT,
-  observations TEXT[],
-  created_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(user_id, tattoo_local_id, day_number)
-);
+### Permission Flow Diagram
+```text
+User taps camera button
+        │
+        ▼
+Check camera permission status
+        │
+        ├─── Already Granted ───► Start camera preview
+        │
+        ├─── Not Yet Asked ───► Show permission dialog
+        │                              │
+        │                              ├─── User allows ───► Start camera
+        │                              └─── User denies ───► Show error
+        │
+        └─── Previously Denied ───► Show "Open Settings" button
 ```
 
-### New Sync Hooks
+### New Camera Permission Method (cameraService.ts)
+```typescript
+import { Camera, CameraPermissionType } from '@capacitor/camera';
 
-**`useCloudTattoos`** - Manages tattoo sync
-- Fetches tattoos on mount when authenticated
-- Provides `addTattoo`, `updateTattoo`, `deleteTattoo` that write to both local and cloud
-- Includes import logic for existing local data
+async requestCameraPermission(): Promise<'granted' | 'denied' | 'prompt'> {
+  if (!isNative) return 'granted'; // Web doesn't need this
 
-**`useCloudSettings`** - Manages settings sync
-- Loads settings from cloud on sign-in
-- Saves settings changes to cloud
-- Merges with defaults for any missing fields
+  try {
+    const status = await Camera.checkPermissions();
+    
+    if (status.camera === 'granted') {
+      return 'granted';
+    }
+    
+    if (status.camera === 'denied') {
+      // User previously denied - can't re-prompt, need to go to Settings
+      return 'denied';
+    }
+    
+    // Permission not yet asked - request it
+    const request = await Camera.requestPermissions({ permissions: ['camera'] });
+    return request.camera === 'granted' ? 'granted' : 'denied';
+  } catch (error) {
+    console.error('[CameraService] Permission check failed:', error);
+    return 'denied';
+  }
+}
+```
 
-**`useCloudCheckins`** - Manages check-in sync
-- Fetches check-ins on mount
-- Saves new check-ins to cloud
-- Links to tattoos via `local_id`
-
-### Migration of Existing Data
-
-When the user signs in and cloud is empty:
-1. Read local `budder_tattoos`, `budder_settings`, `budder_checkins`
-2. Upload each to the corresponding cloud table
-3. The existing `photos` table already uses the local tattoo ID, so they'll automatically connect
+### Updated Ghost Camera Screen Flow
+The screen will show different UI states:
+1. **Loading** - Checking permission status
+2. **Permission Required** - Button to request permission (first time)
+3. **Permission Denied** - Button to open Settings with explanation
+4. **Camera Ready** - Normal camera preview with ghost overlay
 
 ---
 
-## Files to Create/Modify
+## After Implementation
 
-| File | Action |
-|------|--------|
-| `supabase/migrations/` | New migration for 3 tables + RLS policies |
-| `src/hooks/useCloudTattoos.ts` | New hook for cloud tattoo sync |
-| `src/hooks/useCloudSettings.ts` | New hook for cloud settings sync |
-| `src/hooks/useCloudCheckins.ts` | New hook for cloud check-in sync |
-| `src/hooks/useStorage.ts` | Update to use cloud hooks when authenticated |
-| `src/App.tsx` | Minor updates to pass auth state |
+After I implement these changes, you'll need to:
+1. Pull the latest code from GitHub
+2. Run `npm install` to get the new `@capacitor/camera` package
+3. Run `npx cap sync ios` to sync the new plugin
+4. Rebuild and test on device/TestFlight
 
----
+The permission dialog should now appear when you first try to use the camera. If you previously denied permission during testing, you may need to:
+- Go to iOS Settings > Budder Buddy > Camera and enable it manually
+- Or delete and reinstall the app to reset permissions
 
-## Security
-
-All new tables will have Row-Level Security (RLS) enabled:
-- Users can only read/write their own data
-- Policies match the existing `photos` table pattern
