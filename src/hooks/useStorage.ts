@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useContext } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Tattoo, DailyCheckin, PhotoEntry, AppSettings } from '@/types';
 import { logger } from '@/lib/logger';
 
