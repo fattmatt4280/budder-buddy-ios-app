@@ -1,10 +1,33 @@
 
-# Welcome Screen to Sign Up Flow
+# Bring Ink Vault Experience to Photos Tab
 
 ## Summary
-Two simple changes to make the first-time experience clearer for an iOS app:
-1. Change "Get Started" button to "Sign Up" and navigate directly to the auth screen
-2. After first sign up, users stay logged in automatically (this already works thanks to secure token storage)
+Enhance the Photos screen to mirror the Ink Vault experience:
+1. Add stats overview and tattoo list display like Ink Vault
+2. When user taps "Add" with no tattoo, show the full AddTattooDialog (with all the questions) before prompting for a photo
+3. After adding tattoo details, show FirstPhotoPromptDialog to capture the photo
+
+---
+
+## Current vs. Proposed Flow
+
+### Current Photos Screen Flow
+- User taps "Add Your Tattoo" button
+- Auto-creates a "quick tattoo" with defaults (body location = "Other", size = "Medium", etc.)
+- Goes directly to Ghost Camera
+
+### New Photos Screen Flow
+- User taps "Add" button
+- **AddTattooDialog opens** (same questions as Ink Vault):
+  - When did you get it?
+  - Body location
+  - Size (Small/Medium/Large)
+  - Ink type (Black & Grey / Color)
+  - Artist name (optional)
+  - Shop name (optional)
+  - Notes (optional)
+- After tattoo is created, **FirstPhotoPromptDialog opens**
+- User can Take Photo, Upload, or Skip
 
 ---
 
@@ -12,66 +35,71 @@ Two simple changes to make the first-time experience clearer for an iOS app:
 
 | File | Changes |
 |------|---------|
-| `src/pages/onboarding/WelcomeScreen.tsx` | Change button text to "Sign Up" and navigate to `/auth` instead of `/learn` |
+| `src/pages/PhotosScreen.tsx` | Add stats overview, import AddTattooDialog and FirstPhotoPromptDialog, update empty state to use full tattoo form |
 
 ---
 
-## How It Works
+## Visual Changes
 
-### First-Time User
-1. User opens app for the first time
-2. Sees Welcome screen with "Sign Up" button
-3. Taps "Sign Up" - goes directly to auth screen
-4. Creates account
-5. Token saved to iOS Keychain (secure storage)
-6. Welcome notification sent
-7. Onboarding marked complete - user enters app
+### Stats Overview (New)
+At the top of Photos screen, add the same 3-column stats from Ink Vault:
+- Total Tattoos
+- Fully Healed
+- Healing Now
 
-### Returning User
-1. User opens app
-2. Supabase automatically restores session from Keychain
-3. `isAuthenticated` becomes `true`
-4. Self-healing logic in App.tsx sets `hasCompletedOnboarding: true`
-5. User goes straight to Today screen - no login needed
+### Empty State (Updated)
+Instead of auto-creating a "quick tattoo", the "Add Your Tattoo" button will now open the AddTattooDialog with all the form fields.
+
+### With Tattoo State (Updated)
+The header "Add" button will:
+- If adding to existing tattoo: go directly to Ghost Camera (current behavior)
+- If user wants to add new tattoo: open AddTattooDialog first
 
 ---
 
-## Technical Details
+## Technical Implementation
 
-### WelcomeScreen Changes
+### PhotosScreen Updates
 
+1. **Import new components**:
 ```typescript
-const handleStart = () => {
-  updateSettings({ hasAcknowledgedDisclaimer: true });
-  navigate('/auth', { replace: true });  // Go to sign up
-};
-
-// Button text change
-<Button>Sign Up</Button>
+import AddTattooDialog from '@/components/vault/AddTattooDialog';
+import FirstPhotoPromptDialog from '@/components/vault/FirstPhotoPromptDialog';
 ```
 
-### Why Auto-Login Already Works
+2. **Add state for dialogs**:
+```typescript
+const [addTattooDialogOpen, setAddTattooDialogOpen] = useState(false);
+const [firstPhotoPrompt, setFirstPhotoPrompt] = useState<{
+  tattooId: string;
+  bodyLocation: string;
+  tattooDate: string;
+} | null>(null);
+```
 
-The app already has all the pieces in place:
+3. **Add callback for when tattoo is added**:
+```typescript
+const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string) => {
+  setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate });
+};
+```
 
-1. **Secure Storage**: `secureStorageAdapter.ts` stores tokens in iOS Keychain
-2. **Session Persistence**: Supabase client has `persistSession: true`
-3. **Auto Refresh**: Supabase client has `autoRefreshToken: true`
-4. **Self-Healing Logic**: App.tsx checks `isAuthenticated` and unlocks the app
+4. **Update empty state button** to open AddTattooDialog instead of auto-creating tattoo
 
-When the app launches, `useAuth` calls `supabase.auth.getSession()` which retrieves the stored session from secure storage. If valid, user is automatically authenticated - no re-login needed!
+5. **Add stats overview section** showing total tattoos, healed count, and healing count
+
+6. **Render both dialogs** at bottom of component
 
 ---
 
-## User Flow
+## User Flow Comparison
 
 ```text
-FIRST TIME:
-Welcome Screen → "Sign Up" → Auth Screen → Create Account → Today Screen
-                                                    ↓
-                                          Token saved to Keychain
+BEFORE (Photos Screen):
+"Add Your Tattoo" → Auto-create with defaults → Ghost Camera
 
-EVERY TIME AFTER:
-App Launch → Session restored from Keychain → Today Screen
-             (automatic, instant)
+AFTER (Photos Screen):
+"Add Your Tattoo" → AddTattooDialog (full form) → FirstPhotoPromptDialog → Take Photo/Upload/Skip
 ```
+
+This matches the Ink Vault experience exactly while keeping the Photos screen as the primary photo management view.
