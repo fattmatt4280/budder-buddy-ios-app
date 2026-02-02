@@ -1,10 +1,13 @@
 import { CameraPreview, CameraPreviewOptions } from '@capacitor-community/camera-preview';
+import { Camera } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 
 export interface CaptureResult {
   base64: string;
   format: 'jpeg' | 'png';
 }
+
+export type PermissionStatus = 'granted' | 'denied' | 'prompt';
 
 const isNative = Capacitor.isNativePlatform();
 
@@ -14,6 +17,57 @@ export const cameraService = {
    */
   isNativeCamera(): boolean {
     return isNative;
+  },
+
+  /**
+   * Check and request camera permission using @capacitor/camera
+   * This is required on iOS before starting the camera preview
+   */
+  async requestCameraPermission(): Promise<PermissionStatus> {
+    if (!isNative) return 'granted'; // Web handles permissions via browser
+
+    try {
+      console.log('[CameraService] Checking camera permission...');
+      const status = await Camera.checkPermissions();
+      console.log('[CameraService] Current permission status:', status.camera);
+
+      if (status.camera === 'granted') {
+        return 'granted';
+      }
+
+      if (status.camera === 'denied') {
+        // User previously denied - can't re-prompt on iOS, need to go to Settings
+        console.log('[CameraService] Permission previously denied');
+        return 'denied';
+      }
+
+      // Permission not yet asked (prompt or prompt-with-rationale) - request it
+      console.log('[CameraService] Requesting camera permission...');
+      const request = await Camera.requestPermissions({ permissions: ['camera'] });
+      console.log('[CameraService] Permission request result:', request.camera);
+      
+      return request.camera === 'granted' ? 'granted' : 'denied';
+    } catch (error) {
+      console.error('[CameraService] Permission check failed:', error);
+      return 'denied';
+    }
+  },
+
+  /**
+   * Check current permission status without prompting
+   */
+  async checkCameraPermission(): Promise<PermissionStatus> {
+    if (!isNative) return 'granted';
+
+    try {
+      const status = await Camera.checkPermissions();
+      if (status.camera === 'granted') return 'granted';
+      if (status.camera === 'denied') return 'denied';
+      return 'prompt';
+    } catch (error) {
+      console.error('[CameraService] Permission check failed:', error);
+      return 'denied';
+    }
   },
 
   /**

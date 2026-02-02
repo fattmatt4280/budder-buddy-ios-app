@@ -103,10 +103,25 @@ npx cap run ios
 ### Permission Dialogs Not Appearing
 - Ensure the privacy strings are correctly added to Info.plist
 - Clean build folder (Cmd + Shift + K) and rebuild
+- The app uses `@capacitor/camera` to trigger iOS permission dialogs - make sure it's installed and synced
 
 ### Camera/Photos Not Working
 - Check that the privacy strings match the keys exactly
 - Verify the app has the required permissions in Settings > Privacy
+- If permission was previously denied, go to **Settings > Budder Buddy > Camera** and enable it manually
+- Try deleting and reinstalling the app to reset permissions
+
+### Camera Permission Flow
+The app uses two camera-related plugins:
+1. **`@capacitor/camera`** - Used for permission checking and requesting (has proper iOS permission APIs)
+2. **`@capacitor-community/camera-preview`** - Used for the live camera preview overlay
+
+The permission flow:
+1. App checks permission status via `@capacitor/camera`
+2. If not granted, shows a friendly prompt explaining why camera access is needed
+3. User taps "Allow Camera Access" which triggers the iOS permission dialog
+4. If granted, starts the camera preview
+5. If denied, shows instructions to enable in Settings
 
 ### Ghost Camera Preview Not Visible
 The app uses `@capacitor-community/camera-preview` which renders the camera **behind** a transparent webview.
