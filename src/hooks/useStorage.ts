@@ -51,14 +51,19 @@ function getFromStorage<T>(key: string, defaultValue: T): T {
   }
 }
 
-function setToStorage<T>(key: string, value: T): void {
+// Module-level update counter to track which hook instance made the change
+let updateId = 0;
+const lastUpdateBy: Record<string, number> = {};
+
+function setToStorage<T>(key: string, value: T, instanceId: number): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    lastUpdateBy[key] = instanceId;
 
-    // Keep multiple hook instances in sync within the same tab
+    // Dispatch event for other hook instances in the same tab
     window.dispatchEvent(
       new CustomEvent('budder-storage', {
-        detail: { key },
+        detail: { key, instanceId },
       })
     );
   } catch (error) {
@@ -73,7 +78,7 @@ export function useTattoos() {
   );
 
   useEffect(() => {
-    setToStorage(STORAGE_KEYS.TATTOOS, tattoos);
+    setToStorage(STORAGE_KEYS.TATTOOS, tattoos, 0);
   }, [tattoos]);
 
   const addTattoo = useCallback((tattoo: Tattoo) => {
@@ -105,7 +110,7 @@ export function useCheckins() {
   );
 
   useEffect(() => {
-    setToStorage(STORAGE_KEYS.CHECKINS, checkins);
+    setToStorage(STORAGE_KEYS.CHECKINS, checkins, 0);
   }, [checkins]);
 
   const addCheckin = useCallback((checkin: DailyCheckin) => {
@@ -142,7 +147,7 @@ export function usePhotos() {
   );
 
   useEffect(() => {
-    setToStorage(STORAGE_KEYS.PHOTOS, photos);
+    setToStorage(STORAGE_KEYS.PHOTOS, photos, 0);
   }, [photos]);
 
   const addPhoto = useCallback((photo: PhotoEntry) => {
@@ -176,30 +181,27 @@ export function usePhotos() {
   return { photos, addPhoto, updatePhoto, deletePhoto, getPhotosForTattoo, getPhotosForDay };
 }
 
-// Settings Hook
+// Settings Hook - with sync across multiple instances
 export function useSettings() {
+  // Each hook instance gets a unique ID
+  const instanceId = useRef(++updateId);
+  
   const [settings, setSettings] = useState<AppSettings>(() =>
     getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   );
-  
-  // Track if we're the source of the change to prevent sync loops
-  const isLocalUpdate = useRef(false);
 
   // Persist local changes
   useEffect(() => {
-    isLocalUpdate.current = true;
-    setToStorage(STORAGE_KEYS.SETTINGS, settings);
-    // Reset flag after a microtask to allow the event to be processed
-    Promise.resolve().then(() => {
-      isLocalUpdate.current = false;
-    });
+    setToStorage(STORAGE_KEYS.SETTINGS, settings, instanceId.current);
   }, [settings]);
 
   // Sync across multiple hook instances (same tab) + other tabs
   useEffect(() => {
-    const syncFromStorage = () => {
+    const syncFromStorage = (sourceInstanceId?: number) => {
       // Skip if this was triggered by our own update
-      if (isLocalUpdate.current) return;
+      if (sourceInstanceId === instanceId.current) return;
+      if (lastUpdateBy[STORAGE_KEYS.SETTINGS] === instanceId.current) return;
+      
       setSettings(getFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS));
     };
 
@@ -208,8 +210,10 @@ export function useSettings() {
     };
 
     const onBudderStorage = (e: Event) => {
-      const ce = e as CustomEvent<{ key: string }>;
-      if (ce.detail?.key === STORAGE_KEYS.SETTINGS) syncFromStorage();
+      const ce = e as CustomEvent<{ key: string; instanceId?: number }>;
+      if (ce.detail?.key === STORAGE_KEYS.SETTINGS) {
+        syncFromStorage(ce.detail.instanceId);
+      }
     };
 
     window.addEventListener('storage', onStorage);
