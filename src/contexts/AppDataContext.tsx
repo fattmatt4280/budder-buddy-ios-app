@@ -5,6 +5,36 @@ import { useCloudTattoos } from '@/hooks/useCloudTattoos';
 import { useCloudSettings } from '@/hooks/useCloudSettings';
 import { useCloudCheckins } from '@/hooks/useCloudCheckins';
 
+// Default settings for fallback
+const DEFAULT_SETTINGS: AppSettings = {
+  notificationsEnabled: false,
+  notifSchedule: {
+    morningTime: '09:00',
+    eveningTime: '20:00',
+    frequencyPreset: '2_per_day',
+  },
+  quietHoursEnabled: true,
+  wakeTime: '09:00',
+  bedTime: '23:00',
+  reminderTypesEnabled: {
+    wash: true,
+    moisturize: true,
+    checkin: true,
+  },
+  snoozeMinutes: '60',
+  pausedUntil: null,
+  cloudSyncEnabled: false,
+  selectedTattooId: null,
+  hasCompletedOnboarding: false,
+  hasAcknowledgedDisclaimer: false,
+  hasCompletedReminderSetup: false,
+  remindersJustSaved: false,
+  todayStartHereDismissed: false,
+  notificationPermissionStatus: null,
+  sunGuardEnabled: false,
+  activityRemindersEnabled: true,
+};
+
 interface AppDataContextType {
   // Tattoos
   tattoos: Tattoo[];
@@ -31,7 +61,27 @@ interface AppDataContextType {
   isLoading: boolean;
 }
 
-const AppDataContext = createContext<AppDataContextType | null>(null);
+// Fallback context value for when provider isn't ready (hot-reload edge cases)
+const fallbackContext: AppDataContextType = {
+  tattoos: [],
+  addTattoo: () => {},
+  updateTattoo: () => {},
+  deleteTattoo: () => {},
+  getTattoo: () => undefined,
+  settings: DEFAULT_SETTINGS,
+  updateSettings: () => {},
+  resetSettings: () => {},
+  checkins: [],
+  addCheckin: () => {},
+  updateCheckin: () => {},
+  getCheckinForDay: () => undefined,
+  getCheckinsForTattoo: () => [],
+  userId: null,
+  isAuthenticated: false,
+  isLoading: true,
+};
+
+const AppDataContext = createContext<AppDataContextType>(fallbackContext);
 
 interface AppDataProviderProps {
   children: ReactNode;
@@ -96,11 +146,7 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
 }
 
 export function useAppData() {
-  const context = useContext(AppDataContext);
-  if (!context) {
-    throw new Error('useAppData must be used within an AppDataProvider');
-  }
-  return context;
+  return useContext(AppDataContext);
 }
 
 // Convenience hooks that mimic the old API
