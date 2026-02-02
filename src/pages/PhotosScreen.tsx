@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Plus, Trash2, X, Image as ImageIcon, Cloud, HardDrive, LogIn, Check, Loader2 } from 'lucide-react';
+import { Camera, Plus, Trash2, X, Image as ImageIcon, Cloud, HardDrive, LogIn, Check, Loader2, Archive, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -255,6 +255,34 @@ export default function PhotosScreen() {
     </div>
   );
 
+  // Ink Vault Button Component
+  const InkVaultButton = () => (
+    <div className="px-6 mb-4">
+      <button
+        onClick={() => navigate('/ink-vault')}
+        className="w-full liquid-glass-card bg-gradient-to-r from-success/15 via-success/5 to-transparent rounded-2xl p-4 border border-success/20 text-left hover:border-success/40 transition-all duration-200 group"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center backdrop-blur-sm">
+            <Archive className="w-6 h-6 text-success" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-foreground">Ink Vault</h3>
+              <span className="text-xs liquid-glass-light text-success px-2 py-0.5 rounded-full font-medium">
+                Archive
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Your complete tattoo history & healing diaries
+            </p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-success group-hover:translate-x-1 transition-transform" />
+        </div>
+      </button>
+    </div>
+  );
+
   if (!tattoo) {
     return (
       <div className="min-h-screen bg-background safe-area-top">
@@ -265,6 +293,9 @@ export default function PhotosScreen() {
         
         {/* Stats Overview - always show */}
         <StatsOverview />
+
+        {/* Ink Vault Button */}
+        <InkVaultButton />
         
         <div className="px-6 mb-4">
           <Alert className="border-primary/30 bg-primary/5">
@@ -365,6 +396,9 @@ export default function PhotosScreen() {
 
       {/* Stats Overview */}
       <StatsOverview />
+
+      {/* Ink Vault Button */}
+      <InkVaultButton />
 
       {/* Storage indicator */}
       {isAuthenticated ? (
