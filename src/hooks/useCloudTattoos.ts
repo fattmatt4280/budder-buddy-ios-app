@@ -98,6 +98,12 @@ export function useCloudTattoos(userId: string | null) {
         const cloudTattoos = (cloudData || []).map(cloudToLocal);
         const localTattoos = getLocalTattoos();
 
+        logger.log('[useCloudTattoos] sync start', {
+          userId,
+          cloudCount: cloudTattoos.length,
+          localCount: localTattoos.length,
+        });
+
         if (cloudTattoos.length === 0 && localTattoos.length > 0) {
           // Cloud is empty but local has data - import to cloud
           logger.log('Importing local tattoos to cloud:', localTattoos.length);
@@ -114,6 +120,59 @@ export function useCloudTattoos(userId: string | null) {
           }
           // Keep using local tattoos
           setTattoos(localTattoos);
+        } else if (cloudTattoos.length === 0 && localTattoos.length === 0) {
+          // Both cloud and local are empty, but photos might exist (photos are always cloud-backed).
+          // Recover tattoo stubs from distinct photo tattoo_ids so photos become visible.
+          const { data: photoRows, error: photoErr } = await supabase
+            .from('photos')
+            .select('tattoo_id, photo_date')
+            .eq('user_id', userId)
+            .order('photo_date', { ascending: true });
+
+          if (photoErr) {
+            logger.error('Failed to recover tattoos from photos:', photoErr);
+          } else {
+            const distinct = new Map<string, string>();
+            for (const row of photoRows || []) {
+              if (!distinct.has(row.tattoo_id)) {
+                distinct.set(row.tattoo_id, row.photo_date);
+              }
+            }
+
+            if (distinct.size > 0) {
+              logger.log('Recovering tattoo stubs from photos:', distinct.size);
+              const toInsert = Array.from(distinct.entries()).map(([localId, firstPhotoDate]) => ({
+                user_id: userId,
+                local_id: localId,
+                tattoo_date: firstPhotoDate,
+                body_location: 'Other',
+                size_tier: 'Medium',
+                ink_type: 'BlackGrey',
+                notes: 'Recovered from photos - please update details',
+                is_healed: false,
+              }));
+
+              // Types may not be regenerated yet, so assert to any
+              const { error: insertErr } = await (supabase.from('user_tattoos') as any).insert(toInsert);
+              if (insertErr) {
+                logger.error('Failed to insert recovered tattoos:', insertErr);
+              }
+
+              // Fetch again after recovery
+              const { data: recoveredData, error: recoveredErr } = await supabase
+                .from('user_tattoos')
+                .select('*')
+                .eq('user_id', userId);
+
+              if (recoveredErr) {
+                logger.error('Failed to fetch recovered tattoos:', recoveredErr);
+              } else {
+                const recoveredTattoos = (recoveredData || []).map(cloudToLocal);
+                setTattoos(recoveredTattoos);
+                setLocalTattoos(recoveredTattoos);
+              }
+            }
+          }
         } else if (cloudTattoos.length > 0) {
           // Use cloud data as source of truth
           setTattoos(cloudTattoos);
