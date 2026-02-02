@@ -136,12 +136,18 @@ export default function AuthScreen() {
 
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
-        {/* Mascot */}
-        <img 
-          src={mascotImage} 
-          alt="Budder Buddy mascot" 
-          className="w-24 h-24 mb-4 drop-shadow-lg"
-        />
+        {/* Mascot with container */}
+        <div className="relative mb-6">
+          <div className="w-56 h-56 rounded-3xl bg-gradient-to-br from-primary/80 to-primary shadow-2xl flex items-center justify-center overflow-hidden">
+            <img 
+              src={mascotImage} 
+              alt="Budder Buddy mascot" 
+              className="w-44 h-44 drop-shadow-lg"
+            />
+          </div>
+          {/* Sparkle effect */}
+          <div className="absolute -top-2 -right-2 text-2xl animate-pulse">✦</div>
+        </div>
         
         <h1 className="text-2xl font-bold text-foreground mb-1">
           {mode === 'login' ? 'Welcome Back!' : 'Create Account'}
