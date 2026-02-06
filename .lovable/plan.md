@@ -1,110 +1,105 @@
 
 
-# Fix iOS Camera Permissions for Ghost Camera
+# Fix iOS Notifications Not Working in TestFlight
 
 ## Problem Summary
-The camera isn't asking for permissions on iOS TestFlight because the `@capacitor-community/camera-preview` plugin doesn't have permission-requesting methods. When you try to start the camera without granted permissions, iOS silently denies access instead of showing the permission prompt.
+Several issues in the notification service prevent notifications from firing on iOS TestFlight builds. The core problems are: unregistered action types that can cause iOS to silently suppress notifications, and production logging being suppressed which makes it impossible to debug on TestFlight.
 
-## Solution Overview
-We'll add the official `@capacitor/camera` plugin which provides proper permission methods, then update the camera service to request permissions before starting the camera preview.
+## Issues Found
+
+### Issue 1: Unregistered Action Type (Most Likely Cause)
+Every scheduled notification includes `actionTypeId: 'REMINDER_ACTION'` (line 120 of `notificationService.ts`), but the app **never calls** `LocalNotifications.registerActionTypes()` to define this action type. On iOS, referencing an unregistered action type can cause the system to silently drop or suppress the notification.
+
+### Issue 2: No Initialization on App Launch
+The notification listeners are registered in `main.tsx`, but the app never re-schedules pending notifications on launch. If the app was killed or updated via TestFlight, all previously scheduled notifications may be lost. There is no "boot-up" check to verify and reschedule.
+
+### Issue 3: Silent Permission Check Failure
+In `scheduleReminders()`, the permission check on line 73-77 returns early if permission status is not `'granted'`. If there is any timing issue where the permission status returns `'prompt'` instead of `'granted'` (even after the user accepted), all scheduling is silently skipped. Since `logger.log` is suppressed in production (TestFlight), this failure is completely invisible.
+
+### Issue 4: No Debug Visibility in TestFlight
+The `logger.ts` utility suppresses all `log`, `warn`, and `debug` calls in production. TestFlight builds are production builds, so none of the notification scheduling logs appear. This makes it impossible to know if notifications were actually scheduled or if permission checks failed.
 
 ---
 
-## Implementation Steps
+## Implementation Plan
 
-### Step 1: Install the @capacitor/camera Plugin
-Add the official Capacitor camera plugin which has permission methods:
-- Install `@capacitor/camera` package
-- This plugin provides `checkPermissions()` and `requestPermissions()` methods
+### Step 1: Register Action Types on Startup
+Add a call to `LocalNotifications.registerActionTypes()` in the notification service initialization. This tells iOS about the `REMINDER_ACTION` category so notifications using it are not suppressed.
 
-### Step 2: Update Camera Service with Permission Handling
-Modify `src/lib/cameraService.ts` to:
-- Import `Camera` from `@capacitor/camera`
-- Add a new `requestCameraPermission()` function that:
-  - Checks current permission status
-  - Requests permission if not granted
-  - Returns `true` if granted, `false` if denied
-- Modify the `start()` function to request permission first before starting the preview
-- Add an `openSettings()` function to guide users to app settings if permission was permanently denied
+```text
+Location: src/lib/notificationService.ts
+Change: Add an initialize() method that registers action types
+Call it from: src/main.tsx during app startup
+```
 
-### Step 3: Update Ghost Camera Screen for Permission Flow
-Modify `src/pages/GhostCameraScreen.tsx` to:
-- Check permission status on mount
-- Show a friendly permission request screen if permission hasn't been granted
-- Handle the "permanently denied" case by showing a button to open Settings
-- Only start the camera preview after permission is confirmed
+### Step 2: Remove actionTypeId from Scheduled Notifications
+As a safety measure, remove the `actionTypeId: 'REMINDER_ACTION'` from the notification schedule call. The notification tap handler already works by listening to `localNotificationActionPerformed` events regardless of action type. Removing this eliminates the risk of iOS suppressing notifications due to unregistered types.
 
-### Step 4: Update iOS Documentation
-Update `docs/IOS_SETUP.md` to note that `@capacitor/camera` is now also required and its permissions are shared with camera-preview.
+```text
+Location: src/lib/notificationService.ts, line 120
+Change: Remove the actionTypeId property from the notification object
+```
+
+### Step 3: Add Boot-Up Notification Verification
+After app launch, check if notifications are enabled in settings and if any are actually pending. If settings say notifications should be active but none are pending (e.g., after a TestFlight update), automatically reschedule them.
+
+```text
+Location: src/main.tsx or a new useNotificationBootstrap hook
+Change: After auth/settings load, verify pending count matches expectations
+        and reschedule if needed
+```
+
+### Step 4: Add Critical Notification Logging
+For notification-related operations, use `console.error` (which is never suppressed) for critical status messages so they appear in TestFlight device logs. This will help verify the fix is working.
+
+```text
+Location: src/lib/notificationService.ts
+Change: Use console.error for key milestone logs:
+  - Permission check result
+  - Number of notifications scheduled
+  - Any scheduling failures
+```
+
+### Step 5: Add a "Send Test Notification" Button in Settings
+Add a debug/test button in the Settings screen that schedules a single notification 5 seconds in the future. This gives you an immediate way to verify notifications are working on the device without waiting for a scheduled time.
+
+```text
+Location: src/pages/SettingsScreen.tsx
+Change: Add a "Test Notification" button in the Reminders section
+        that fires a test notification after 5 seconds
+```
 
 ---
 
 ## Technical Details
 
-### Permission Flow Diagram
-```text
-User taps camera button
-        │
-        ▼
-Check camera permission status
-        │
-        ├─── Already Granted ───► Start camera preview
-        │
-        ├─── Not Yet Asked ───► Show permission dialog
-        │                              │
-        │                              ├─── User allows ───► Start camera
-        │                              └─── User denies ───► Show error
-        │
-        └─── Previously Denied ───► Show "Open Settings" button
-```
+### Files to Modify
 
-### New Camera Permission Method (cameraService.ts)
-```typescript
-import { Camera, CameraPermissionType } from '@capacitor/camera';
+1. **src/lib/notificationService.ts**
+   - Add `initialize()` method to register action types
+   - Remove `actionTypeId` from scheduled notifications
+   - Add `sendTestNotification()` method for debugging
+   - Add `verifyAndReschedule()` method for boot-up check
+   - Upgrade critical log statements to `console.error` for TestFlight visibility
 
-async requestCameraPermission(): Promise<'granted' | 'denied' | 'prompt'> {
-  if (!isNative) return 'granted'; // Web doesn't need this
+2. **src/main.tsx**
+   - Call `notificationService.initialize()` during startup
 
-  try {
-    const status = await Camera.checkPermissions();
-    
-    if (status.camera === 'granted') {
-      return 'granted';
-    }
-    
-    if (status.camera === 'denied') {
-      // User previously denied - can't re-prompt, need to go to Settings
-      return 'denied';
-    }
-    
-    // Permission not yet asked - request it
-    const request = await Camera.requestPermissions({ permissions: ['camera'] });
-    return request.camera === 'granted' ? 'granted' : 'denied';
-  } catch (error) {
-    console.error('[CameraService] Permission check failed:', error);
-    return 'denied';
-  }
-}
-```
+3. **src/pages/SettingsScreen.tsx**
+   - Add "Send Test Notification" button in the Reminders section
 
-### Updated Ghost Camera Screen Flow
-The screen will show different UI states:
-1. **Loading** - Checking permission status
-2. **Permission Required** - Button to request permission (first time)
-3. **Permission Denied** - Button to open Settings with explanation
-4. **Camera Ready** - Normal camera preview with ghost overlay
+4. **src/components/layout/AppLayout.tsx** (or a new hook)
+   - Add boot-up notification verification that runs once when the app loads with valid settings
 
 ---
 
 ## After Implementation
 
-After I implement these changes, you'll need to:
+After these changes are deployed, you will need to:
 1. Pull the latest code from GitHub
-2. Run `npm install` to get the new `@capacitor/camera` package
-3. Run `npx cap sync ios` to sync the new plugin
-4. Rebuild and test on device/TestFlight
-
-The permission dialog should now appear when you first try to use the camera. If you previously denied permission during testing, you may need to:
-- Go to iOS Settings > Budder Buddy > Camera and enable it manually
-- Or delete and reinstall the app to reset permissions
+2. Run `npm install` (no new dependencies needed)
+3. Run `npx cap sync ios`
+4. Rebuild and deploy to TestFlight
+5. On the device, go to Settings and tap "Send Test Notification" to verify it works
+6. If you previously denied notification permission, delete and reinstall the app to reset permissions
 
