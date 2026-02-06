@@ -7,18 +7,20 @@ import { logger } from "./lib/logger";
 
 // Initialize secure auth storage before rendering
 // This migrates tokens from localStorage to Keychain/Keystore on native platforms
-initializeSecureAuth().then(() => {
+initializeSecureAuth().then(async () => {
+  // Initialize notification service (registers action types on iOS)
+  await notificationService.initialize();
+
   // Register notification listeners for handling taps
   notificationService.registerListeners((type) => {
     logger.log('[App] Notification tapped, type:', type);
     // Navigate to home screen when notification is tapped
-    // The app will naturally show the Today screen
     window.location.href = '/';
   });
   
   createRoot(document.getElementById("root")!).render(<App />);
 }).catch((error) => {
-  logger.error('[App] Failed to initialize secure auth:', error);
+  logger.error('[App] Failed to initialize:', error);
   // Render app anyway to prevent blank screen
   createRoot(document.getElementById("root")!).render(<App />);
 });

@@ -1,6 +1,8 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Clock, Camera, BookOpen, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNotificationBootstrap } from '@/hooks/useNotificationBootstrap';
+import { useAppData } from '@/contexts/AppDataContext';
 
 const tabs = [
   { id: 'home', label: 'Today', icon: Home, path: '/' },
@@ -13,6 +15,10 @@ const tabs = [
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { settings, isLoading } = useAppData();
+
+  // Verify and reschedule notifications on app boot
+  useNotificationBootstrap(settings, !isLoading);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';

@@ -79,6 +79,7 @@ export default function SettingsScreen() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
 
   const selectedTattoo = tattoos.find(t => t.id === settings.selectedTattooId) || tattoos[0];
 
@@ -549,6 +550,27 @@ export default function SettingsScreen() {
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Reschedule reminders
+                  </Button>
+                  <Button 
+                    onClick={async () => {
+                      setSendingTest(true);
+                      const success = await notificationService.sendTestNotification();
+                      setSendingTest(false);
+                      toast({
+                        title: success ? 'Test sent!' : 'Test failed',
+                        description: success 
+                          ? 'You should receive a notification in ~5 seconds.' 
+                          : 'Could not schedule test notification. Check permissions.',
+                        variant: success ? 'default' : 'destructive',
+                      });
+                    }}
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full mt-2"
+                    disabled={sendingTest}
+                  >
+                    <Bell className="w-4 h-4 mr-2" />
+                    {sendingTest ? 'Sending...' : 'Send test notification'}
                   </Button>
                 </div>
               </>
