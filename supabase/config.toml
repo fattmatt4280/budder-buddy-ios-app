@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.validate-receipt]
 verify_jwt = false
+
+[functions.healing-guide]
+verify_jwt = false
