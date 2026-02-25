@@ -1,0 +1,1 @@
+ALTER TABLE public.user_tattoos ADD COLUMN IF NOT EXISTS referred_by_artist_code TEXT DEFAULT NULL;

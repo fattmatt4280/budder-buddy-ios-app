@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useTattoos, useSettings, useCheckins, usePhotos, generateId } from '@/hooks/useStorage';
-import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist, HEALING_PHASES } from '@/types';
+import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist, DailyCheckin, HEALING_PHASES } from '@/types';
 import { getDayContent, getAdjustedContent } from '@/data/healingTimeline';
 import { getDailyTip, getGenericTip } from '@/data/dailyTips'; // Day-specific tips
 import { cn } from '@/lib/utils';
@@ -71,7 +71,7 @@ export default function TodayScreen() {
   const navigate = useNavigate();
   const { tattoos, getTattoo } = useTattoos();
   const { settings, updateSettings } = useSettings();
-  const { getCheckinForDay, addCheckin, updateCheckin } = useCheckins();
+  const { getCheckinForDay, getCheckinsForTattoo, addCheckin, updateCheckin } = useCheckins();
   const { getPhotosForTattoo } = usePhotos();
   
   const checklistRef = useRef<HTMLDivElement>(null);
@@ -93,6 +93,21 @@ export default function TodayScreen() {
   // Get existing checkin for this tattoo/day (needed before early return)
   const dayNumberForCheckin = tattoo ? getDayNumber(tattoo.tattooDate) : 0;
   const existingCheckinForHook = tattoo ? getCheckinForDay(tattoo.id, dayNumberForCheckin) : undefined;
+
+  // Calculate current streak
+  const currentStreak = useMemo(() => {
+    if (!tattoo) return 0;
+    const allCheckins = getCheckinsForTattoo(tattoo.id);
+    if (allCheckins.length === 0) return 0;
+    const checkedDays = new Set(allCheckins.map(c => c.dayNumber));
+    const today = getDayNumber(tattoo.tattooDate);
+    let streak = 0;
+    for (let d = today; d >= 0; d--) {
+      if (checkedDays.has(d)) streak++;
+      else break;
+    }
+    return streak;
+  }, [tattoo, getCheckinsForTattoo]);
 
   // Generate scheduled reminders based on settings
   const scheduledReminders = useMemo(() => {
@@ -325,7 +340,7 @@ export default function TodayScreen() {
           </div>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress bar + Streak */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Healing Progress</span>
@@ -337,6 +352,14 @@ export default function TodayScreen() {
               style={{ width: `${progress}%` }}
             />
           </div>
+          {/* Streak counter */}
+          {currentStreak > 0 && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-sm">🔥</span>
+              <span className="text-xs font-medium text-foreground">{currentStreak}-day streak</span>
+              <span className="text-xs text-muted-foreground">· Keep it going!</span>
+            </div>
+          )}
         </div>
       </div>
 

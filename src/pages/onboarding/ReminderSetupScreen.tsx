@@ -116,9 +116,8 @@ export default function ReminderSetupScreen() {
 
   const handleContinue = () => {
     setShowSuccessModal(false);
-    // Complete onboarding THEN navigate to prevent 404
     updateSettings({ hasCompletedOnboarding: true });
-    navigate('/');
+    navigate('/checkin');
   };
 
   const handleSkip = () => {

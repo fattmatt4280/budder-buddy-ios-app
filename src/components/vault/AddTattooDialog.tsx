@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calendar, MapPin, Ruler, Palette, User, Store, FileText, Tag } from 'lucide-react';
 import { PremiumGate } from '@/components/premium/PremiumGate';
+import { analytics } from '@/lib/analyticsService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,6 +59,7 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
 
     addTattoo(newTattoo);
     updateSettings({ selectedTattooId: newTattoo.id });
+    analytics.track('tattoo_added', { bodyLocation: formData.bodyLocation });
 
     toast({
       title: 'Tattoo added!',
@@ -213,45 +215,54 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
             </div>
           </div>
 
-          {/* Artist Name */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <User className="w-4 h-4 text-muted-foreground" />
-              Artist name (optional)
-            </Label>
-            <Input
-              value={formData.artistName}
-              onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
-              placeholder="Who did your tattoo?"
-            />
-          </div>
+          {/* Optional Details - Collapsed */}
+          <details className="group">
+            <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer py-2 hover:text-foreground transition-colors">
+              <span className="text-xs bg-muted px-2 py-0.5 rounded-full">Optional</span>
+              Artist, shop &amp; notes
+            </summary>
+            <div className="space-y-4 pt-2 animate-fade-in">
+              {/* Artist Name */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-muted-foreground">
+                  <User className="w-4 h-4" />
+                  Artist name
+                </Label>
+                <Input
+                  value={formData.artistName}
+                  onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
+                  placeholder="Who did your tattoo?"
+                />
+              </div>
 
-          {/* Shop Name */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Store className="w-4 h-4 text-muted-foreground" />
-              Shop name (optional)
-            </Label>
-            <Input
-              value={formData.shopName}
-              onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
-              placeholder="Where did you get it?"
-            />
-          </div>
+              {/* Shop Name */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-muted-foreground">
+                  <Store className="w-4 h-4" />
+                  Shop name
+                </Label>
+                <Input
+                  value={formData.shopName}
+                  onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
+                  placeholder="Where did you get it?"
+                />
+              </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-muted-foreground" />
-              Notes (optional)
-            </Label>
-            <Textarea
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Any details you want to remember..."
-              rows={2}
-            />
-          </div>
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-muted-foreground">
+                  <FileText className="w-4 h-4" />
+                  Notes
+                </Label>
+                <Textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Any details you want to remember..."
+                  rows={2}
+                />
+              </div>
+            </div>
+          </details>
         </div>
 
         <div className="flex gap-3 mt-6">

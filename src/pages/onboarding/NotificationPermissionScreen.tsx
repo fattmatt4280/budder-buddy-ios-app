@@ -4,6 +4,7 @@ import { Bell, BellOff, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSettings } from '@/hooks/useStorage';
 import { notificationService } from '@/lib/notificationService';
+import { analytics } from '@/lib/analyticsService';
 
 export default function NotificationPermissionScreen() {
   const navigate = useNavigate();
@@ -18,13 +19,13 @@ export default function NotificationPermissionScreen() {
       const result = await notificationService.requestPermission();
       const granted = result.display === 'granted';
       
-      // Update settings with actual permission status
       updateSettings({ 
         notificationsEnabled: granted,
         notificationPermissionStatus: granted ? 'granted' : 'denied',
       });
-      
+
       if (granted) {
+        analytics.track('notifications_enabled');
         // Permission granted - proceed to reminder setup
         navigate('/reminder-setup');
       } else {
@@ -51,7 +52,7 @@ export default function NotificationPermissionScreen() {
       notificationPermissionStatus: 'denied',
       hasCompletedOnboarding: true 
     });
-    navigate('/');
+    navigate('/checkin');
   };
 
   return (
