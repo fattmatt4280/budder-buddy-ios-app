@@ -248,6 +248,7 @@ export type Database = {
           local_id: string
           name: string | null
           notes: string | null
+          referred_by_artist_code: string | null
           shop_name: string | null
           size_tier: string
           tattoo_date: string
@@ -265,6 +266,7 @@ export type Database = {
           local_id: string
           name?: string | null
           notes?: string | null
+          referred_by_artist_code?: string | null
           shop_name?: string | null
           size_tier: string
           tattoo_date: string
@@ -282,6 +284,7 @@ export type Database = {
           local_id?: string
           name?: string | null
           notes?: string | null
+          referred_by_artist_code?: string | null
           shop_name?: string | null
           size_tier?: string
           tattoo_date?: string

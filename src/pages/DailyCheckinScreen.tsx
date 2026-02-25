@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppData } from '@/contexts/AppDataContext';
-import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist } from '@/types';
+import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist, DailyCheckin } from '@/types';
 import { cn } from '@/lib/utils';
 import mascotImage from '@/assets/mascot.png';
 import { generateId } from '@/hooks/useStorage';
+import FirstCheckinSuccess from '@/components/checkin/FirstCheckinSuccess';
+import { analytics } from '@/lib/analyticsService';
 
 const CHECKLIST_ITEMS = [
   { key: 'washed', label: 'Washed gently', icon: Droplet, emoji: '🧼' },
@@ -35,18 +37,39 @@ const OBSERVATION_TAGS = [
   { key: 'healing_well', label: 'Healing nicely', emoji: '💚' },
 ];
 
-function getScoreEmoji(score: number): string {
-  if (score >= 90) return '🏆';
-  if (score >= 70) return '⭐';
-  if (score >= 50) return '👍';
-  return '💪';
+function getConsistencyLabel(score: number): { label: string; emoji: string; color: string } {
+  if (score >= 80) return { label: 'Strong', emoji: '🏆', color: 'text-success' };
+  if (score >= 50) return { label: 'On Track', emoji: '⭐', color: 'text-primary' };
+  return { label: 'Needs Attention', emoji: '💪', color: 'text-amber-500' };
 }
 
-function getScoreMessage(score: number): string {
-  if (score >= 90) return 'Perfect aftercare!';
-  if (score >= 70) return 'Great job!';
-  if (score >= 50) return 'Keep it up!';
-  return 'Every check-in helps!';
+function calculateStreak(checkins: DailyCheckin[], tattooDate: string): { current: number; max: number } {
+  if (checkins.length === 0) return { current: 0, max: 0 };
+
+  // Build a set of checked-in day numbers
+  const checkedDays = new Set(checkins.map(c => c.dayNumber));
+  const today = getDayNumber(tattooDate);
+
+  let current = 0;
+  // Count backwards from today
+  for (let d = today; d >= 0; d--) {
+    if (checkedDays.has(d)) current++;
+    else break;
+  }
+
+  // Max streak
+  const sortedDays = [...checkedDays].sort((a, b) => a - b);
+  let max = 0;
+  let run = 0;
+  let prev = -2;
+  for (const d of sortedDays) {
+    if (d === prev + 1) run++;
+    else run = 1;
+    if (run > max) max = run;
+    prev = d;
+  }
+
+  return { current, max };
 }
 
 export default function DailyCheckinScreen() {
@@ -71,6 +94,7 @@ export default function DailyCheckinScreen() {
   const [noteText, setNoteText] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [selectedObs, setSelectedObs] = useState<string[]>([]);
+  const [showFirstCheckinSuccess, setShowFirstCheckinSuccess] = useState(false);
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
 
@@ -81,7 +105,7 @@ export default function DailyCheckinScreen() {
 
   const existingCheckin = tattoo ? getCheckinForDay(tattoo.id, dayNumber) : undefined;
 
-  // Healing journey score: average of all check-in scores
+  // Healing consistency score: average of all check-in scores
   const healingScore = useMemo(() => {
     if (!tattoo) return 0;
     const allCheckins = getCheckinsForTattoo(tattoo.id);
@@ -96,7 +120,16 @@ export default function DailyCheckinScreen() {
     return Math.round(totalScore / allCheckins.length);
   }, [tattoo, getCheckinsForTattoo]);
 
-  // Total check-in streak
+  const consistency = getConsistencyLabel(healingScore);
+
+  // Streak calculation
+  const streak = useMemo(() => {
+    if (!tattoo) return { current: 0, max: 0 };
+    const allCheckins = getCheckinsForTattoo(tattoo.id);
+    return calculateStreak(allCheckins, tattoo.tattooDate);
+  }, [tattoo, getCheckinsForTattoo]);
+
+  // Total check-in count
   const totalCheckins = useMemo(() => {
     if (!tattoo) return 0;
     return getCheckinsForTattoo(tattoo.id).length;
@@ -212,32 +245,32 @@ export default function DailyCheckinScreen() {
       </div>
 
       <div className="px-4 space-y-4 pb-8">
-        {/* Healing Journey Score Card */}
+        {/* Healing Consistency Card */}
         <div className="liquid-glass-card rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Trophy className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-foreground">Healing Score</h3>
+              <h3 className="font-semibold text-foreground">Healing Consistency</h3>
             </div>
-            <span className="text-2xl">{getScoreEmoji(healingScore)}</span>
+            <span className="text-2xl">{consistency.emoji}</span>
           </div>
 
           <div className="flex items-end gap-4">
-            {/* Overall score */}
+            {/* Contextual state */}
             <div className="flex-1">
-              <div className="text-4xl font-bold text-foreground">{healingScore}%</div>
-              <p className="text-xs text-muted-foreground mt-1">{getScoreMessage(healingScore)}</p>
+              <div className={cn("text-2xl font-bold", consistency.color)}>{consistency.label}</div>
+              <p className="text-xs text-muted-foreground mt-1">{healingScore}% average completion</p>
             </div>
 
             {/* Stats */}
             <div className="flex gap-4 text-center">
               <div>
-                <div className="text-lg font-bold text-foreground">{totalCheckins}</div>
-                <p className="text-[10px] text-muted-foreground">Check-ins</p>
+                <div className="text-lg font-bold text-foreground">🔥 {streak.current}</div>
+                <p className="text-[10px] text-muted-foreground">Streak</p>
               </div>
               <div>
-                <div className="text-lg font-bold text-foreground">{progress}%</div>
-                <p className="text-[10px] text-muted-foreground">Healed</p>
+                <div className="text-lg font-bold text-foreground">{totalCheckins}</div>
+                <p className="text-[10px] text-muted-foreground">Check-ins</p>
               </div>
             </div>
           </div>
@@ -427,13 +460,27 @@ export default function DailyCheckinScreen() {
         {/* Done button */}
         {completedCount > 0 && (
           <Button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              // If first ever checkin, show success modal
+              if (totalCheckins <= 1) {
+                analytics.trackOnce('first_checkin_completed');
+                setShowFirstCheckinSuccess(true);
+              } else {
+                navigate('/');
+              }
+            }}
             className="w-full h-12 text-base font-semibold liquid-glass-primary text-primary-foreground"
           >
-            Done — {todayScore}% Today {getScoreEmoji(todayScore)}
+            Done — {getConsistencyLabel(todayScore).label} {getConsistencyLabel(todayScore).emoji}
           </Button>
         )}
       </div>
+
+      {/* First Checkin Success */}
+      <FirstCheckinSuccess
+        open={showFirstCheckinSuccess}
+        onClose={() => setShowFirstCheckinSuccess(false)}
+      />
     </div>
   );
 }

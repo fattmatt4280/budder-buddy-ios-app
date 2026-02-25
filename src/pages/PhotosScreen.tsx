@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Plus, Trash2, X, Image as ImageIcon, Cloud, HardDrive, LogIn, Check, Loader2, Archive, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,10 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import AddTattooDialog from '@/components/vault/AddTattooDialog';
 import FirstPhotoPromptDialog from '@/components/vault/FirstPhotoPromptDialog';
+import PhotoUpgradeModal from '@/components/premium/PhotoUpgradeModal';
+import TimelapseTeaser from '@/components/premium/TimelapseTeaser';
+import { useAppData } from '@/contexts/AppDataContext';
+import { analytics } from '@/lib/analyticsService';
 
 // Unified photo type for display
 interface DisplayPhoto {
@@ -67,6 +71,9 @@ export default function PhotosScreen() {
     bodyLocation: string;
     tattooDate: string;
   } | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  const { isPro } = useAppData();
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
   const currentDay = tattoo ? getDayNumber(tattoo.tattooDate) : 1;
@@ -185,6 +192,14 @@ export default function PhotosScreen() {
     const result = await uploadCloudPhoto(file, tattooId, dayNumber, newCaption || undefined);
     
     if (result.success) {
+      analytics.track('photo_uploaded', { photoCount: photos.length + 1 });
+
+      // Trigger upgrade modal on 3rd photo for free users
+      if (!isPro && photos.length + 1 >= 3) {
+        setShowUpgradeModal(true);
+        analytics.track('upgrade_viewed', { trigger: 'photo_count' });
+      }
+
       toast({
         title: 'Photo saved to cloud ☁️',
         description: 'Your photo is securely stored online.',
@@ -473,6 +488,10 @@ export default function PhotosScreen() {
                 </div>
               </div>
             ))}
+          {/* Timelapse Teaser for free users */}
+          <div className="px-6">
+            <TimelapseTeaser photoCount={photos.length} />
+          </div>
         </div>
       )}
 
@@ -626,6 +645,12 @@ export default function PhotosScreen() {
         tattooId={firstPhotoPrompt?.tattooId}
         tattooLocation={firstPhotoPrompt?.bodyLocation}
         tattooDate={firstPhotoPrompt?.tattooDate}
+      />
+
+      {/* Photo Upgrade Modal */}
+      <PhotoUpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
       />
     </div>
   );
