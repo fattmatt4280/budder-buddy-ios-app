@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Loader2, Bell } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Loader2, Bell } from 'lucide-react';
 import { z } from 'zod';
 import mascotImage from '@/assets/mascot.png';
 import { notificationService } from '@/lib/notificationService';
@@ -124,16 +124,6 @@ export default function AuthScreen() {
 
   return (
     <div className="fixed inset-0 flex flex-col gradient-background safe-area-top safe-area-bottom">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="w-10 h-10 rounded-full liquid-glass-light flex items-center justify-center"
-        >
-          <ArrowLeft className="w-5 h-5 text-foreground" />
-        </button>
-      </div>
-
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
         {/* Mascot */}
