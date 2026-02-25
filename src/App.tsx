@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
 
 // Layouts
@@ -36,7 +37,7 @@ import NotFound from "@/pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { settings, updateSettings, tattoos, isAuthenticated } = useAppData();
+  const { settings, updateSettings, tattoos, isAuthenticated, isLoading } = useAppData();
 
   // Self-heal onboarding state so users don't get stuck on the welcome screen
   // if they already have enough state to use the app.
@@ -58,6 +59,16 @@ function AppRoutes() {
     isAuthenticated,
     updateSettings,
   ]);
+
+  // Show loading spinner while auth/data is resolving to prevent
+  // flash to welcome screen on app restart for already-signed-in users
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // If onboarding not complete, redirect to welcome
   if (!settings.hasCompletedOnboarding) {

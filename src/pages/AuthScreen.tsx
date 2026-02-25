@@ -245,13 +245,6 @@ export default function AuthScreen() {
           </button>
         </div>
 
-        {/* Skip option */}
-        <button
-          onClick={() => navigate('/')}
-          className="mt-8 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Continue without an account
-        </button>
       </div>
     </div>
   );
