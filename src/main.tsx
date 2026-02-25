@@ -14,8 +14,8 @@ initializeSecureAuth().then(async () => {
   // Register notification listeners for handling taps
   notificationService.registerListeners((type) => {
     logger.log('[App] Notification tapped, type:', type);
-    // Navigate to home screen when notification is tapped
-    window.location.href = '/';
+    // Navigate to check-in screen when notification is tapped
+    window.location.href = '/checkin';
   });
   
   createRoot(document.getElementById("root")!).render(<App />);
