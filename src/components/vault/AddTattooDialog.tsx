@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Calendar, MapPin, Ruler, Palette, User, Store, FileText } from 'lucide-react';
+import { PremiumGate } from '@/components/premium/PremiumGate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,9 +20,10 @@ interface AddTattooDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onTattooAdded?: (tattooId: string, bodyLocation: string, tattooDate: string) => void;
+  premiumGated?: boolean;
 }
 
-export default function AddTattooDialog({ open, onOpenChange, onTattooAdded }: AddTattooDialogProps) {
+export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, premiumGated }: AddTattooDialogProps) {
   const { addTattoo } = useTattoos();
   const { updateSettings } = useSettings();
   const { toast } = useToast();
@@ -104,8 +106,13 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded }: A
 
         <h2 className="text-lg font-semibold text-foreground mb-4">Add New Tattoo</h2>
 
-        <div className="space-y-4">
-          {/* Date */}
+        {premiumGated ? (
+          <PremiumGate featureName="Unlimited Tattoos" active={true}>
+            <div />
+          </PremiumGate>
+        ) : (
+          <>
+          <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -238,6 +245,8 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded }: A
             Add to Vault
           </Button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

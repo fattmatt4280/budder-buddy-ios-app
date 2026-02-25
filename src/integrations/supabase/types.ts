@@ -71,6 +71,45 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          apple_original_transaction_id: string | null
+          apple_transaction_id: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          original_purchase_date: string | null
+          product_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          apple_original_transaction_id?: string | null
+          apple_transaction_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          original_purchase_date?: string | null
+          product_id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          apple_original_transaction_id?: string | null
+          apple_transaction_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          original_purchase_date?: string | null
+          product_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_checkins: {
         Row: {
           checkin_date: string

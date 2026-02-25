@@ -6,6 +6,7 @@ import { HealingStageCard } from "@/components/healing/HealingStageCard";
 import { HealingGuideChat } from "@/components/healing/HealingGuideChat";
 import { HEALING_STAGES, getNormalStages, getConcerningStages } from "@/data/healingStages";
 import { BookOpen, MessageCircle, AlertTriangle, CheckCircle } from "lucide-react";
+import { PremiumGate } from "@/components/premium/PremiumGate";
 
 export default function HealingGuideScreen() {
   const [expandedStage, setExpandedStage] = useState<string | null>(null);
@@ -97,7 +98,9 @@ export default function HealingGuideScreen() {
         </TabsContent>
 
         <TabsContent value="chat" className="mt-0 h-[calc(100vh-280px)]">
-          <HealingGuideChat />
+          <PremiumGate featureName="AI Healing Guide" compact>
+            <HealingGuideChat />
+          </PremiumGate>
         </TabsContent>
       </Tabs>
     </div>

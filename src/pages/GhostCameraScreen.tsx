@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getDayNumber } from "@/types";
 import { Loader2, Camera, ImageOff, Settings, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PremiumGate } from "@/components/premium/PremiumGate";
 
 interface LocationState {
   tattooId?: string;
@@ -16,6 +17,14 @@ interface LocationState {
 }
 
 export default function GhostCameraScreen() {
+  return (
+    <PremiumGate featureName="Ghost Camera">
+      <GhostCameraContent />
+    </PremiumGate>
+  );
+}
+
+function GhostCameraContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();

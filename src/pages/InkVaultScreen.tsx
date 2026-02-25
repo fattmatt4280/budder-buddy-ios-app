@@ -10,6 +10,8 @@ import mascotImage from '@/assets/mascot.png';
 import TattooVaultCard from '@/components/vault/TattooVaultCard';
 import AddTattooDialog from '@/components/vault/AddTattooDialog';
 import FirstPhotoPromptDialog from '@/components/vault/FirstPhotoPromptDialog';
+import { PremiumGate } from '@/components/premium/PremiumGate';
+import { useAppData } from '@/contexts/AppDataContext';
 
 export default function InkVaultScreen() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export default function InkVaultScreen() {
   const { checkins } = useCheckins();
   const { photos: localPhotos } = usePhotos();
   const { photos: cloudPhotos } = useCloudPhotos();
+  const { isPro } = useAppData();
   
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [expandedTattooId, setExpandedTattooId] = useState<string | null>(null);
@@ -107,7 +110,14 @@ export default function InkVaultScreen() {
             </div>
           </div>
           <Button
-            onClick={() => setAddDialogOpen(true)}
+            onClick={() => {
+              if (!isPro && tattoos.length >= 1) {
+                // Show upgrade prompt via PremiumGate in the dialog
+                setAddDialogOpen(true);
+              } else {
+                setAddDialogOpen(true);
+              }
+            }}
             size="sm"
             className="gap-2"
           >
@@ -208,11 +218,12 @@ export default function InkVaultScreen() {
         )}
       </div>
 
-      {/* Add Tattoo Dialog */}
+      {/* Add Tattoo Dialog - gated for 2nd+ tattoo */}
       <AddTattooDialog 
         open={addDialogOpen} 
         onOpenChange={setAddDialogOpen}
         onTattooAdded={handleTattooAdded}
+        premiumGated={!isPro && tattoos.length >= 1}
       />
 
       {/* First Photo Prompt Dialog */}
