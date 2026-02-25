@@ -30,6 +30,21 @@ export function usePremiumStatus(userId: string | null): PremiumStatus {
     }
 
     try {
+      // Check admin role first — admins get full Pro access
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (roleData) {
+        setIsPro(true);
+        setStatus('admin');
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('subscriptions')
         .select('status, expires_at')
