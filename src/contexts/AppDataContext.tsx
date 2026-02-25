@@ -34,6 +34,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   notificationPermissionStatus: null,
   sunGuardEnabled: false,
   activityRemindersEnabled: true,
+  longTermCareEnabled: false,
 };
 
 interface AppDataContextType {

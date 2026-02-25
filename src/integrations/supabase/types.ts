@@ -110,6 +110,54 @@ export type Database = {
         }
         Relationships: []
       }
+      tattoo_wishlist: {
+        Row: {
+          artist_name: string | null
+          body_location: string | null
+          budget: number | null
+          created_at: string
+          id: string
+          notes: string | null
+          reference_url: string | null
+          shop_name: string | null
+          sort_order: number
+          style: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          artist_name?: string | null
+          body_location?: string | null
+          budget?: number | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reference_url?: string | null
+          shop_name?: string | null
+          sort_order?: number
+          style?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          artist_name?: string | null
+          body_location?: string | null
+          budget?: number | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reference_url?: string | null
+          shop_name?: string | null
+          sort_order?: number
+          style?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_checkins: {
         Row: {
           checkin_date: string

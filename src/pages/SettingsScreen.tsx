@@ -682,6 +682,21 @@ export default function SettingsScreen() {
                 onCheckedChange={(checked) => updateSettings({ activityRemindersEnabled: checked })}
               />
             </div>
+
+            {/* Long-term Care Reminders */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5 text-primary" />
+                <div>
+                  <span className="font-medium text-foreground">Long-term Care</span>
+                  <p className="text-xs text-muted-foreground">SPF & moisturize reminders for healed tattoos</p>
+                </div>
+              </div>
+              <Switch
+                checked={settings.longTermCareEnabled ?? false}
+                onCheckedChange={(checked) => updateSettings({ longTermCareEnabled: checked })}
+              />
+            </div>
           </div>
         </section>
 
