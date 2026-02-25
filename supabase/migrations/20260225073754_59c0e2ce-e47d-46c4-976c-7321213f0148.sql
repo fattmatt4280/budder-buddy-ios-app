@@ -1,0 +1,1 @@
+ALTER TABLE public.subscriptions ALTER COLUMN product_id SET DEFAULT '20260224';

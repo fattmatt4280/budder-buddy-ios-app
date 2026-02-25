@@ -5,7 +5,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
-const PRODUCT_ID = 'budderbuddy_pro_monthly';
+const PRODUCT_ID = '20260224';
 
 export interface PurchaseResult {
   success: boolean;
