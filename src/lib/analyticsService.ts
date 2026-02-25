@@ -2,6 +2,7 @@
  * Lightweight analytics service for launch funnel measurement.
  * Logs events to console in dev; ready to pipe to a real backend later.
  */
+import { logger } from './logger';
 
 export type AnalyticsEvent =
   | 'app_installed'
@@ -32,7 +33,7 @@ class AnalyticsService {
     };
 
     // Dev logging — replace with real endpoint when ready
-    console.log('[Analytics]', JSON.stringify(entry));
+    logger.log('[Analytics]', JSON.stringify(entry));
   }
 
   /** Track only once per session (e.g. app_installed, first_checkin_completed). */

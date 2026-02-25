@@ -102,7 +102,49 @@ Deno.serve(async (req) => {
       console.error('Error deleting photos:', photosError);
     }
 
-    // 3. Delete profile
+    // 3. Delete checkins
+    const { error: checkinsError } = await supabaseAdmin
+      .from('user_checkins')
+      .delete()
+      .eq('user_id', userId);
+    if (checkinsError) console.error('Error deleting checkins:', checkinsError);
+
+    // 4. Delete tattoos
+    const { error: tattoosError } = await supabaseAdmin
+      .from('user_tattoos')
+      .delete()
+      .eq('user_id', userId);
+    if (tattoosError) console.error('Error deleting tattoos:', tattoosError);
+
+    // 5. Delete settings
+    const { error: settingsError } = await supabaseAdmin
+      .from('user_settings')
+      .delete()
+      .eq('user_id', userId);
+    if (settingsError) console.error('Error deleting settings:', settingsError);
+
+    // 6. Delete subscriptions
+    const { error: subsError } = await supabaseAdmin
+      .from('subscriptions')
+      .delete()
+      .eq('user_id', userId);
+    if (subsError) console.error('Error deleting subscriptions:', subsError);
+
+    // 7. Delete wishlist
+    const { error: wishlistError } = await supabaseAdmin
+      .from('tattoo_wishlist')
+      .delete()
+      .eq('user_id', userId);
+    if (wishlistError) console.error('Error deleting wishlist:', wishlistError);
+
+    // 8. Delete roles
+    const { error: rolesError } = await supabaseAdmin
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId);
+    if (rolesError) console.error('Error deleting roles:', rolesError);
+
+    // 9. Delete profile
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .delete()
@@ -112,7 +154,7 @@ Deno.serve(async (req) => {
       console.error('Error deleting profile:', profileError);
     }
 
-    // 4. Delete the user from auth
+    // 10. Delete the user from auth
     const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteUserError) {
