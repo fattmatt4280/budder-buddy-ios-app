@@ -6,6 +6,7 @@ export type InkType = 'BlackGrey' | 'Color';
 export interface Tattoo {
   id: string;
   createdAt: string;
+  name?: string; // User-given title e.g. "Spiderweb", "Rose"
   tattooDate: string; // ISO date string (YYYY-MM-DD)
   bodyLocation: string;
   sizeTier: SizeTier;

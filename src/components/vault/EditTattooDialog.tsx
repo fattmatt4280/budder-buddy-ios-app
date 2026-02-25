@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, MapPin, Ruler, Palette, User, Store, FileText } from 'lucide-react';
+import { Calendar, MapPin, Ruler, Palette, User, Store, FileText, Tag } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,7 @@ export default function EditTattooDialog({ open, onOpenChange, tattoo }: EditTat
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
+    name: tattoo.name || '',
     tattooDate: tattoo.tattooDate,
     bodyLocation: tattoo.bodyLocation,
     sizeTier: tattoo.sizeTier,
@@ -44,6 +45,7 @@ export default function EditTattooDialog({ open, onOpenChange, tattoo }: EditTat
   // Update form when tattoo prop changes
   useEffect(() => {
     setFormData({
+      name: tattoo.name || '',
       tattooDate: tattoo.tattooDate,
       bodyLocation: tattoo.bodyLocation,
       sizeTier: tattoo.sizeTier,
@@ -64,7 +66,7 @@ export default function EditTattooDialog({ open, onOpenChange, tattoo }: EditTat
       return;
     }
 
-    updateTattoo(tattoo.id, formData);
+    updateTattoo(tattoo.id, { ...formData, name: formData.name.trim() || undefined });
 
     toast({
       title: 'Tattoo updated',
@@ -82,6 +84,19 @@ export default function EditTattooDialog({ open, onOpenChange, tattoo }: EditTat
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Tattoo Name */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Tag className="w-4 h-4 text-muted-foreground" />
+              Tattoo name (optional)
+            </Label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder='e.g. "Spiderweb", "Rose"'
+            />
+          </div>
+
           {/* Date */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">

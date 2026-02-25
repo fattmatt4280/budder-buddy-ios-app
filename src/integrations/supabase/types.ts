@@ -228,6 +228,7 @@ export type Database = {
           ink_type: string
           is_healed: boolean | null
           local_id: string
+          name: string | null
           notes: string | null
           shop_name: string | null
           size_tier: string
@@ -244,6 +245,7 @@ export type Database = {
           ink_type: string
           is_healed?: boolean | null
           local_id: string
+          name?: string | null
           notes?: string | null
           shop_name?: string | null
           size_tier: string
@@ -260,6 +262,7 @@ export type Database = {
           ink_type?: string
           is_healed?: boolean | null
           local_id?: string
+          name?: string | null
           notes?: string | null
           shop_name?: string | null
           size_tier?: string
