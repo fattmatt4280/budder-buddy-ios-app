@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, MapPin, Ruler, Palette, User, Store, FileText } from 'lucide-react';
+import { Calendar, MapPin, Ruler, Palette, User, Store, FileText, Tag } from 'lucide-react';
 import { PremiumGate } from '@/components/premium/PremiumGate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
+    name: '',
     tattooDate: new Date().toISOString().split('T')[0],
     bodyLocation: '',
     sizeTier: 'Medium' as SizeTier,
@@ -52,6 +53,7 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
       id: generateId(),
       createdAt: new Date().toISOString(),
       ...formData,
+      name: formData.name.trim() || undefined,
     };
 
     addTattoo(newTattoo);
@@ -70,6 +72,7 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
 
     // Reset form
     setFormData({
+      name: '',
       tattooDate: new Date().toISOString().split('T')[0],
       bodyLocation: '',
       sizeTier: 'Medium',
@@ -113,6 +116,20 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
         ) : (
           <>
           <div className="space-y-4">
+          {/* Tattoo Name */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Tag className="w-4 h-4 text-muted-foreground" />
+              Tattoo name (optional)
+            </Label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder='e.g. "Spiderweb", "Rose"'
+            />
+          </div>
+
+          {/* Date */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />

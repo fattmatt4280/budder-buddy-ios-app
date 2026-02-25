@@ -1,0 +1,1 @@
+ALTER TABLE public.user_tattoos ADD COLUMN name TEXT;

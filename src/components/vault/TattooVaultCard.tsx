@@ -190,7 +190,7 @@ export default function TattooVaultCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold text-foreground truncate">
-                  {tattoo.bodyLocation}
+                  {tattoo.name || tattoo.bodyLocation}
                 </h3>
                 {isSelected && (
                   <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-medium shrink-0">
@@ -400,7 +400,7 @@ export default function TattooVaultCard({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this tattoo?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove "{tattoo.bodyLocation}" from your vault, including all associated photos and check-ins. This action cannot be undone.
+              This will permanently remove "{tattoo.name || tattoo.bodyLocation}" from your vault, including all associated photos and check-ins. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

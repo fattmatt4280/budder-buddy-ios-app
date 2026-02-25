@@ -26,6 +26,7 @@ interface CloudTattoo {
   id: string;
   user_id: string;
   local_id: string;
+  name: string | null;
   tattoo_date: string;
   body_location: string;
   size_tier: string;
@@ -43,6 +44,7 @@ function cloudToLocal(cloud: CloudTattoo): Tattoo {
   return {
     id: cloud.local_id,
     createdAt: cloud.created_at,
+    name: cloud.name ?? undefined,
     tattooDate: cloud.tattoo_date,
     bodyLocation: cloud.body_location,
     sizeTier: cloud.size_tier as Tattoo['sizeTier'],
@@ -59,6 +61,7 @@ function localToCloud(local: Tattoo, userId: string): Omit<CloudTattoo, 'id' | '
   return {
     user_id: userId,
     local_id: local.id,
+    name: local.name ?? null,
     tattoo_date: local.tattooDate,
     body_location: local.bodyLocation,
     size_tier: local.sizeTier,
@@ -221,6 +224,7 @@ export function useCloudTattoos(userId: string | null) {
 
     if (userId) {
       const updateData: Record<string, unknown> = {};
+      if (updates.name !== undefined) updateData.name = updates.name;
       if (updates.tattooDate !== undefined) updateData.tattoo_date = updates.tattooDate;
       if (updates.bodyLocation !== undefined) updateData.body_location = updates.bodyLocation;
       if (updates.sizeTier !== undefined) updateData.size_tier = updates.sizeTier;
