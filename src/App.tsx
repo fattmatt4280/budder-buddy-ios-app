@@ -26,6 +26,7 @@ import LearnScreen from "@/pages/LearnScreen";
 import SettingsScreen from "@/pages/SettingsScreen";
 import ArticleScreen from "@/pages/ArticleScreen";
 import AuthScreen from "@/pages/AuthScreen";
+import DailyCheckinScreen from "@/pages/DailyCheckinScreen";
 import PrivacyPolicyScreen from "@/pages/PrivacyPolicyScreen";
 import TermsOfServiceScreen from "@/pages/TermsOfServiceScreen";
 import SupportScreen from "@/pages/SupportScreen";
@@ -100,6 +101,7 @@ function AppRoutes() {
       <Route path="/ghost-camera" element={<ProtectedRoute><GhostCameraScreen /></ProtectedRoute>} />
       <Route path="/setup" element={<Navigate to="/learn" replace />} />
       <Route path="/auth" element={<AuthScreen />} />
+      <Route path="/checkin" element={<ProtectedRoute><DailyCheckinScreen /></ProtectedRoute>} />
       <Route path="/privacy" element={<PrivacyPolicyScreen />} />
       <Route path="/terms" element={<TermsOfServiceScreen />} />
       <Route path="/support" element={<SupportScreen />} />
