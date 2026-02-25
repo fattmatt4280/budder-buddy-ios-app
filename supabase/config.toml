@@ -2,3 +2,6 @@ project_id = "ahakqntfpkbeblmljeib"
 
 [functions.delete-account]
 verify_jwt = false
+
+[functions.validate-receipt]
+verify_jwt = false

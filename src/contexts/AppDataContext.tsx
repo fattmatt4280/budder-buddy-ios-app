@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCloudTattoos } from '@/hooks/useCloudTattoos';
 import { useCloudSettings } from '@/hooks/useCloudSettings';
 import { useCloudCheckins } from '@/hooks/useCloudCheckins';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 
 // Default settings for fallback
 const DEFAULT_SETTINGS: AppSettings = {
@@ -59,6 +60,12 @@ interface AppDataContextType {
   userId: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  
+  // Premium
+  isPro: boolean;
+  premiumLoading: boolean;
+  purchase: () => Promise<void>;
+  restore: () => Promise<void>;
 }
 
 // Fallback context value for when provider isn't ready (hot-reload edge cases)
@@ -79,6 +86,10 @@ const fallbackContext: AppDataContextType = {
   userId: null,
   isAuthenticated: false,
   isLoading: true,
+  isPro: false,
+  premiumLoading: true,
+  purchase: async () => {},
+  restore: async () => {},
 };
 
 const AppDataContext = createContext<AppDataContextType>(fallbackContext);
@@ -116,6 +127,13 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
     getCheckinsForTattoo,
     isLoading: checkinsLoading,
   } = useCloudCheckins(userId);
+
+  const {
+    isPro,
+    isLoading: premiumLoading,
+    purchase,
+    restore,
+  } = usePremiumStatus(userId);
   
   const isLoading = authLoading || tattoosLoading || settingsLoading || checkinsLoading;
 
@@ -136,6 +154,10 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
     userId,
     isAuthenticated,
     isLoading,
+    isPro,
+    premiumLoading,
+    purchase,
+    restore,
   };
 
   return (
