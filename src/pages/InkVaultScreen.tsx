@@ -12,6 +12,9 @@ import AddTattooDialog from '@/components/vault/AddTattooDialog';
 import FirstPhotoPromptDialog from '@/components/vault/FirstPhotoPromptDialog';
 import { PremiumGate } from '@/components/premium/PremiumGate';
 import { useAppData } from '@/contexts/AppDataContext';
+import { MilestoneBanner } from '@/components/vault/MilestoneBanner';
+import WishlistSection from '@/components/vault/WishlistSection';
+import { getUpcomingMilestones } from '@/lib/milestoneService';
 
 export default function InkVaultScreen() {
   const navigate = useNavigate();
@@ -216,6 +219,16 @@ export default function InkVaultScreen() {
             </div>
           </section>
         )}
+
+        {/* Milestone Banners for healed tattoos */}
+        {isPro && archivedTattoos.map((tattoo) => {
+          const milestones = getUpcomingMilestones(tattoo);
+          if (milestones.length === 0) return null;
+          return <MilestoneBanner key={`milestone-${tattoo.id}`} tattoo={tattoo} />;
+        })}
+
+        {/* Next Tattoo Wishlist (Pro) */}
+        <WishlistSection />
       </div>
 
       {/* Add Tattoo Dialog - gated for 2nd+ tattoo */}

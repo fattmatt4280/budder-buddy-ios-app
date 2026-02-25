@@ -83,6 +83,8 @@ export interface AppSettings {
   // Environment notifications
   sunGuardEnabled: boolean;
   activityRemindersEnabled: boolean;
+  // Long-term care (post-healing)
+  longTermCareEnabled: boolean;
 }
 
 export interface HealingPhase {

@@ -20,6 +20,7 @@ import { Tattoo, getDayNumber, getHealingPhase, getHealingProgress } from '@/typ
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { getNextMilestone, getTattooAge, formatMilestoneDate } from '@/lib/milestoneService';
 import { useState } from 'react';
 import { useTattoos, useSettings } from '@/hooks/useStorage';
 import { useCloudPhotos } from '@/hooks/useCloudPhotos';
@@ -156,6 +157,8 @@ export default function TattooVaultCard({
   // Check if this tattoo is considered healed (manually or 30+ days)
   const isHealed = tattoo.isHealed || dayNumber > 30;
   const hasEnoughPhotosForTimelapse = healingSummary.totalPhotos >= 2;
+  const nextMilestone = isHealed ? getNextMilestone(tattoo) : null;
+  const tattooAge = isHealed ? getTattooAge(tattoo.tattooDate) : null;
 
   return (
     <>
@@ -202,7 +205,7 @@ export default function TattooVaultCard({
                   "font-medium",
                   isActive ? "text-warning" : "text-success"
                 )}>
-                  {isActive ? `Day ${dayNumber}` : 'Healed'}
+                  {isActive ? `Day ${dayNumber}` : tattooAge ? `${tattooAge} old` : 'Healed'}
                 </span>
               </div>
             </div>
@@ -264,6 +267,21 @@ export default function TattooVaultCard({
               {tattoo.notes && (
                 <div className="pt-2 border-t border-border">
                   <p className="text-sm text-muted-foreground italic">"{tattoo.notes}"</p>
+                </div>
+              )}
+
+              {/* Next Milestone */}
+              {nextMilestone && (
+                <div className="pt-2 border-t border-border flex items-center gap-2">
+                  <span className="text-lg">{nextMilestone.emoji}</span>
+                  <div>
+                    <p className="text-xs font-medium text-foreground">
+                      {nextMilestone.label} Ink-iversary
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {formatMilestoneDate(nextMilestone.date)}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

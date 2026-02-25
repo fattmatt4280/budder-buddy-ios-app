@@ -372,6 +372,82 @@ class NotificationService {
       notifLog('Failed to schedule welcome notification:', error);
     }
   }
+
+  /**
+   * Schedule a long-term care reminder (sun protection / moisturize).
+   * Fires once weekly for healed tattoos.
+   */
+  async scheduleLongTermCareReminder(): Promise<void> {
+    if (!this.isNative) return;
+
+    const permission = await this.checkPermission();
+    if (permission.display !== 'granted') return;
+
+    try {
+      // Schedule for 3 days from now at 10am
+      const scheduleDate = new Date();
+      scheduleDate.setDate(scheduleDate.getDate() + 3);
+      scheduleDate.setHours(10, 0, 0, 0);
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: 90000,
+            title: '☀️ Protect Your Ink',
+            body: 'Apply SPF 30+ to your healed tattoos before heading out. UV fading is the #1 enemy of vibrant ink!',
+            schedule: { at: scheduleDate },
+            sound: 'default',
+            extra: { type: 'longterm_care' },
+          },
+        ],
+      });
+      notifLog('Long-term care reminder scheduled');
+    } catch (error) {
+      notifLog('Failed to schedule long-term care reminder:', error);
+    }
+  }
+
+  /**
+   * Schedule a milestone/anniversary notification for a specific date.
+   */
+  async scheduleMilestoneReminder(
+    tattooLocation: string,
+    milestoneLabel: string,
+    milestoneDate: Date
+  ): Promise<void> {
+    if (!this.isNative) return;
+
+    const permission = await this.checkPermission();
+    if (permission.display !== 'granted') return;
+
+    // Schedule for 9am on the milestone day
+    const scheduleDate = new Date(milestoneDate);
+    scheduleDate.setHours(9, 0, 0, 0);
+
+    // Don't schedule if in the past
+    if (scheduleDate <= new Date()) return;
+
+    try {
+      // Generate a unique ID from the date
+      const notifId = 80000 + Math.floor(scheduleDate.getTime() / 100000) % 9999;
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: notifId,
+            title: `🎂 ${milestoneLabel} Ink-iversary!`,
+            body: `Your ${tattooLocation} tattoo hits ${milestoneLabel} today! Take a photo to compare.`,
+            schedule: { at: scheduleDate },
+            sound: 'default',
+            extra: { type: 'milestone' },
+          },
+        ],
+      });
+      notifLog(`Milestone reminder scheduled for ${milestoneLabel} on ${scheduleDate}`);
+    } catch (error) {
+      notifLog('Failed to schedule milestone reminder:', error);
+    }
+  }
 }
 
 // Export singleton instance
