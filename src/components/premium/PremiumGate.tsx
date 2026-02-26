@@ -34,7 +34,7 @@ export function PremiumGate({ children, featureName, compact, active = true }: P
     <div className={compact ? '' : 'flex items-center justify-center px-6 py-8'}>
       <UpgradeCard
         featureName={featureName}
-        onUpgrade={purchase}
+        onUpgrade={() => navigate('/upgrade')}
         compact={compact}
       />
     </div>

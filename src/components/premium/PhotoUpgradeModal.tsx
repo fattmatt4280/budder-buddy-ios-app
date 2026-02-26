@@ -51,11 +51,10 @@ export default function PhotoUpgradeModal({ open, onOpenChange }: PhotoUpgradeMo
         <div className="space-y-3">
           <Button
             onClick={handleUpgrade}
-            disabled={purchasing}
             className="w-full liquid-glass-primary text-primary-foreground font-semibold"
           >
             <Lock className="w-4 h-4 mr-2" />
-            {purchasing ? 'Processing...' : 'Go Pro — $2.99/mo'}
+            Go Pro
           </Button>
           <Button
             variant="ghost"
