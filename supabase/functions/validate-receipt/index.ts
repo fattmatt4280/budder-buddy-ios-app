@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
     const subscriber = rcData.subscriber;
 
     // Check for active "pro" entitlement
-    const proEntitlement = subscriber?.entitlements?.pro;
+    const proEntitlement = subscriber?.entitlements?.Pro;
     const isActive = proEntitlement &&
       new Date(proEntitlement.expires_date) > new Date();
 

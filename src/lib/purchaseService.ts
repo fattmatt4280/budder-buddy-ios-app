@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
 const REVENUECAT_API_KEY = 'test_BUVslRNoWEZMGNWOJiTDTjItfiv';
-const ENTITLEMENT_ID = 'pro'; // Must match RevenueCat dashboard entitlement identifier
+const ENTITLEMENT_ID = 'Pro'; // Must match RevenueCat dashboard entitlement identifier
 
 export interface PurchaseResult {
   success: boolean;
@@ -120,7 +120,7 @@ class PurchaseService {
   }
 
   private fallbackMonthly(): ProductInfo {
-    return { id: '20260224', title: 'Monthly', description: 'Billed monthly', price: '$2.99/mo' };
+    return { id: '20260224', title: 'Monthly', description: 'Billed monthly', price: '$3.99/mo' };
   }
 
   private fallbackAnnual(): ProductInfo {

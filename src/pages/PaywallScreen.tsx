@@ -31,7 +31,7 @@ export default function PaywallScreen() {
     if (isPro) navigate(-1);
   }, [isPro, navigate]);
 
-  const monthlyPrice = offerings?.monthly.price ?? '$2.99/mo';
+  const monthlyPrice = offerings?.monthly.price ?? '$3.99/mo';
   const annualPrice = offerings?.annual.price ?? '$24.99/yr';
 
   const handlePurchase = async () => {
