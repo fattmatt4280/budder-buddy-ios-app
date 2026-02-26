@@ -14,11 +14,18 @@ export interface PurchaseResult {
   error?: string;
 }
 
+export type PlanType = 'monthly' | 'annual';
+
 export interface ProductInfo {
   id: string;
   title: string;
   description: string;
   price: string;
+}
+
+export interface PlanOfferings {
+  monthly: ProductInfo;
+  annual: ProductInfo;
 }
 
 class PurchaseService {
