@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import type { Tattoo, DailyCheckin, AppSettings } from '@/types';
+import type { PlanType } from '@/lib/purchaseService';
 import { useAuth } from '@/hooks/useAuth';
 import { useCloudTattoos } from '@/hooks/useCloudTattoos';
 import { useCloudSettings } from '@/hooks/useCloudSettings';
