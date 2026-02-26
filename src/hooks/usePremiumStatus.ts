@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { purchaseService } from '@/lib/purchaseService';
+import type { PlanType } from '@/lib/purchaseService';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 
@@ -9,7 +10,7 @@ interface PremiumStatus {
   isLoading: boolean;
   status: string;
   expiresAt: Date | null;
-  purchase: () => Promise<void>;
+  purchase: (plan?: PlanType) => Promise<void>;
   restore: () => Promise<void>;
   refresh: () => Promise<void>;
 }
