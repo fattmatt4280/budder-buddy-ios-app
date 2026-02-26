@@ -12,6 +12,8 @@ export interface WishlistItem {
   budget?: number;
   notes?: string;
   referenceUrl?: string;
+  imagePath?: string;
+  imageUrl?: string;
   sortOrder: number;
   createdAt: string;
 }
@@ -36,21 +38,35 @@ export function useWishlist(userId: string | null) {
 
       if (error) throw error;
 
-      setItems(
-        (data || []).map((row: any) => ({
-          id: row.id,
-          title: row.title,
-          bodyLocation: row.body_location,
-          style: row.style,
-          artistName: row.artist_name,
-          shopName: row.shop_name,
-          budget: row.budget ? Number(row.budget) : undefined,
-          notes: row.notes,
-          referenceUrl: row.reference_url,
-          sortOrder: row.sort_order,
-          createdAt: row.created_at,
-        }))
+      const rows = (data || []).map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        bodyLocation: row.body_location,
+        style: row.style,
+        artistName: row.artist_name,
+        shopName: row.shop_name,
+        budget: row.budget ? Number(row.budget) : undefined,
+        notes: row.notes,
+        referenceUrl: row.reference_url,
+        imagePath: row.image_path,
+        sortOrder: row.sort_order,
+        createdAt: row.created_at,
+      }));
+
+      // Generate signed URLs for items with images
+      const itemsWithUrls = await Promise.all(
+        rows.map(async (item: WishlistItem) => {
+          if (item.imagePath) {
+            const { data: urlData } = await supabase.storage
+              .from('wishlist-images')
+              .createSignedUrl(item.imagePath, 3600);
+            return { ...item, imageUrl: urlData?.signedUrl };
+          }
+          return item;
+        })
       );
+
+      setItems(itemsWithUrls);
     } catch (err) {
       logger.error('[Wishlist] Fetch error:', err);
     } finally {
@@ -62,9 +78,31 @@ export function useWishlist(userId: string | null) {
     fetchItems();
   }, [fetchItems]);
 
+  const uploadImage = useCallback(
+    async (file: File): Promise<string> => {
+      if (!userId) throw new Error('Not authenticated');
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${userId}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from('wishlist-images')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) {
+        logger.error('[Wishlist] Upload error:', error);
+        throw error;
+      }
+      return path;
+    },
+    [userId]
+  );
+
   const addItem = useCallback(
-    async (item: Omit<WishlistItem, 'id' | 'sortOrder' | 'createdAt'>) => {
+    async (item: Omit<WishlistItem, 'id' | 'sortOrder' | 'createdAt' | 'imageUrl'>, imageFile?: File) => {
       if (!userId) return;
+
+      let imagePath: string | null = null;
+      if (imageFile) {
+        imagePath = await uploadImage(imageFile);
+      }
 
       const { error } = await supabase.from('tattoo_wishlist').insert({
         user_id: userId,
@@ -76,6 +114,7 @@ export function useWishlist(userId: string | null) {
         budget: item.budget || null,
         notes: item.notes || null,
         reference_url: item.referenceUrl || null,
+        image_path: imagePath,
         sort_order: items.length,
       });
 
@@ -85,7 +124,7 @@ export function useWishlist(userId: string | null) {
       }
       await fetchItems();
     },
-    [userId, items.length, fetchItems]
+    [userId, items.length, fetchItems, uploadImage]
   );
 
   const updateItem = useCallback(
@@ -121,6 +160,12 @@ export function useWishlist(userId: string | null) {
     async (id: string) => {
       if (!userId) return;
 
+      // Find the item to check for image cleanup
+      const item = items.find((i) => i.id === id);
+      if (item?.imagePath) {
+        await supabase.storage.from('wishlist-images').remove([item.imagePath]);
+      }
+
       const { error } = await supabase
         .from('tattoo_wishlist')
         .delete()
@@ -133,8 +178,8 @@ export function useWishlist(userId: string | null) {
       }
       await fetchItems();
     },
-    [userId, fetchItems]
+    [userId, fetchItems, items]
   );
 
-  return { items, isLoading, addItem, updateItem, deleteItem, refresh: fetchItems };
+  return { items, isLoading, addItem, updateItem, deleteItem, uploadImage, refresh: fetchItems };
 }

@@ -117,6 +117,7 @@ export type Database = {
           budget: number | null
           created_at: string
           id: string
+          image_path: string | null
           notes: string | null
           reference_url: string | null
           shop_name: string | null
@@ -132,6 +133,7 @@ export type Database = {
           budget?: number | null
           created_at?: string
           id?: string
+          image_path?: string | null
           notes?: string | null
           reference_url?: string | null
           shop_name?: string | null
@@ -147,6 +149,7 @@ export type Database = {
           budget?: number | null
           created_at?: string
           id?: string
+          image_path?: string | null
           notes?: string | null
           reference_url?: string | null
           shop_name?: string | null
