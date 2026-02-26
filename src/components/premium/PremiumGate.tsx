@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppData } from '@/contexts/AppDataContext';
 import { UpgradeCard } from './UpgradeCard';
 import { Loader2 } from 'lucide-react';
@@ -13,7 +14,8 @@ interface PremiumGateProps {
 }
 
 export function PremiumGate({ children, featureName, compact, active = true }: PremiumGateProps) {
-  const { isPro, premiumLoading, purchase } = useAppData();
+  const { isPro, premiumLoading } = useAppData();
+  const navigate = useNavigate();
 
   // If gate is not active or user is Pro, render children
   if (!active || isPro) {
@@ -32,7 +34,7 @@ export function PremiumGate({ children, featureName, compact, active = true }: P
     <div className={compact ? '' : 'flex items-center justify-center px-6 py-8'}>
       <UpgradeCard
         featureName={featureName}
-        onUpgrade={purchase}
+        onUpgrade={() => navigate('/upgrade')}
         compact={compact}
       />
     </div>

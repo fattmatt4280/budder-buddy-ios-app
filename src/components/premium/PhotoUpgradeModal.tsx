@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Sparkles, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAppData } from '@/contexts/AppDataContext';
 
 interface PhotoUpgradeModalProps {
   open: boolean;
@@ -11,19 +9,12 @@ interface PhotoUpgradeModalProps {
 
 export default function PhotoUpgradeModal({ open, onOpenChange }: PhotoUpgradeModalProps) {
   const navigate = useNavigate();
-  const { purchase } = useAppData();
-  const [purchasing, setPurchasing] = useState(false);
 
   if (!open) return null;
 
-  const handleUpgrade = async () => {
-    setPurchasing(true);
-    try {
-      await purchase();
-      onOpenChange(false);
-    } finally {
-      setPurchasing(false);
-    }
+  const handleUpgrade = () => {
+    onOpenChange(false);
+    navigate('/upgrade');
   };
 
   return (
@@ -60,11 +51,10 @@ export default function PhotoUpgradeModal({ open, onOpenChange }: PhotoUpgradeMo
         <div className="space-y-3">
           <Button
             onClick={handleUpgrade}
-            disabled={purchasing}
             className="w-full liquid-glass-primary text-primary-foreground font-semibold"
           >
             <Lock className="w-4 h-4 mr-2" />
-            {purchasing ? 'Processing...' : 'Go Pro — $2.99/mo'}
+            Go Pro
           </Button>
           <Button
             variant="ghost"

@@ -342,13 +342,13 @@ export default function SettingsScreen() {
                   </div>
                 </div>
                 <Button
-                  onClick={purchase}
+                  onClick={() => navigate('/upgrade')}
                   variant="glassPrimary"
                   size="sm"
                   className="w-full gap-2"
                 >
                   <Crown className="w-4 h-4" />
-                  Go Pro — $2.99/mo
+                  Go Pro
                 </Button>
                 <Button
                   onClick={restore}

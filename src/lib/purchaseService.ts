@@ -14,11 +14,18 @@ export interface PurchaseResult {
   error?: string;
 }
 
+export type PlanType = 'monthly' | 'annual';
+
 export interface ProductInfo {
   id: string;
   title: string;
   description: string;
   price: string;
+}
+
+export interface PlanOfferings {
+  monthly: ProductInfo;
+  annual: ProductInfo;
 }
 
 class PurchaseService {
@@ -80,40 +87,50 @@ class PurchaseService {
   }
 
   /**
-   * Get available product info from RevenueCat offerings
+   * Get available product info for both plans from RevenueCat offerings
    */
-  async getProduct(): Promise<ProductInfo> {
+  async getProducts(): Promise<PlanOfferings> {
     if (this.isNativePlatform() && this.Purchases) {
       try {
         const offerings = await this.Purchases.getOfferings();
         const currentOffering = offerings.current;
-        if (currentOffering?.monthly) {
-          const pkg = currentOffering.monthly;
-          return {
-            id: pkg.storeProduct.productIdentifier,
-            title: pkg.storeProduct.title || 'Budder Buddy Pro',
-            description: pkg.storeProduct.description || 'Unlimited tattoos, Ghost Camera, AI Guide & more',
-            price: pkg.storeProduct.priceString || '$2.99/mo',
-          };
-        }
+        const monthly = currentOffering?.monthly;
+        const annual = currentOffering?.annual;
+
+        return {
+          monthly: monthly ? {
+            id: monthly.storeProduct.productIdentifier,
+            title: monthly.storeProduct.title || 'Monthly',
+            description: monthly.storeProduct.description || 'Billed monthly',
+            price: monthly.storeProduct.priceString || '$2.99/mo',
+          } : this.fallbackMonthly(),
+          annual: annual ? {
+            id: annual.storeProduct.productIdentifier,
+            title: annual.storeProduct.title || 'Yearly',
+            description: annual.storeProduct.description || 'Billed annually',
+            price: annual.storeProduct.priceString || '$24.99/yr',
+          } : this.fallbackAnnual(),
+        };
       } catch (error) {
         logger.error('[RevenueCat] Failed to get offerings:', error);
       }
     }
 
-    // Fallback / web preview
-    return {
-      id: '20260224',
-      title: 'Budder Buddy Pro',
-      description: 'Unlimited tattoos, Ghost Camera, AI Guide & more',
-      price: '$2.99/mo',
-    };
+    return { monthly: this.fallbackMonthly(), annual: this.fallbackAnnual() };
+  }
+
+  private fallbackMonthly(): ProductInfo {
+    return { id: '20260224', title: 'Monthly', description: 'Billed monthly', price: '$2.99/mo' };
+  }
+
+  private fallbackAnnual(): ProductInfo {
+    return { id: '20260224_annual', title: 'Yearly', description: 'Billed annually', price: '$24.99/yr' };
   }
 
   /**
    * Initiate a purchase through RevenueCat
    */
-  async purchase(): Promise<PurchaseResult> {
+  async purchase(plan: PlanType = 'monthly'): Promise<PurchaseResult> {
     if (!this.isNativePlatform() || !this.Purchases) {
       logger.log('[Purchase] Web preview - simulating purchase');
       return this.syncSubscriptionToBackend();
@@ -122,13 +139,14 @@ class PurchaseService {
     try {
       const offerings = await this.Purchases.getOfferings();
       const currentOffering = offerings.current;
+      const pkg = plan === 'annual' ? currentOffering?.annual : currentOffering?.monthly;
 
-      if (!currentOffering?.monthly) {
-        return { success: false, error: 'No subscription offering available' };
+      if (!pkg) {
+        return { success: false, error: `No ${plan} offering available` };
       }
 
       const { customerInfo } = await this.Purchases.purchasePackage({
-        aPackage: currentOffering.monthly,
+        aPackage: pkg,
       });
 
       // Check if Pro entitlement is now active
