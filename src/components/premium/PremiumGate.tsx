@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppData } from '@/contexts/AppDataContext';
 import { UpgradeCard } from './UpgradeCard';
 import { Loader2 } from 'lucide-react';
