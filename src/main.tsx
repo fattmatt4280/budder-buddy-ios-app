@@ -9,6 +9,9 @@ import { logger } from "./lib/logger";
 // Initialize secure auth storage before rendering
 // This migrates tokens from localStorage to Keychain/Keystore on native platforms
 initializeSecureAuth().then(async () => {
+  // Initialize RevenueCat (no-op on web)
+  await purchaseService.initialize();
+
   // Initialize notification service (registers action types on iOS)
   await notificationService.initialize();
 

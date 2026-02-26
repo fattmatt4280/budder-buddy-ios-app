@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { clearAuthStorage } from '@/lib/supabaseClientInit';
+import { purchaseService } from '@/lib/purchaseService';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
