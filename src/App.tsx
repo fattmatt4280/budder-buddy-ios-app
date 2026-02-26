@@ -114,6 +114,7 @@ function AppRoutes() {
       <Route path="/ghost-camera" element={<ProtectedRoute><GhostCameraScreen /></ProtectedRoute>} />
       <Route path="/setup" element={<Navigate to="/learn" replace />} />
       <Route path="/auth" element={<AuthScreen />} />
+      <Route path="/upgrade" element={<PaywallScreen />} />
       <Route path="/checkin" element={<ProtectedRoute><DailyCheckinScreen /></ProtectedRoute>} />
       <Route path="/privacy" element={<PrivacyPolicyScreen />} />
       <Route path="/terms" element={<TermsOfServiceScreen />} />
