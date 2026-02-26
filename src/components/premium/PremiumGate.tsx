@@ -14,7 +14,8 @@ interface PremiumGateProps {
 }
 
 export function PremiumGate({ children, featureName, compact, active = true }: PremiumGateProps) {
-  const { isPro, premiumLoading, purchase } = useAppData();
+  const { isPro, premiumLoading } = useAppData();
+  const navigate = useNavigate();
 
   // If gate is not active or user is Pro, render children
   if (!active || isPro) {
