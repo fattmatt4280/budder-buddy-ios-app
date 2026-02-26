@@ -16,6 +16,11 @@ export function useAuth() {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Identify or reset RevenueCat user
+        if (session?.user) {
+          purchaseService.identify(session.user.id);
+        }
       }
     );
 
