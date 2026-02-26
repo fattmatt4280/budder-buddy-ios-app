@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
 const REVENUECAT_API_KEY = 'test_BUVslRNoWEZMGNWOJiTDTjItfiv';
-const ENTITLEMENT_ID = 'pro'; // Must match RevenueCat dashboard entitlement identifier
+const ENTITLEMENT_ID = 'Pro'; // Must match RevenueCat dashboard entitlement identifier
 
 export interface PurchaseResult {
   success: boolean;
