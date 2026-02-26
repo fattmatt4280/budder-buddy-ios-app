@@ -1,11 +1,12 @@
-// Purchase Service - Abstraction layer for Apple StoreKit via Capacitor
-// In web preview, this provides mock/no-op implementations.
-// On native iOS, this would integrate with a Capacitor StoreKit plugin.
+// Purchase Service - RevenueCat integration via Capacitor plugin
+// On web preview, provides mock/no-op implementations.
+// On native iOS, uses RevenueCat for StoreKit purchases.
 
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
-const PRODUCT_ID = '20260224';
+const REVENUECAT_API_KEY = 'test_BUVslRNoWEZMGNWOJiTDTjItfiv';
+const ENTITLEMENT_ID = 'pro'; // Must match RevenueCat dashboard entitlement identifier
 
 export interface PurchaseResult {
   success: boolean;
@@ -21,24 +22,88 @@ export interface ProductInfo {
 }
 
 class PurchaseService {
+  private initialized = false;
+  private Purchases: any = null;
+
   private isNativePlatform(): boolean {
-    // Check if running inside Capacitor native shell
     return !!(window as any).Capacitor?.isNativePlatform?.();
   }
 
   /**
-   * Get available product info from the App Store
+   * Initialize RevenueCat SDK — call once at app startup on native
+   */
+  async initialize(appUserId?: string): Promise<void> {
+    if (!this.isNativePlatform() || this.initialized) return;
+
+    try {
+      const { Purchases } = await import('@revenuecat/purchases-capacitor');
+      this.Purchases = Purchases;
+
+      await Purchases.configure({
+        apiKey: REVENUECAT_API_KEY,
+        appUserID: appUserId ?? undefined,
+      });
+
+      this.initialized = true;
+      logger.log('[RevenueCat] Initialized successfully');
+    } catch (error) {
+      logger.error('[RevenueCat] Initialization failed:', error);
+    }
+  }
+
+  /**
+   * Identify user with RevenueCat (call after login)
+   */
+  async identify(userId: string): Promise<void> {
+    if (!this.isNativePlatform() || !this.Purchases) return;
+
+    try {
+      await this.Purchases.logIn({ appUserID: userId });
+      logger.log('[RevenueCat] User identified:', userId);
+    } catch (error) {
+      logger.error('[RevenueCat] Identify failed:', error);
+    }
+  }
+
+  /**
+   * Log out from RevenueCat (call on sign out)
+   */
+  async logout(): Promise<void> {
+    if (!this.isNativePlatform() || !this.Purchases) return;
+
+    try {
+      await this.Purchases.logOut();
+      logger.log('[RevenueCat] User logged out');
+    } catch (error) {
+      logger.error('[RevenueCat] Logout failed:', error);
+    }
+  }
+
+  /**
+   * Get available product info from RevenueCat offerings
    */
   async getProduct(): Promise<ProductInfo> {
-    if (this.isNativePlatform()) {
-      // TODO: Integrate with Capacitor StoreKit plugin
-      // const products = await CapacitorPurchases.getProducts({ productIds: [PRODUCT_ID] });
-      // return products[0];
+    if (this.isNativePlatform() && this.Purchases) {
+      try {
+        const offerings = await this.Purchases.getOfferings();
+        const currentOffering = offerings.current;
+        if (currentOffering?.monthly) {
+          const pkg = currentOffering.monthly;
+          return {
+            id: pkg.storeProduct.productIdentifier,
+            title: pkg.storeProduct.title || 'Budder Buddy Pro',
+            description: pkg.storeProduct.description || 'Unlimited tattoos, Ghost Camera, AI Guide & more',
+            price: pkg.storeProduct.priceString || '$2.99/mo',
+          };
+        }
+      } catch (error) {
+        logger.error('[RevenueCat] Failed to get offerings:', error);
+      }
     }
 
     // Fallback / web preview
     return {
-      id: PRODUCT_ID,
+      id: '20260224',
       title: 'Budder Buddy Pro',
       description: 'Unlimited tattoos, Ghost Camera, AI Guide & more',
       price: '$2.99/mo',
@@ -46,26 +111,45 @@ class PurchaseService {
   }
 
   /**
-   * Initiate a purchase through Apple's native payment sheet
+   * Initiate a purchase through RevenueCat
    */
   async purchase(): Promise<PurchaseResult> {
-    if (!this.isNativePlatform()) {
+    if (!this.isNativePlatform() || !this.Purchases) {
       logger.log('[Purchase] Web preview - simulating purchase');
-      // In web preview, call validate-receipt with a mock to create active sub
-      return this.validateReceipt('web-preview-mock', 'mock-original');
+      return this.syncSubscriptionToBackend();
     }
 
     try {
-      // TODO: Integrate with Capacitor StoreKit plugin
-      // const result = await CapacitorPurchases.purchaseProduct({ productId: PRODUCT_ID });
-      // return this.validateReceipt(result.transactionId, result.originalTransactionId);
-      
-      return { success: false, error: 'Native purchases not yet configured' };
-    } catch (error) {
+      const offerings = await this.Purchases.getOfferings();
+      const currentOffering = offerings.current;
+
+      if (!currentOffering?.monthly) {
+        return { success: false, error: 'No subscription offering available' };
+      }
+
+      const { customerInfo } = await this.Purchases.purchasePackage({
+        aPackage: currentOffering.monthly,
+      });
+
+      // Check if Pro entitlement is now active
+      const isPro = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+
+      if (isPro) {
+        // Sync to our backend
+        await this.syncSubscriptionToBackend();
+        return { success: true };
+      }
+
+      return { success: false, error: 'Purchase completed but entitlement not found' };
+    } catch (error: any) {
+      // RevenueCat returns userCancelled for dismissed payment sheet
+      if (error?.code === 1 || error?.message?.includes('cancelled')) {
+        return { success: false, error: 'Purchase cancelled' };
+      }
       logger.error('[Purchase] Purchase failed:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Purchase failed' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Purchase failed',
       };
     }
   }
@@ -74,18 +158,20 @@ class PurchaseService {
    * Restore previous purchases (required by Apple)
    */
   async restore(): Promise<PurchaseResult> {
-    if (!this.isNativePlatform()) {
+    if (!this.isNativePlatform() || !this.Purchases) {
       logger.log('[Purchase] Web preview - restore not available');
       return { success: false, error: 'Restore only available on iOS' };
     }
 
     try {
-      // TODO: Integrate with Capacitor StoreKit plugin
-      // const result = await CapacitorPurchases.restorePurchases();
-      // if (result.activeSubscription) {
-      //   return this.validateReceipt(result.transactionId, result.originalTransactionId);
-      // }
-      
+      const { customerInfo } = await this.Purchases.restorePurchases();
+      const isPro = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+
+      if (isPro) {
+        await this.syncSubscriptionToBackend();
+        return { success: true };
+      }
+
       return { success: false, error: 'No active subscription found' };
     } catch (error) {
       logger.error('[Purchase] Restore failed:', error);
@@ -97,12 +183,25 @@ class PurchaseService {
   }
 
   /**
-   * Validate receipt with backend and update subscription status
+   * Check current entitlement status from RevenueCat
    */
-  private async validateReceipt(
-    transactionId: string,
-    originalTransactionId: string
-  ): Promise<PurchaseResult> {
+  async checkEntitlement(): Promise<boolean> {
+    if (!this.isNativePlatform() || !this.Purchases) return false;
+
+    try {
+      const { customerInfo } = await this.Purchases.getCustomerInfo();
+      return customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+    } catch (error) {
+      logger.error('[RevenueCat] Failed to check entitlement:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Sync subscription status to our backend via validate-receipt edge function.
+   * RevenueCat server-side verification ensures legitimacy.
+   */
+  private async syncSubscriptionToBackend(): Promise<PurchaseResult> {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -110,7 +209,7 @@ class PurchaseService {
       }
 
       const response = await supabase.functions.invoke('validate-receipt', {
-        body: { transactionId, originalTransactionId, productId: PRODUCT_ID },
+        body: { source: 'revenuecat' },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -120,9 +219,9 @@ class PurchaseService {
         throw new Error(response.error.message);
       }
 
-      return { success: true, transactionId };
+      return { success: true };
     } catch (error) {
-      logger.error('[Purchase] Receipt validation failed:', error);
+      logger.error('[Purchase] Backend sync failed:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Validation failed',

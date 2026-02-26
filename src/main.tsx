@@ -3,6 +3,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { initializeSecureAuth } from "./lib/supabaseClientInit";
 import { notificationService } from "./lib/notificationService";
+import { purchaseService } from "./lib/purchaseService";
 import { logger } from "./lib/logger";
 
 // Initialize secure auth storage before rendering
