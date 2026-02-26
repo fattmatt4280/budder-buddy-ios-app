@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Sparkles, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAppData } from '@/contexts/AppDataContext';
 
 interface PhotoUpgradeModalProps {
   open: boolean;
