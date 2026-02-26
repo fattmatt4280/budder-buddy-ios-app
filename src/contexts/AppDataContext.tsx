@@ -66,7 +66,7 @@ interface AppDataContextType {
   // Premium
   isPro: boolean;
   premiumLoading: boolean;
-  purchase: () => Promise<void>;
+  purchase: (plan?: PlanType) => Promise<void>;
   restore: () => Promise<void>;
 }
 

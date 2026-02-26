@@ -79,8 +79,8 @@ export function usePremiumStatus(userId: string | null): PremiumStatus {
     fetchStatus();
   }, [fetchStatus]);
 
-  const purchase = useCallback(async () => {
-    const result = await purchaseService.purchase();
+  const purchase = useCallback(async (plan: PlanType = 'monthly') => {
+    const result = await purchaseService.purchase(plan);
     if (result.success) {
       toast({ title: 'Welcome to Pro! 🎉', description: 'All premium features are now unlocked.' });
       await fetchStatus();
