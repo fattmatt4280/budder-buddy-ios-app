@@ -11,19 +11,12 @@ interface PhotoUpgradeModalProps {
 
 export default function PhotoUpgradeModal({ open, onOpenChange }: PhotoUpgradeModalProps) {
   const navigate = useNavigate();
-  const { purchase } = useAppData();
-  const [purchasing, setPurchasing] = useState(false);
 
   if (!open) return null;
 
-  const handleUpgrade = async () => {
-    setPurchasing(true);
-    try {
-      await purchase();
-      onOpenChange(false);
-    } finally {
-      setPurchasing(false);
-    }
+  const handleUpgrade = () => {
+    onOpenChange(false);
+    navigate('/upgrade');
   };
 
   return (
