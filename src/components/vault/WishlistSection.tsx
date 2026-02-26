@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Sparkles, MapPin, User, Store, DollarSign, FileText, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Sparkles, MapPin, User, Store, DollarSign, FileText, Trash2, ChevronDown, ChevronRight, ImagePlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,25 +36,48 @@ export default function WishlistSection() {
     budget: '',
     notes: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setForm({ title: '', bodyLocation: '', style: '', artistName: '', shopName: '', budget: '', notes: '' });
+    setImageFile(null);
+    setImagePreview(null);
     setShowForm(false);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleAdd = async () => {
     if (!form.title.trim()) return;
     setSaving(true);
     try {
-      await addItem({
-        title: form.title.trim(),
-        bodyLocation: form.bodyLocation.trim() || undefined,
-        style: form.style.trim() || undefined,
-        artistName: form.artistName.trim() || undefined,
-        shopName: form.shopName.trim() || undefined,
-        budget: form.budget ? Number(form.budget) : undefined,
-        notes: form.notes.trim() || undefined,
-      });
+      await addItem(
+        {
+          title: form.title.trim(),
+          bodyLocation: form.bodyLocation.trim() || undefined,
+          style: form.style.trim() || undefined,
+          artistName: form.artistName.trim() || undefined,
+          shopName: form.shopName.trim() || undefined,
+          budget: form.budget ? Number(form.budget) : undefined,
+          notes: form.notes.trim() || undefined,
+        },
+        imageFile || undefined
+      );
       resetForm();
     } catch {
       // error handled in hook
@@ -91,6 +114,43 @@ export default function WishlistSection() {
         {/* Add Form */}
         {showForm && (
           <div className="liquid-glass-card rounded-xl p-4 mb-3 space-y-3 animate-fade-in">
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                <ImagePlus className="w-3 h-3" /> Reference Image
+              </Label>
+              {imagePreview ? (
+                <div className="relative w-full rounded-lg overflow-hidden border border-border">
+                  <img
+                    src={imagePreview}
+                    alt="Reference preview"
+                    className="w-full h-40 object-cover"
+                  />
+                  <button
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1"
+                  >
+                    <X className="w-4 h-4 text-foreground" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-28 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1.5 transition-colors bg-muted/30"
+                >
+                  <ImagePlus className="w-6 h-6 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Tap to add reference photo</span>
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+            </div>
+
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">What do you want?</Label>
               <Input
@@ -238,9 +298,18 @@ function WishlistCard({
   return (
     <div className="liquid-glass-card rounded-xl overflow-hidden">
       <button onClick={onToggle} className="w-full p-3 text-left flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-          <Sparkles className="w-4 h-4 text-primary" />
-        </div>
+        {/* Thumbnail or icon */}
+        {item.imageUrl ? (
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className="w-9 h-9 rounded-lg object-cover shrink-0"
+          />
+        ) : (
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4 text-primary" />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <p className="font-medium text-foreground text-sm truncate">{item.title}</p>
           <p className="text-xs text-muted-foreground truncate">
@@ -258,6 +327,32 @@ function WishlistCard({
 
       {isExpanded && (
         <div className="border-t border-border p-3 space-y-2 animate-fade-in">
+          {/* Full-size reference image */}
+          {item.imageUrl && (
+            <div className="rounded-lg overflow-hidden mb-2">
+              <img
+                src={item.imageUrl}
+                alt={`Reference for ${item.title}`}
+                className="w-full h-48 object-cover"
+              />
+              {item.bodyLocation && (
+                <div className="flex items-center gap-1.5 mt-1.5 px-0.5">
+                  <MapPin className="w-3 h-3 text-primary" />
+                  <span className="text-xs text-muted-foreground">Placement:</span>
+                  <span className="text-xs text-foreground font-medium">{item.bodyLocation}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!item.imageUrl && item.bodyLocation && (
+            <div className="flex items-center gap-2 text-xs">
+              <MapPin className="w-3 h-3 text-muted-foreground" />
+              <span className="text-muted-foreground">Placement:</span>
+              <span className="text-foreground">{item.bodyLocation}</span>
+            </div>
+          )}
+
           {item.artistName && (
             <div className="flex items-center gap-2 text-xs">
               <User className="w-3 h-3 text-muted-foreground" />
