@@ -38,7 +38,7 @@ export function UpgradeCard({ featureName, onUpgrade, isLoading, compact }: Upgr
           size="sm"
         >
           <Crown className="w-4 h-4 mr-1" />
-          Go Pro — $2.99/mo
+          Go Pro
         </Button>
       </div>
     );
