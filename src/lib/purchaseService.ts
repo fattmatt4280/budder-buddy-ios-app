@@ -130,7 +130,7 @@ class PurchaseService {
   /**
    * Initiate a purchase through RevenueCat
    */
-  async purchase(): Promise<PurchaseResult> {
+  async purchase(plan: PlanType = 'monthly'): Promise<PurchaseResult> {
     if (!this.isNativePlatform() || !this.Purchases) {
       logger.log('[Purchase] Web preview - simulating purchase');
       return this.syncSubscriptionToBackend();
@@ -139,13 +139,14 @@ class PurchaseService {
     try {
       const offerings = await this.Purchases.getOfferings();
       const currentOffering = offerings.current;
+      const pkg = plan === 'annual' ? currentOffering?.annual : currentOffering?.monthly;
 
-      if (!currentOffering?.monthly) {
-        return { success: false, error: 'No subscription offering available' };
+      if (!pkg) {
+        return { success: false, error: `No ${plan} offering available` };
       }
 
       const { customerInfo } = await this.Purchases.purchasePackage({
-        aPackage: currentOffering.monthly,
+        aPackage: pkg,
       });
 
       // Check if Pro entitlement is now active
