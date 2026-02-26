@@ -28,6 +28,7 @@ import SettingsScreen from "@/pages/SettingsScreen";
 import ArticleScreen from "@/pages/ArticleScreen";
 import AuthScreen from "@/pages/AuthScreen";
 import DailyCheckinScreen from "@/pages/DailyCheckinScreen";
+import PaywallScreen from "@/pages/PaywallScreen";
 import PrivacyPolicyScreen from "@/pages/PrivacyPolicyScreen";
 import TermsOfServiceScreen from "@/pages/TermsOfServiceScreen";
 import SupportScreen from "@/pages/SupportScreen";
