@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { clearAuthStorage } from '@/lib/supabaseClientInit';
+import { purchaseService } from '@/lib/purchaseService';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -15,6 +16,11 @@ export function useAuth() {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Identify or reset RevenueCat user
+        if (session?.user) {
+          purchaseService.identify(session.user.id);
+        }
       }
     );
 
@@ -56,7 +62,7 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
-    // Clear tokens from both secure and insecure storage
+    await purchaseService.logout();
     await clearAuthStorage();
     return { error };
   }, []);
