@@ -120,7 +120,7 @@ class PurchaseService {
   }
 
   private fallbackMonthly(): ProductInfo {
-    return { id: '20260224', title: 'Monthly', description: 'Billed monthly', price: '$2.99/mo' };
+    return { id: '20260224', title: 'Monthly', description: 'Billed monthly', price: '$3.99/mo' };
   }
 
   private fallbackAnnual(): ProductInfo {
