@@ -62,7 +62,7 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
-    // Clear tokens from both secure and insecure storage
+    await purchaseService.logout();
     await clearAuthStorage();
     return { error };
   }, []);
