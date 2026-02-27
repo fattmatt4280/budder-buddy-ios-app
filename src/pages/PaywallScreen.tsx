@@ -110,7 +110,7 @@ export default function PaywallScreen() {
             }`}
           >
             <div className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-success text-success-foreground text-[10px] font-bold uppercase">
-              Save 30%
+              Save 48%
             </div>
             <p className="text-sm font-semibold text-foreground mb-1">Yearly</p>
             <p className="text-lg font-bold text-foreground">{annualPrice}</p>
