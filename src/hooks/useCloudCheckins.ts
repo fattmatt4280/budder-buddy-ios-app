@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { DailyCheckin, DailyChecklist } from '@/types';
 import { logger } from '@/lib/logger';
@@ -62,9 +62,16 @@ export function useCloudCheckins(userId: string | null) {
   const [checkins, setCheckins] = useState<DailyCheckin[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
-  // Reset state when userId changes to prevent data leakage between accounts
+  // Reset state when userId actually changes (not on HMR remount)
   useEffect(() => {
+    if (prevUserIdRef.current === undefined) {
+      prevUserIdRef.current = userId;
+      return;
+    }
+    if (prevUserIdRef.current === userId) return;
+    prevUserIdRef.current = userId;
     setCheckins([]);
     setHasSynced(false);
     localStorage.removeItem(LOCAL_STORAGE_KEY);
