@@ -296,6 +296,41 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlist_images: {
+        Row: {
+          created_at: string
+          id: string
+          sort_order: number
+          storage_path: string
+          user_id: string
+          wishlist_item_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+          storage_path: string
+          user_id: string
+          wishlist_item_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+          storage_path?: string
+          user_id?: string
+          wishlist_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_images_wishlist_item_id_fkey"
+            columns: ["wishlist_item_id"]
+            isOneToOne: false
+            referencedRelation: "tattoo_wishlist"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
