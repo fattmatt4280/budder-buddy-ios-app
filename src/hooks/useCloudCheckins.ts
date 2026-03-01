@@ -59,9 +59,16 @@ function localToCloud(local: DailyCheckin, userId: string): Omit<CloudCheckin, '
 }
 
 export function useCloudCheckins(userId: string | null) {
-  const [checkins, setCheckins] = useState<DailyCheckin[]>(() => getLocalCheckins());
+  const [checkins, setCheckins] = useState<DailyCheckin[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
+
+  // Reset state when userId changes to prevent data leakage between accounts
+  useEffect(() => {
+    setCheckins([]);
+    setHasSynced(false);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+  }, [userId]);
 
   // Fetch from cloud and merge/import local data
   useEffect(() => {

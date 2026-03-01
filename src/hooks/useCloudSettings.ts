@@ -56,9 +56,16 @@ function setLocalSettings(settings: AppSettings): void {
 }
 
 export function useCloudSettings(userId: string | null) {
-  const [settings, setSettings] = useState<AppSettings>(() => getLocalSettings());
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
+
+  // Reset state when userId changes to prevent data leakage between accounts
+  useEffect(() => {
+    setSettings(DEFAULT_SETTINGS);
+    setHasSynced(false);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+  }, [userId]);
 
   // Fetch from cloud and merge/import local data
   useEffect(() => {

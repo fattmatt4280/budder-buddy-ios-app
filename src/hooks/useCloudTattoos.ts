@@ -75,9 +75,16 @@ function localToCloud(local: Tattoo, userId: string): Omit<CloudTattoo, 'id' | '
 }
 
 export function useCloudTattoos(userId: string | null) {
-  const [tattoos, setTattoos] = useState<Tattoo[]>(() => getLocalTattoos());
+  const [tattoos, setTattoos] = useState<Tattoo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
+
+  // Reset state when userId changes to prevent data leakage between accounts
+  useEffect(() => {
+    setTattoos([]);
+    setHasSynced(false);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+  }, [userId]);
 
   // Fetch from cloud and merge/import local data
   useEffect(() => {
