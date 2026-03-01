@@ -16,6 +16,16 @@ interface PremiumStatus {
 }
 
 export function usePremiumStatus(userId: string | null): PremiumStatus {
+  // TODO: Remove this override when ready to enforce paywall (~5,000 users)
+  return {
+    isPro: true,
+    isLoading: false,
+    status: 'override',
+    expiresAt: null,
+    purchase: async () => {},
+    restore: async () => {},
+    refresh: async () => {},
+  };
   const [isPro, setIsPro] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState('free');
