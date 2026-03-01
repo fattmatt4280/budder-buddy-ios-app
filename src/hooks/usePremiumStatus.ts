@@ -17,22 +17,16 @@ interface PremiumStatus {
 
 export function usePremiumStatus(userId: string | null): PremiumStatus {
   // TODO: Remove this override when ready to enforce paywall (~5,000 users)
-  return {
-    isPro: true,
-    isLoading: false,
-    status: 'override',
-    expiresAt: null,
-    purchase: async () => {},
-    restore: async () => {},
-    refresh: async () => {},
-  };
-  const [isPro, setIsPro] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [status, setStatus] = useState('free');
+  const PAYWALL_DISABLED = true;
+
+  const [isPro, setIsPro] = useState(PAYWALL_DISABLED ? true : false);
+  const [isLoading, setIsLoading] = useState(PAYWALL_DISABLED ? false : true);
+  const [status, setStatus] = useState(PAYWALL_DISABLED ? 'override' : 'free');
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const { toast } = useToast();
 
   const fetchStatus = useCallback(async () => {
+    if (PAYWALL_DISABLED) return;
     if (!userId) {
       setIsPro(false);
       setStatus('free');
@@ -41,7 +35,6 @@ export function usePremiumStatus(userId: string | null): PremiumStatus {
     }
 
     try {
-      // Check admin role first — admins get full Pro access
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -90,6 +83,7 @@ export function usePremiumStatus(userId: string | null): PremiumStatus {
   }, [fetchStatus]);
 
   const purchase = useCallback(async (plan: PlanType = 'monthly') => {
+    if (PAYWALL_DISABLED) return;
     const result = await purchaseService.purchase(plan);
     if (result.success) {
       toast({ title: 'Welcome to Pro! 🎉', description: 'All premium features are now unlocked.' });
@@ -100,6 +94,7 @@ export function usePremiumStatus(userId: string | null): PremiumStatus {
   }, [fetchStatus, toast]);
 
   const restore = useCallback(async () => {
+    if (PAYWALL_DISABLED) return;
     const result = await purchaseService.restore();
     if (result.success) {
       toast({ title: 'Subscription restored!', description: 'Your Pro access has been restored.' });
