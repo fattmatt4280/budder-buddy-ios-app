@@ -21,7 +21,7 @@ import {
 
 export default function WishlistSection() {
   const { userId, isPro } = useAppData();
-  const { items, isLoading, addItem, deleteItem } = useWishlist(userId);
+  const { items, isLoading, addItem, deleteItem, addImages, removeImage } = useWishlist(userId);
   const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -36,30 +36,38 @@ export default function WishlistSection() {
     budget: '',
     notes: '',
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const addMoreInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setForm({ title: '', bodyLocation: '', style: '', artistName: '', shopName: '', budget: '', notes: '' });
-    setImageFile(null);
-    setImagePreview(null);
+    setImageFiles([]);
+    setImagePreviews([]);
     setShowForm(false);
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    setImageFiles((prev) => [...prev, ...files]);
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () =>
+        setImagePreviews((prev) => [...prev, reader.result as string]);
+      reader.readAsDataURL(file);
+    });
+
+    // Reset input so user can select same file again
+    if (e.target) e.target.value = '';
   };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+  const removePreviewImage = (index: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAdd = async () => {
@@ -76,7 +84,7 @@ export default function WishlistSection() {
           budget: form.budget ? Number(form.budget) : undefined,
           notes: form.notes.trim() || undefined,
         },
-        imageFile || undefined
+        imageFiles.length > 0 ? imageFiles : undefined
       );
       resetForm();
     } catch {
@@ -90,6 +98,13 @@ export default function WishlistSection() {
     if (!deleteConfirm) return;
     await deleteItem(deleteConfirm);
     setDeleteConfirm(null);
+  };
+
+  const handleAddMoreImages = async (itemId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    await addImages(itemId, files);
+    if (e.target) e.target.value = '';
   };
 
   return (
@@ -114,38 +129,48 @@ export default function WishlistSection() {
         {/* Add Form */}
         {showForm && (
           <div className="liquid-glass-card rounded-xl p-4 mb-3 space-y-3 animate-fade-in">
-            {/* Image Upload */}
+            {/* Image Upload - Multi */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground flex items-center gap-1">
-                <ImagePlus className="w-3 h-3" /> Reference Image
+                <ImagePlus className="w-3 h-3" /> Reference Images
               </Label>
-              {imagePreview ? (
-                <div className="relative w-full rounded-lg overflow-hidden border border-border">
-                  <img
-                    src={imagePreview}
-                    alt="Reference preview"
-                    className="w-full h-40 object-cover"
-                  />
+              {imagePreviews.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                  {imagePreviews.map((preview, idx) => (
+                    <div key={idx} className="relative shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-border">
+                      <img src={preview} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removePreviewImage(idx)}
+                        className="absolute top-1 right-1 bg-background/80 backdrop-blur-sm rounded-full p-0.5"
+                      >
+                        <X className="w-3 h-3 text-foreground" />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Add more button inline */}
                   <button
-                    onClick={removeImage}
-                    className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="shrink-0 w-24 h-24 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 transition-colors bg-muted/30"
                   >
-                    <X className="w-4 h-4 text-foreground" />
+                    <Plus className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground">More</span>
                   </button>
                 </div>
-              ) : (
+              )}
+              {imagePreviews.length === 0 && (
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full h-28 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1.5 transition-colors bg-muted/30"
                 >
                   <ImagePlus className="w-6 h-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Tap to add reference photo</span>
+                  <span className="text-xs text-muted-foreground">Tap to add reference photos</span>
                 </button>
               )}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
+                multiple
                 onChange={handleImageSelect}
                 className="hidden"
               />
@@ -260,6 +285,8 @@ export default function WishlistSection() {
                 isExpanded={expandedId === item.id}
                 onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
                 onDelete={() => setDeleteConfirm(item.id)}
+                onAddImages={(files) => addImages(item.id, files)}
+                onRemoveImage={removeImage}
               />
             ))}
           </div>
@@ -289,22 +316,37 @@ function WishlistCard({
   isExpanded,
   onToggle,
   onDelete,
+  onAddImages,
+  onRemoveImage,
 }: {
   item: WishlistItem;
   isExpanded: boolean;
   onToggle: () => void;
   onDelete: () => void;
+  onAddImages: (files: File[]) => Promise<void>;
+  onRemoveImage: (imageId: string) => Promise<void>;
 }) {
+  const addInputRef = useRef<HTMLInputElement>(null);
+  const firstImage = item.images[0];
+  const imageCount = item.images.length;
+
   return (
     <div className="liquid-glass-card rounded-xl overflow-hidden">
       <button onClick={onToggle} className="w-full p-3 text-left flex items-center gap-3">
-        {/* Thumbnail or icon */}
-        {item.imageUrl ? (
-          <img
-            src={item.imageUrl}
-            alt={item.title}
-            className="w-9 h-9 rounded-lg object-cover shrink-0"
-          />
+        {/* Thumbnail with count badge */}
+        {firstImage?.url ? (
+          <div className="relative shrink-0">
+            <img
+              src={firstImage.url}
+              alt={item.title}
+              className="w-9 h-9 rounded-lg object-cover"
+            />
+            {imageCount > 1 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {imageCount}
+              </span>
+            )}
+          </div>
         ) : (
           <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Sparkles className="w-4 h-4 text-primary" />
@@ -327,25 +369,73 @@ function WishlistCard({
 
       {isExpanded && (
         <div className="border-t border-border p-3 space-y-2 animate-fade-in">
-          {/* Full-size reference image */}
-          {item.imageUrl && (
-            <div className="rounded-lg overflow-hidden mb-2">
-              <img
-                src={item.imageUrl}
-                alt={`Reference for ${item.title}`}
-                className="w-full h-48 object-cover"
-              />
-              {item.bodyLocation && (
-                <div className="flex items-center gap-1.5 mt-1.5 px-0.5">
-                  <MapPin className="w-3 h-3 text-primary" />
-                  <span className="text-xs text-muted-foreground">Placement:</span>
-                  <span className="text-xs text-foreground font-medium">{item.bodyLocation}</span>
+          {/* Image gallery */}
+          {item.images.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+              {item.images.map((img) => (
+                <div key={img.id} className="relative shrink-0 w-28 h-28 rounded-lg overflow-hidden border border-border group">
+                  <img
+                    src={img.url}
+                    alt={`Reference for ${item.title}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onRemoveImage(img.id); }}
+                    className="absolute top-1 right-1 bg-background/80 backdrop-blur-sm rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3 text-foreground" />
+                  </button>
                 </div>
-              )}
+              ))}
+              {/* Add more photos button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); addInputRef.current?.click(); }}
+                className="shrink-0 w-28 h-28 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 transition-colors bg-muted/30"
+              >
+                <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground">Add more</span>
+              </button>
+              <input
+                ref={addInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length) await onAddImages(files);
+                  if (e.target) e.target.value = '';
+                }}
+                className="hidden"
+              />
             </div>
           )}
 
-          {!item.imageUrl && item.bodyLocation && (
+          {/* No images yet — offer to add */}
+          {item.images.length === 0 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); addInputRef.current?.click(); }}
+                className="w-full h-20 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 transition-colors bg-muted/30"
+              >
+                <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground">Add reference photos</span>
+              </button>
+              <input
+                ref={addInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length) await onAddImages(files);
+                  if (e.target) e.target.value = '';
+                }}
+                className="hidden"
+              />
+            </>
+          )}
+
+          {item.bodyLocation && (
             <div className="flex items-center gap-2 text-xs">
               <MapPin className="w-3 h-3 text-muted-foreground" />
               <span className="text-muted-foreground">Placement:</span>
