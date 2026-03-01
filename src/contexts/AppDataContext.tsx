@@ -1,3 +1,4 @@
+// @refresh reset
 import React, { createContext, useContext, ReactNode } from 'react';
 import type { Tattoo, DailyCheckin, AppSettings } from '@/types';
 import type { PlanType } from '@/lib/purchaseService';
