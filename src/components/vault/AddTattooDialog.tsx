@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 interface AddTattooDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onTattooAdded?: (tattooId: string, bodyLocation: string, tattooDate: string) => void;
+  onTattooAdded?: (tattooId: string, bodyLocation: string, tattooDate: string, artistName?: string) => void;
   premiumGated?: boolean;
 }
 
