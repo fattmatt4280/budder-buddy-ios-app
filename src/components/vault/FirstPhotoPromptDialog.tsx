@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useCloudPhotos } from '@/hooks/useCloudPhotos';
 import { useAuth } from '@/hooks/useAuth';
 import { useTattoos } from '@/hooks/useStorage';
@@ -15,6 +17,7 @@ interface FirstPhotoPromptDialogProps {
   tattooId?: string;
   tattooLocation?: string;
   tattooDate?: string;
+  artistName?: string;
 }
 
 export default function FirstPhotoPromptDialog({
@@ -23,17 +26,32 @@ export default function FirstPhotoPromptDialog({
   tattooId,
   tattooLocation,
   tattooDate,
+  artistName: initialArtistName,
 }: FirstPhotoPromptDialogProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { uploadPhoto } = useCloudPhotos();
+  const { updateTattoo } = useTattoos();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [artistName, setArtistName] = useState(initialArtistName || '');
+  const [artistSocialLink, setArtistSocialLink] = useState('');
 
   if (!open) return null;
 
+  const saveArtistInfo = () => {
+    if (!tattooId) return;
+    const updates: Record<string, string | undefined> = {};
+    if (artistName.trim()) updates.artistName = artistName.trim();
+    if (artistSocialLink.trim()) updates.artistSocialLink = artistSocialLink.trim();
+    if (Object.keys(updates).length > 0) {
+      updateTattoo(tattooId, updates);
+    }
+  };
+
   const handleTakePhoto = () => {
+    saveArtistInfo();
     onOpenChange(false);
     navigate('/ghost-camera', { state: { tattooId } });
   };
@@ -56,15 +74,11 @@ export default function FirstPhotoPromptDialog({
     }
 
     setUploading(true);
+    saveArtistInfo();
 
     try {
-      // Compress the image
       const compressedFile = await cameraService.compressImage(file);
-      
-      // Calculate day number from tattoo date
       const dayNumber = getDayNumber(tattooDate);
-
-      // Upload to cloud
       const result = await uploadPhoto(compressedFile, tattooId, dayNumber);
 
       if (result.success) {
@@ -89,7 +103,6 @@ export default function FirstPhotoPromptDialog({
       });
     } finally {
       setUploading(false);
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -97,6 +110,7 @@ export default function FirstPhotoPromptDialog({
   };
 
   const handleSkip = () => {
+    saveArtistInfo();
     onOpenChange(false);
   };
 
@@ -130,9 +144,39 @@ export default function FirstPhotoPromptDialog({
         </h2>
 
         {/* Description */}
-        <p className="text-muted-foreground text-sm mb-6">
+        <p className="text-muted-foreground text-sm mb-5">
           Capture your fresh {tattooLocation?.toLowerCase() || 'ink'} to start tracking your healing journey!
         </p>
+
+        {/* Artist Info Fields */}
+        <div className="text-left space-y-3 mb-5">
+          <div>
+            <Label htmlFor="artist-name" className="text-xs text-muted-foreground">
+              Artist Name (optional)
+            </Label>
+            <Input
+              id="artist-name"
+              placeholder="Who did your tattoo?"
+              value={artistName}
+              onChange={(e) => setArtistName(e.target.value)}
+              className="mt-1 h-9 text-sm"
+              disabled={uploading}
+            />
+          </div>
+          <div>
+            <Label htmlFor="artist-social" className="text-xs text-muted-foreground">
+              Artist Social / Website (optional)
+            </Label>
+            <Input
+              id="artist-social"
+              placeholder="Instagram, TikTok, or website URL"
+              value={artistSocialLink}
+              onChange={(e) => setArtistSocialLink(e.target.value)}
+              className="mt-1 h-9 text-sm"
+              disabled={uploading}
+            />
+          </div>
+        </div>
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3 mb-4">
