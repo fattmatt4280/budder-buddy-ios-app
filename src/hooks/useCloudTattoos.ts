@@ -250,6 +250,7 @@ export function useCloudTattoos(userId: string | null) {
       if (updates.artistName !== undefined) updateData.artist_name = updates.artistName;
       if (updates.shopName !== undefined) updateData.shop_name = updates.shopName;
       if (updates.notes !== undefined) updateData.notes = updates.notes;
+      if (updates.artistSocialLink !== undefined) updateData.artist_social_link = updates.artistSocialLink;
       if (updates.isHealed !== undefined) updateData.is_healed = updates.isHealed;
       if (updates.healedDate !== undefined) updateData.healed_date = updates.healedDate;
 
