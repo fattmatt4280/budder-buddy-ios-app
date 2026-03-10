@@ -31,10 +31,11 @@ export default function InkVaultScreen() {
     tattooId: string;
     bodyLocation: string;
     tattooDate: string;
+    artistName?: string;
   } | null>(null);
 
-  const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string) => {
-    setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate });
+  const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string, artistName?: string) => {
+    setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate, artistName });
   };
 
   // Combine and sort tattoos - newest first
@@ -246,6 +247,7 @@ export default function InkVaultScreen() {
         tattooId={firstPhotoPrompt?.tattooId}
         tattooLocation={firstPhotoPrompt?.bodyLocation}
         tattooDate={firstPhotoPrompt?.tattooDate}
+        artistName={firstPhotoPrompt?.artistName}
       />
     </div>
   );

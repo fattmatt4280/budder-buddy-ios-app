@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 interface AddTattooDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onTattooAdded?: (tattooId: string, bodyLocation: string, tattooDate: string) => void;
+  onTattooAdded?: (tattooId: string, bodyLocation: string, tattooDate: string, artistName?: string) => void;
   premiumGated?: boolean;
 }
 
@@ -70,7 +70,7 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
     onOpenChange(false);
 
     // Trigger callback with new tattoo info
-    onTattooAdded?.(newTattoo.id, formData.bodyLocation, formData.tattooDate);
+    onTattooAdded?.(newTattoo.id, formData.bodyLocation, formData.tattooDate, formData.artistName || undefined);
 
     // Reset form
     setFormData({

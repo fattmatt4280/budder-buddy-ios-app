@@ -70,6 +70,7 @@ export default function PhotosScreen() {
     tattooId: string;
     bodyLocation: string;
     tattooDate: string;
+    artistName?: string;
   } | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
@@ -122,8 +123,8 @@ export default function PhotosScreen() {
   }, {} as Record<number, DisplayPhoto[]>);
 
   // Handle tattoo added callback - show first photo prompt
-  const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string) => {
-    setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate });
+  const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string, artistName?: string) => {
+    setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate, artistName });
   };
 
   const handleAddTattooClick = () => {
@@ -381,6 +382,7 @@ export default function PhotosScreen() {
           tattooId={firstPhotoPrompt?.tattooId}
           tattooLocation={firstPhotoPrompt?.bodyLocation}
           tattooDate={firstPhotoPrompt?.tattooDate}
+          artistName={firstPhotoPrompt?.artistName}
         />
       </div>
     );
@@ -645,6 +647,7 @@ export default function PhotosScreen() {
         tattooId={firstPhotoPrompt?.tattooId}
         tattooLocation={firstPhotoPrompt?.bodyLocation}
         tattooDate={firstPhotoPrompt?.tattooDate}
+        artistName={firstPhotoPrompt?.artistName}
       />
 
       {/* Photo Upgrade Modal */}

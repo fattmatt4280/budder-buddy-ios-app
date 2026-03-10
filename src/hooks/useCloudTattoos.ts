@@ -35,6 +35,7 @@ interface CloudTattoo {
   artist_name: string | null;
   shop_name: string | null;
   notes: string | null;
+  artist_social_link: string | null;
   is_healed: boolean | null;
   healed_date: string | null;
   created_at: string;
@@ -53,6 +54,7 @@ function cloudToLocal(cloud: CloudTattoo): Tattoo {
     artistName: cloud.artist_name ?? undefined,
     shopName: cloud.shop_name ?? undefined,
     notes: cloud.notes ?? undefined,
+    artistSocialLink: cloud.artist_social_link ?? undefined,
     isHealed: cloud.is_healed ?? undefined,
     healedDate: cloud.healed_date ?? undefined,
   };
@@ -70,6 +72,7 @@ function localToCloud(local: Tattoo, userId: string): Omit<CloudTattoo, 'id' | '
     artist_name: local.artistName ?? null,
     shop_name: local.shopName ?? null,
     notes: local.notes ?? null,
+    artist_social_link: local.artistSocialLink ?? null,
     is_healed: local.isHealed ?? false,
     healed_date: local.healedDate ?? null,
   };
@@ -247,6 +250,7 @@ export function useCloudTattoos(userId: string | null) {
       if (updates.artistName !== undefined) updateData.artist_name = updates.artistName;
       if (updates.shopName !== undefined) updateData.shop_name = updates.shopName;
       if (updates.notes !== undefined) updateData.notes = updates.notes;
+      if (updates.artistSocialLink !== undefined) updateData.artist_social_link = updates.artistSocialLink;
       if (updates.isHealed !== undefined) updateData.is_healed = updates.isHealed;
       if (updates.healedDate !== undefined) updateData.healed_date = updates.healedDate;
 

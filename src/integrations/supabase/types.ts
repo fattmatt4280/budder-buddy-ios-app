@@ -242,6 +242,7 @@ export type Database = {
       user_tattoos: {
         Row: {
           artist_name: string | null
+          artist_social_link: string | null
           body_location: string
           created_at: string | null
           healed_date: string | null
@@ -260,6 +261,7 @@ export type Database = {
         }
         Insert: {
           artist_name?: string | null
+          artist_social_link?: string | null
           body_location: string
           created_at?: string | null
           healed_date?: string | null
@@ -278,6 +280,7 @@ export type Database = {
         }
         Update: {
           artist_name?: string | null
+          artist_social_link?: string | null
           body_location?: string
           created_at?: string | null
           healed_date?: string | null
