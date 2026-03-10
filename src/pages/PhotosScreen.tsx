@@ -70,6 +70,7 @@ export default function PhotosScreen() {
     tattooId: string;
     bodyLocation: string;
     tattooDate: string;
+    artistName?: string;
   } | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
