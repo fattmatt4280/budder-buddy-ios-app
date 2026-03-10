@@ -11,6 +11,8 @@ import { Loader2, Camera, ImageOff, Settings, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PremiumGate } from "@/components/premium/PremiumGate";
 
+const GHOST_OPACITY = 20;
+
 interface LocationState {
   tattooId?: string;
   ghostImageUrl?: string;
@@ -35,13 +37,10 @@ function GhostCameraContent() {
   const state = location.state as LocationState | null;
   const tattooId = state?.tattooId || settings.selectedTattooId;
   
-  // Find the current tattoo to calculate day number
   const currentTattoo = tattoos.find(t => t.id === tattooId);
   const currentDayNumber = currentTattoo ? getDayNumber(currentTattoo.tattooDate) : 1;
 
   const [ghostImageUrl, setGhostImageUrl] = useState<string | null>(state?.ghostImageUrl || null);
-  const [ghostOpacity, setGhostOpacity] = useState(40);
-  const [showGhost, setShowGhost] = useState(true);
   const [isCapturing, setIsCapturing] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -56,7 +55,6 @@ function GhostCameraContent() {
     if (!ghostImageUrl && tattooId) {
       const photos = getPhotosForTattoo(tattooId);
       if (photos.length > 0) {
-        // Get the most recent photo (they're sorted by dayNumber descending)
         const mostRecentPhoto = photos[0];
         setGhostImageUrl(mostRecentPhoto.imageUrl);
       }
@@ -69,7 +67,6 @@ function GhostCameraContent() {
 
     const checkPermission = async () => {
       if (!isNative) {
-        // Web doesn't need native permissions
         setPermissionStatus('granted');
         setIsWebFallback(true);
         setCameraReady(true);
@@ -79,8 +76,6 @@ function GhostCameraContent() {
       const status = await cameraService.checkCameraPermission();
       if (mounted) {
         setPermissionStatus(status);
-        
-        // If already granted, start the camera
         if (status === 'granted') {
           startCamera();
         }
@@ -88,10 +83,7 @@ function GhostCameraContent() {
     };
 
     checkPermission();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [isNative]);
 
   const startCamera = async () => {
@@ -112,15 +104,12 @@ function GhostCameraContent() {
     setPermissionStatus('loading');
     const status = await cameraService.requestCameraPermission();
     setPermissionStatus(status);
-    
     if (status === 'granted') {
       await startCamera();
     }
   };
 
   const handleOpenSettings = () => {
-    // On iOS, we can't directly open settings from the app
-    // But we can show instructions
     toast({
       title: "Open Settings",
       description: "Go to Settings > Budder Buddy > Camera and enable access",
@@ -150,23 +139,32 @@ function GhostCameraContent() {
 
     try {
       if (isNative && !isWebFallback) {
-        // Native capture
         const result = await cameraService.capture(85);
-        const file = cameraService.base64ToFile(result.base64, `tattoo-${Date.now()}.jpg`);
-        const compressedFile = await cameraService.compressImage(file);
         
-        await uploadPhoto(compressedFile, tattooId, currentDayNumber);
+        let finalFile: File;
+        
+        // If ghost image exists, composite it onto the captured photo
+        if (ghostImageUrl) {
+          finalFile = await cameraService.compositeImages(
+            result.base64,
+            ghostImageUrl,
+            GHOST_OPACITY
+          );
+        } else {
+          const file = cameraService.base64ToFile(result.base64, `tattoo-${Date.now()}.jpg`);
+          finalFile = await cameraService.compressImage(file);
+        }
+        
+        await uploadPhoto(finalFile, tattooId, currentDayNumber);
         
         toast({
           title: "Photo saved!",
           description: `Day ${currentDayNumber} photo added to your gallery`,
         });
         
-        // Stop camera before navigating
         await cameraService.stop();
         navigate('/photos', { replace: true });
       } else {
-        // Web fallback - trigger file input
         fileInputRef.current?.click();
       }
     } catch (error) {
@@ -179,7 +177,7 @@ function GhostCameraContent() {
     } finally {
       setIsCapturing(false);
     }
-  }, [tattooId, currentDayNumber, isNative, isWebFallback, uploadPhoto, toast, navigate]);
+  }, [tattooId, currentDayNumber, isNative, isWebFallback, ghostImageUrl, uploadPhoto, toast, navigate]);
 
   const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -205,7 +203,6 @@ function GhostCameraContent() {
       });
     } finally {
       setIsCapturing(false);
-      // Reset the input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -249,18 +246,10 @@ function GhostCameraContent() {
           <p className="text-white/70 mb-8">
             To take photos of your healing tattoo, Budder Buddy needs access to your camera.
           </p>
-          <Button
-            onClick={handleRequestPermission}
-            className="w-full mb-4"
-            size="lg"
-          >
+          <Button onClick={handleRequestPermission} className="w-full mb-4" size="lg">
             Allow Camera Access
           </Button>
-          <Button
-            variant="ghost"
-            onClick={handleClose}
-            className="w-full text-white/60"
-          >
+          <Button variant="ghost" onClick={handleClose} className="w-full text-white/60">
             Maybe Later
           </Button>
         </div>
@@ -268,7 +257,7 @@ function GhostCameraContent() {
     );
   }
 
-  // Permission was denied - show settings prompt
+  // Permission was denied
   if (permissionStatus === 'denied' && isNative) {
     return (
       <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-8">
@@ -289,19 +278,11 @@ function GhostCameraContent() {
               <li>Return here and try again</li>
             </ol>
           </div>
-          <Button
-            onClick={handleOpenSettings}
-            className="w-full mb-4 gap-2"
-            size="lg"
-          >
+          <Button onClick={handleOpenSettings} className="w-full mb-4 gap-2" size="lg">
             <Settings className="h-5 w-5" />
             Open Settings Guide
           </Button>
-          <Button
-            variant="ghost"
-            onClick={handleClose}
-            className="w-full text-white/60"
-          >
+          <Button variant="ghost" onClick={handleClose} className="w-full text-white/60">
             Go Back
           </Button>
         </div>
@@ -309,7 +290,7 @@ function GhostCameraContent() {
     );
   }
 
-  // Loading state (starting camera after permission granted)
+  // Loading state
   if (!cameraReady) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
@@ -325,15 +306,14 @@ function GhostCameraContent() {
   if (isWebFallback) {
     return (
       <div className="fixed inset-0 bg-black flex flex-col z-50">
-        {/* Ghost overlay for reference */}
         <div className="flex-1 relative flex items-center justify-center">
-          {ghostImageUrl && showGhost ? (
+          {ghostImageUrl ? (
             <div className="relative w-full h-full flex items-center justify-center p-4">
               <img
                 src={ghostImageUrl}
                 alt="Previous photo reference"
                 className="max-w-full max-h-full object-contain rounded-lg"
-                style={{ opacity: ghostOpacity / 100 }}
+                style={{ opacity: GHOST_OPACITY / 100 }}
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="text-center text-white/80 bg-black/50 px-4 py-2 rounded-lg">
@@ -351,19 +331,12 @@ function GhostCameraContent() {
           )}
         </div>
 
-        {/* Camera controls for web */}
         <CameraControls
-          ghostOpacity={ghostOpacity}
-          onOpacityChange={setGhostOpacity}
-          showGhost={showGhost}
-          onToggleGhost={() => setShowGhost(!showGhost)}
-          hasGhostImage={!!ghostImageUrl}
           onCapture={handleCapture}
           onClose={handleClose}
           isCapturing={isCapturing}
         />
 
-        {/* Hidden file input for web fallback */}
         <input
           ref={fileInputRef}
           type="file"
@@ -384,22 +357,17 @@ function GhostCameraContent() {
     );
   }
 
-  // Native camera UI (camera renders behind transparent webview)
-  // The camera-preview plugin renders the camera BEHIND the webview.
-  // We must ensure the webview is transparent and use GPU compositing
-  // to keep overlay elements visible on top of the camera feed.
+  // Native camera UI
   return (
     <div 
       className="fixed inset-0 z-50" 
       style={{ 
         backgroundColor: 'transparent',
-        // Force GPU compositing for the entire container
         transform: 'translateZ(0)',
-        // Ensure proper layer stacking
         isolation: 'isolate',
       }}
     >
-      {/* Ghost overlay layer - sits above the camera */}
+      {/* Ghost overlay - always visible at fixed opacity when image exists */}
       <div 
         className="absolute inset-0 z-10"
         style={{
@@ -409,12 +377,12 @@ function GhostCameraContent() {
       >
         <GhostOverlay
           imageUrl={ghostImageUrl}
-          opacity={ghostOpacity}
-          visible={showGhost}
+          opacity={GHOST_OPACITY}
+          visible={!!ghostImageUrl}
         />
       </div>
 
-      {/* Budder Buddy title - transparent header */}
+      {/* Budder Buddy title */}
       <div 
         className="absolute top-0 left-0 right-0 pt-safe-area-inset-top z-20 pointer-events-none"
         style={{ transform: 'translateZ(0)' }}
@@ -429,20 +397,14 @@ function GhostCameraContent() {
           >
             Budder Buddy
           </h1>
-          {/* Day indicator below title */}
           <span className="bg-black/50 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm mt-2">
             Day {currentDayNumber}
           </span>
         </div>
       </div>
 
-      {/* Camera controls layer */}
+      {/* Camera controls */}
       <CameraControls
-        ghostOpacity={ghostOpacity}
-        onOpacityChange={setGhostOpacity}
-        showGhost={showGhost}
-        onToggleGhost={() => setShowGhost(!showGhost)}
-        hasGhostImage={!!ghostImageUrl}
         onCapture={handleCapture}
         onClose={handleClose}
         onFlip={handleFlip}

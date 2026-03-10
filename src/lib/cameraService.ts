@@ -189,6 +189,96 @@ export const cameraService = {
   },
 
   /**
+   * Composite a ghost image onto a captured photo at a given opacity.
+   * Returns a compressed File ready for upload.
+   */
+  async compositeImages(
+    cameraBase64: string,
+    ghostImageUrl: string,
+    ghostOpacity: number,
+    maxDimension: number = 1280,
+    quality: number = 0.82
+  ): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const cameraImg = new Image();
+      const ghostImg = new Image();
+      let cameraLoaded = false;
+      let ghostLoaded = false;
+
+      const tryComposite = () => {
+        if (!cameraLoaded || !ghostLoaded) return;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Failed to get canvas context'));
+
+        let { width, height } = cameraImg;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = (height / width) * maxDimension;
+            width = maxDimension;
+          } else {
+            width = (width / height) * maxDimension;
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw the camera image
+        ctx.drawImage(cameraImg, 0, 0, width, height);
+
+        // Draw ghost overlay at specified opacity
+        ctx.globalAlpha = ghostOpacity / 100;
+        // Scale ghost to fit within canvas while maintaining aspect ratio
+        const ghostAspect = ghostImg.width / ghostImg.height;
+        const canvasAspect = width / height;
+        let gw: number, gh: number, gx: number, gy: number;
+        if (ghostAspect > canvasAspect) {
+          gw = width;
+          gh = width / ghostAspect;
+          gx = 0;
+          gy = (height - gh) / 2;
+        } else {
+          gh = height;
+          gw = height * ghostAspect;
+          gx = (width - gw) / 2;
+          gy = 0;
+        }
+        ctx.drawImage(ghostImg, gx, gy, gw, gh);
+        ctx.globalAlpha = 1.0;
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(new File([blob], `tattoo-composite-${Date.now()}.jpg`, { type: 'image/jpeg' }));
+            } else {
+              reject(new Error('Failed to composite images'));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+
+      cameraImg.onload = () => { cameraLoaded = true; tryComposite(); };
+      ghostImg.onload = () => { ghostLoaded = true; tryComposite(); };
+      cameraImg.onerror = () => reject(new Error('Failed to load camera image'));
+      ghostImg.onerror = () => reject(new Error('Failed to load ghost image'));
+
+      // Set crossOrigin for ghost image (may be a Supabase URL)
+      ghostImg.crossOrigin = 'anonymous';
+
+      const base64Data = cameraBase64.startsWith('data:')
+        ? cameraBase64
+        : `data:image/jpeg;base64,${cameraBase64}`;
+      cameraImg.src = base64Data;
+      ghostImg.src = ghostImageUrl;
+    });
+  },
+
+  /**
    * Compress an image file to the app's standard size (1280px max, JPEG 0.82)
    */
   async compressImage(file: File, maxDimension: number = 1280, quality: number = 0.82): Promise<File> {
