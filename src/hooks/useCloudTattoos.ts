@@ -35,6 +35,7 @@ interface CloudTattoo {
   artist_name: string | null;
   shop_name: string | null;
   notes: string | null;
+  artist_social_link: string | null;
   is_healed: boolean | null;
   healed_date: string | null;
   created_at: string;
