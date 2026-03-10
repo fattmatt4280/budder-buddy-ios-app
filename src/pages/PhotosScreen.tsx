@@ -647,6 +647,7 @@ export default function PhotosScreen() {
         tattooId={firstPhotoPrompt?.tattooId}
         tattooLocation={firstPhotoPrompt?.bodyLocation}
         tattooDate={firstPhotoPrompt?.tattooDate}
+        artistName={firstPhotoPrompt?.artistName}
       />
 
       {/* Photo Upgrade Modal */}

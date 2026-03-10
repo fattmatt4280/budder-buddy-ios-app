@@ -70,7 +70,7 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
     onOpenChange(false);
 
     // Trigger callback with new tattoo info
-    onTattooAdded?.(newTattoo.id, formData.bodyLocation, formData.tattooDate);
+    onTattooAdded?.(newTattoo.id, formData.bodyLocation, formData.tattooDate, formData.artistName || undefined);
 
     // Reset form
     setFormData({
