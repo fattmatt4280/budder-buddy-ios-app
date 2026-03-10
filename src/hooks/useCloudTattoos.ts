@@ -72,6 +72,7 @@ function localToCloud(local: Tattoo, userId: string): Omit<CloudTattoo, 'id' | '
     artist_name: local.artistName ?? null,
     shop_name: local.shopName ?? null,
     notes: local.notes ?? null,
+    artist_social_link: local.artistSocialLink ?? null,
     is_healed: local.isHealed ?? false,
     healed_date: local.healedDate ?? null,
   };
