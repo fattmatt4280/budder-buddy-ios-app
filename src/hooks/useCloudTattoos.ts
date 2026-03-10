@@ -54,6 +54,7 @@ function cloudToLocal(cloud: CloudTattoo): Tattoo {
     artistName: cloud.artist_name ?? undefined,
     shopName: cloud.shop_name ?? undefined,
     notes: cloud.notes ?? undefined,
+    artistSocialLink: cloud.artist_social_link ?? undefined,
     isHealed: cloud.is_healed ?? undefined,
     healedDate: cloud.healed_date ?? undefined,
   };
