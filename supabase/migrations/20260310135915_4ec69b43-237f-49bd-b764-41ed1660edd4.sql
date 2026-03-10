@@ -1,0 +1,1 @@
+ALTER TABLE public.user_tattoos ADD COLUMN artist_social_link text DEFAULT NULL;
