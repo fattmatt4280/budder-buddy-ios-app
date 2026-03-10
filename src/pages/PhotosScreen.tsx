@@ -123,8 +123,8 @@ export default function PhotosScreen() {
   }, {} as Record<number, DisplayPhoto[]>);
 
   // Handle tattoo added callback - show first photo prompt
-  const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string) => {
-    setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate });
+  const handleTattooAdded = (tattooId: string, bodyLocation: string, tattooDate: string, artistName?: string) => {
+    setFirstPhotoPrompt({ tattooId, bodyLocation, tattooDate, artistName });
   };
 
   const handleAddTattooClick = () => {
