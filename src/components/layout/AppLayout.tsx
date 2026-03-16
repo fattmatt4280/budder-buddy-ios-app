@@ -17,9 +17,15 @@ export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { settings, isLoading } = useAppData();
+  const mainRef = useRef<HTMLElement>(null);
 
   // Verify and reschedule notifications on app boot
   useNotificationBootstrap(settings, !isLoading);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
