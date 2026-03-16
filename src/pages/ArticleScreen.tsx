@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import { getArticle, EDUCATION_CATEGORIES } from '@/data/educationContent';
@@ -6,11 +5,6 @@ import { getArticle, EDUCATION_CATEGORIES } from '@/data/educationContent';
 export default function ArticleScreen() {
   const navigate = useNavigate();
   const { articleId } = useParams();
-
-  // Scroll to top when article loads
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [articleId]);
 
   const article = articleId ? getArticle(articleId) : undefined;
   const category = article
