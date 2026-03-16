@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Clock, Camera, BookOpen, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
