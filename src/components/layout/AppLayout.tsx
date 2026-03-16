@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Clock, Camera, BookOpen, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -16,9 +17,15 @@ export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { settings, isLoading } = useAppData();
+  const mainRef = useRef<HTMLElement>(null);
 
   // Verify and reschedule notifications on app boot
   useNotificationBootstrap(settings, !isLoading);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -28,7 +35,7 @@ export default function AppLayout() {
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Main content area - scrollable */}
-      <main className="flex-1 overflow-y-auto pb-20 safe-area-top">
+      <main ref={mainRef} className="flex-1 overflow-y-auto pb-20 safe-area-top">
         <Outlet />
       </main>
 

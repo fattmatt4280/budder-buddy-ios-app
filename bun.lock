@@ -343,9 +343,9 @@
 
     "@remix-run/router": ["@remix-run/router@1.23.0", "", {}, "sha512-O3rHJzAQKamUz1fvE0Qaw0xSFqsA/yafi2iqeE0pvdFtCO1viYx8QL6f3Ln/aCCTLxs68SLf0KPM9eSeM8yBnA=="],
 
-    "@revenuecat/purchases-capacitor": ["@revenuecat/purchases-capacitor@12.2.2", "", { "dependencies": { "@revenuecat/purchases-typescript-internal-esm": "17.42.0" }, "peerDependencies": { "@capacitor/core": ">=8.0.0" } }, "sha512-3mlrJHw1EPuZi6S36n6a4rni67J5WDfft9dOB8m2aAGRyasjvyvrUslq8m7RHGixdNw4NilLZ8Ewa68LFJ+z/Q=="],
+    "@revenuecat/purchases-capacitor": ["@revenuecat/purchases-capacitor@12.2.4", "", { "dependencies": { "@revenuecat/purchases-typescript-internal-esm": "17.47.0" }, "peerDependencies": { "@capacitor/core": ">=8.0.0" } }, "sha512-U0EZd13kRmUoM8hMmI6yQmHOl+f4MmJTbx13SRgoC4zlL+Rvp/04HI8ZBEz6+1PMow724V+jZiS04gHuE/AW1w=="],
 
-    "@revenuecat/purchases-typescript-internal-esm": ["@revenuecat/purchases-typescript-internal-esm@17.42.0", "", {}, "sha512-8nzWr0a6iX3hrEUJdjS+ul1q+ec6uROk0CvqLu+i2VvLCrTt0Kp1zKY0IcupT7DMMrfUezGUhCaxSmLJ9irELA=="],
+    "@revenuecat/purchases-typescript-internal-esm": ["@revenuecat/purchases-typescript-internal-esm@17.47.0", "", {}, "sha512-dch8pR3TvLHGgC7KuUfAUqO0xzfJTgrixCC3srIZz6Ubo5/L/AidrLHRGuWrPQ7jdsst7bdBWBYk1Ofjax4pLA=="],
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-beta.27", "", {}, "sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA=="],
 
