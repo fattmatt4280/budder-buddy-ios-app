@@ -22,9 +22,17 @@ export default function AppLayout() {
   // Verify and reschedule notifications on app boot
   useNotificationBootstrap(settings, !isLoading);
 
+  // Disable native scroll restoration (causes issues on iOS / Capacitor)
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
+
   // Scroll to top on route change
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
   }, [location.pathname]);
 
   const isActive = (path: string) => {
