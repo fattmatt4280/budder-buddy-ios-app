@@ -290,21 +290,7 @@ export default function DailyCheckinScreen() {
           </div>
         </div>
 
-        {/* Take a Photo CTA */}
-        <button
-          onClick={() => navigate('/ghost-camera')}
-          className="w-full liquid-glass-primary rounded-2xl p-5 flex items-center gap-4 text-left"
-        >
-          <div className="w-14 h-14 rounded-xl bg-primary-foreground/20 flex items-center justify-center">
-            <Camera className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-primary-foreground text-base">Snap a Progress Photo</h3>
-            <p className="text-primary-foreground/70 text-sm mt-0.5">Track your healing with a daily photo</p>
-          </div>
-        </button>
-
-        {/* Today's Checklist */}
+        {/* Today's Checklist — shown first so notification taps land here */}
         <div className="liquid-glass-card rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -408,7 +394,20 @@ export default function DailyCheckinScreen() {
           </div>
         </div>
 
-        {/* Notes */}
+        {/* Take a Photo CTA — placed after questionnaire */}
+        <button
+          onClick={() => navigate('/ghost-camera')}
+          className="w-full liquid-glass-primary rounded-2xl p-5 flex items-center gap-4 text-left"
+        >
+          <div className="w-14 h-14 rounded-xl bg-primary-foreground/20 flex items-center justify-center">
+            <Camera className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-primary-foreground text-base">Snap a Progress Photo</h3>
+            <p className="text-primary-foreground/70 text-sm mt-0.5">Track your healing with a daily photo</p>
+          </div>
+        </button>
+
         <div className="liquid-glass-card rounded-2xl p-5">
           {!showNotes ? (
             <button
