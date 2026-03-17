@@ -490,9 +490,13 @@ export default function PhotosScreen() {
                 </div>
               </div>
             ))}
-          {/* Timelapse Teaser for free users */}
+          {/* Timelapse teaser / export */}
           <div className="px-6">
-            <TimelapseTeaser photoCount={photos.length} />
+            <TimelapseTeaser
+              photoCount={photos.length}
+              photos={photos.map(p => ({ imageUrl: p.imageUrl, dayNumber: p.dayNumber }))}
+              tattooName={tattoo?.name || tattoo?.bodyLocation || 'tattoo'}
+            />
           </div>
         </div>
       )}
