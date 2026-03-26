@@ -9,6 +9,7 @@ import { Eye, EyeOff, Mail, Lock, User, Loader2, Bell } from 'lucide-react';
 import { z } from 'zod';
 import mascotImage from '@/assets/mascot.png';
 import { notificationService } from '@/lib/notificationService';
+import { lovable } from '@/integrations/lovable/index';
 
 const emailSchema = z.string().email('Please enter a valid email');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
