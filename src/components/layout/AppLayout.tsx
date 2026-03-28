@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Clock, Camera, BookOpen, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNotificationBootstrap } from '@/hooks/useNotificationBootstrap';
 import { useAppData } from '@/contexts/AppDataContext';
+import AppWalkthrough from '@/components/onboarding/AppWalkthrough';
 
 const tabs = [
   { id: 'home', label: 'Today', icon: Home, path: '/' },
@@ -16,7 +17,7 @@ const tabs = [
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { settings, isLoading } = useAppData();
+  const { settings, updateSettings, isLoading, isAuthenticated } = useAppData();
   const mainRef = useRef<HTMLElement>(null);
 
   // Verify and reschedule notifications on app boot
@@ -28,6 +29,11 @@ export default function AppLayout() {
       window.history.scrollRestoration = 'manual';
     }
   }, []);
+
+  const showWalkthrough = !isLoading &&
+    isAuthenticated &&
+    settings.hasCompletedOnboarding &&
+    !settings.hasSeenWalkthrough;
 
   // Scroll to top on route change
   useEffect(() => {
@@ -58,16 +64,16 @@ export default function AppLayout() {
                 onClick={() => navigate(tab.path)}
                 className={cn(
                   "flex flex-col items-center justify-center w-16 h-12 rounded-2xl transition-all duration-200",
-                  active 
-                    ? "liquid-glass-tab-active text-primary" 
+                  active
+                    ? "liquid-glass-tab-active text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                 )}
               >
-                <tab.icon 
+                <tab.icon
                   className={cn(
                     "w-5 h-5 mb-0.5 transition-transform duration-200",
                     active && "scale-110"
-                  )} 
+                  )}
                   strokeWidth={active ? 2.5 : 2}
                 />
                 <span className={cn(
@@ -81,6 +87,11 @@ export default function AppLayout() {
           })}
         </div>
       </nav>
+
+      {/* Feature walkthrough overlay (shown once after first sign-in) */}
+      {showWalkthrough && (
+        <AppWalkthrough onComplete={() => updateSettings({ hasSeenWalkthrough: true })} />
+      )}
     </div>
   );
 }

@@ -13,7 +13,7 @@ export default function ArticleScreen() {
 
   if (!article) {
     return (
-      <div className="min-h-screen bg-background safe-area-top flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center px-6">
           <p className="text-muted-foreground mb-4">Article not found</p>
           <button
@@ -28,7 +28,7 @@ export default function ArticleScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-background safe-area-top">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10">
         <div className="px-4 py-3 flex items-center gap-3">

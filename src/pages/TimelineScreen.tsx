@@ -35,7 +35,7 @@ export default function TimelineScreen() {
   const selectedDayContent = selectedDay !== null ? getDayContent(selectedDay) : null;
 
   return (
-    <div className="min-h-screen bg-background safe-area-top">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-foreground mb-1">Healing Timeline</h1>

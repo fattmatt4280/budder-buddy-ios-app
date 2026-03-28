@@ -1,11 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, ScanFace, Fingerprint } from "lucide-react";
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
+import { biometricService, type BiometryType } from "@/lib/biometricService";
 
 // Layouts
 import AppLayout from "@/components/layout/AppLayout";
@@ -40,6 +41,51 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   const { settings, updateSettings, tattoos, isAuthenticated, isLoading } = useAppData();
 
+  // Biometric lock state
+  const [biometricLocked, setBiometricLocked] = useState<boolean | null>(null); // null = checking
+  const [biometryType, setBiometryType] = useState<BiometryType>('none');
+  const [biometricChecking, setBiometricChecking] = useState(false);
+
+  // On mount, check if biometric lock should be shown
+  useEffect(() => {
+    (async () => {
+      const [enabled, available, type] = await Promise.all([
+        biometricService.isEnabled(),
+        biometricService.isAvailable(),
+        biometricService.getBiometryType(),
+      ]);
+      setBiometryType(type);
+      // Only lock if biometric is both enabled and available, AND user is authenticated
+      if (enabled && available) {
+        setBiometricLocked(true);
+      } else {
+        setBiometricLocked(false);
+      }
+    })();
+  }, []);
+
+  const handleBiometricUnlock = useCallback(async () => {
+    setBiometricChecking(true);
+    try {
+      const label = biometryType === 'faceId' ? 'Face ID' : 'Touch ID';
+      const result = await biometricService.authenticate(`Use ${label} to unlock Budder Buddy`);
+      if (result.success) {
+        setBiometricLocked(false);
+      }
+    } catch {
+      // User cancelled — stay locked
+    } finally {
+      setBiometricChecking(false);
+    }
+  }, [biometryType]);
+
+  // Auto-trigger Face ID on first load when locked
+  useEffect(() => {
+    if (biometricLocked === true && isAuthenticated && !isLoading) {
+      handleBiometricUnlock();
+    }
+  }, [biometricLocked, isAuthenticated, isLoading, handleBiometricUnlock]);
+
   // Self-heal onboarding state so users don't get stuck on the welcome screen
   // if they already have enough state to use the app.
   useEffect(() => {
@@ -63,10 +109,39 @@ function AppRoutes() {
 
   // Show loading spinner while auth/data is resolving to prevent
   // flash to welcome screen on app restart for already-signed-in users
-  if (isLoading) {
+  if (isLoading || biometricLocked === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Biometric lock screen — shown when user is authenticated but hasn't passed Face ID yet
+  if (biometricLocked && isAuthenticated) {
+    const label = biometryType === 'faceId' ? 'Face ID' : 'Touch ID';
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-8 gap-6 safe-area-top safe-area-bottom">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+          {biometryType === 'faceId' ? (
+            <ScanFace className="w-10 h-10 text-primary" />
+          ) : (
+            <Fingerprint className="w-10 h-10 text-primary" />
+          )}
+        </div>
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-foreground mb-2">Budder Buddy is Locked</h1>
+          <p className="text-muted-foreground text-sm">
+            Use {label} to unlock your account
+          </p>
+        </div>
+        <button
+          onClick={handleBiometricUnlock}
+          disabled={biometricChecking}
+          className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-base disabled:opacity-50 transition-opacity"
+        >
+          {biometricChecking ? 'Verifying...' : `Unlock with ${label}`}
+        </button>
       </div>
     );
   }

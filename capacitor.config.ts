@@ -4,8 +4,13 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.f8e96625555b4f769c477869ccd21511',
   appName: 'Budder Buddy',
   webDir: 'dist',
+    
+  server: {
+        iosScheme: 'capacitor'
+  },
+    
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     allowsLinkPreview: false,
     // Note: No backgroundColor set here - this allows the webview to be transparent
     // so the camera preview (which renders behind the webview) can show through.

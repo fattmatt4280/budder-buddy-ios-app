@@ -1,16 +1,22 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Check, Droplet, Sun, Hand, GlassWater, Sparkles, ArrowLeft, MessageCircle, Trophy } from 'lucide-react';
+import { Camera, Check, Droplet, Sun, Hand, GlassWater, Sparkles, ArrowLeft, MessageCircle, Trophy, AlertTriangle, ExternalLink, X, ShieldCheck, ShieldOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppData } from '@/contexts/AppDataContext';
+import { useCloudPhotos } from '@/hooks/useCloudPhotos';
 import { getDayNumber, getHealingPhase, getHealingProgress, DailyChecklist, DailyCheckin } from '@/types';
 import { cn } from '@/lib/utils';
 import mascotImage from '@/assets/mascot.png';
 import { generateId } from '@/hooks/useStorage';
 import FirstCheckinSuccess from '@/components/checkin/FirstCheckinSuccess';
 import { analytics } from '@/lib/analyticsService';
+
+// Observation tags that indicate potential abnormal healing when selected after day 3
+const CONCERN_TAGS = ['hot', 'swelling', 'redness'];
+const CONCERN_THRESHOLD = 2; // Show warning when 2+ concern tags are selected
+const CONCERN_DAY_THRESHOLD = 4; // Only trigger from day 4 onward
 
 const CHECKLIST_ITEMS = [
   { key: 'washed', label: 'Washed gently', icon: Droplet, emoji: '🧼' },
@@ -78,11 +84,13 @@ export default function DailyCheckinScreen() {
     tattoos,
     settings,
     getTattoo,
+    updateTattoo,
     getCheckinForDay,
     getCheckinsForTattoo,
     addCheckin,
     updateCheckin,
   } = useAppData();
+  const { getPhotosForTattoo } = useCloudPhotos();
 
   const [checklist, setChecklist] = useState<DailyChecklist>({
     washed: false,
@@ -95,6 +103,7 @@ export default function DailyCheckinScreen() {
   const [showNotes, setShowNotes] = useState(false);
   const [selectedObs, setSelectedObs] = useState<string[]>([]);
   const [showFirstCheckinSuccess, setShowFirstCheckinSuccess] = useState(false);
+  const [showHealingWarning, setShowHealingWarning] = useState(false);
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
 
@@ -183,6 +192,14 @@ export default function DailyCheckinScreen() {
         checklist,
         observations: newObs,
       });
+    }
+
+    // Check for abnormal healing indicators from day 4 onward
+    if (dayNumber >= CONCERN_DAY_THRESHOLD) {
+      const concernCount = newObs.filter(o => CONCERN_TAGS.includes(o)).length;
+      if (concernCount >= CONCERN_THRESHOLD) {
+        setShowHealingWarning(true);
+      }
     }
   };
 
@@ -289,6 +306,127 @@ export default function DailyCheckinScreen() {
             </div>
           </div>
         </div>
+
+        {/* Dermal Shield Tracker */}
+        {tattoo.aftercareProduct === 'dermal_shield' && !tattoo.dermalShieldRemoved && (
+          <div className="liquid-glass-card rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-5 h-5 text-sky-400" />
+              <h3 className="font-semibold text-foreground">Dermal Shield</h3>
+              <span className="ml-auto text-xs text-muted-foreground">Day {dayNumber}</span>
+            </div>
+
+            {dayNumber <= 5 ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Keep your dermal shield on for 5–7 days. You're on day {dayNumber} — {dayNumber < 5 ? `${5 - dayNumber} more day${5 - dayNumber === 1 ? '' : 's'} minimum.` : 'you can remove it now or keep it on up to day 7.'}
+                </p>
+                <div className="h-2 bg-muted rounded-full overflow-hidden mb-3">
+                  <div
+                    className="h-full bg-sky-400 transition-all duration-500 rounded-full"
+                    style={{ width: `${Math.min((dayNumber / 7) * 100, 100)}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">Is the shield still on?</p>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <ShieldCheck className="w-4 h-4 mr-1.5" />
+                    Still on
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-amber-500 border-amber-500/30 hover:bg-amber-500/10"
+                    onClick={() => updateTattoo(tattoo.id, {
+                      dermalShieldRemoved: true,
+                      dermalShieldRemovedDate: new Date().toISOString().split('T')[0],
+                    })}
+                  >
+                    <ShieldOff className="w-4 h-4 mr-1.5" />
+                    Removed it
+                  </Button>
+                </div>
+              </div>
+            ) : dayNumber <= 7 ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  You're on day {dayNumber} — it's safe to remove your dermal shield now. Day 7 is the maximum recommended time.
+                </p>
+                <div className="h-2 bg-muted rounded-full overflow-hidden mb-3">
+                  <div
+                    className="h-full bg-amber-400 transition-all duration-500 rounded-full"
+                    style={{ width: `${Math.min((dayNumber / 7) * 100, 100)}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">Is the shield still on?</p>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <ShieldCheck className="w-4 h-4 mr-1.5" />
+                    Still on
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 liquid-glass-primary text-white"
+                    onClick={() => updateTattoo(tattoo.id, {
+                      dermalShieldRemoved: true,
+                      dermalShieldRemovedDate: new Date().toISOString().split('T')[0],
+                    })}
+                  >
+                    <ShieldOff className="w-4 h-4 mr-1.5" />
+                    Removed it
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-amber-400 font-medium mb-3">
+                  It's day {dayNumber} — your dermal shield should be removed by now. Leaving it on past 7 days can trap bacteria and irritate your skin.
+                </p>
+                <Button
+                  size="sm"
+                  className="w-full liquid-glass-primary text-white"
+                  onClick={() => updateTattoo(tattoo.id, {
+                    dermalShieldRemoved: true,
+                    dermalShieldRemovedDate: new Date().toISOString().split('T')[0],
+                  })}
+                >
+                  <ShieldOff className="w-4 h-4 mr-1.5" />
+                  I've removed it
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Take a Photo CTA */}
+        <button
+          onClick={() => {
+            const ghostPhoto = getPhotosForTattoo(tattoo.id).find(p => !!p.imageUrl);
+            navigate('/ghost-camera', {
+              state: {
+                tattooId: tattoo.id,
+                ghostImageUrl: ghostPhoto?.imageUrl,
+              }
+            });
+          }}
+          className="w-full liquid-glass-primary rounded-2xl p-5 flex items-center gap-4 text-left"
+        >
+          <div className="w-14 h-14 rounded-xl bg-primary-foreground/20 flex items-center justify-center">
+            <Camera className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-primary-foreground text-base">Snap a Progress Photo</h3>
+            <p className="text-primary-foreground/70 text-sm mt-0.5">Track your healing with a daily photo</p>
+          </div>
+        </button>
 
         {/* Today's Checklist — shown first so notification taps land here */}
         <div className="liquid-glass-card rounded-2xl p-5">
@@ -480,6 +618,73 @@ export default function DailyCheckinScreen() {
         open={showFirstCheckinSuccess}
         onClose={() => setShowFirstCheckinSuccess(false)}
       />
+
+      {/* Abnormal Healing Warning Dialog */}
+      {showHealingWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowHealingWarning(false)}
+          />
+
+          {/* Dialog */}
+          <div className="relative w-full max-w-sm rounded-2xl bg-card border border-border shadow-2xl p-6 animate-fade-in">
+            {/* Close button */}
+            <button
+              onClick={() => setShowHealingWarning(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Warning icon */}
+            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-amber-500/15 flex items-center justify-center">
+              <AlertTriangle className="w-7 h-7 text-amber-500" />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-lg font-bold text-foreground text-center mb-2">
+              Heads Up — Check Your Healing
+            </h2>
+
+            {/* Description */}
+            <p className="text-sm text-muted-foreground text-center mb-4 leading-relaxed">
+              It's day {dayNumber} and you're reporting symptoms like heat, swelling, or redness.
+              While some of this can be normal early on, these signs persisting past day 3
+              could indicate abnormal healing or a possible infection.
+            </p>
+
+            <div className="bg-muted/50 rounded-xl p-3 mb-5">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">When in doubt:</span>{' '}
+                Reach out to your tattoo artist or a medical professional.
+                You can also use our AI-powered Heal Aid tool to analyze a photo of your tattoo for signs of concern.
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  setShowHealingWarning(false);
+                  window.open('https://heal-aid.com', '_blank');
+                }}
+                className="w-full h-12 text-base font-semibold liquid-glass-primary text-white gap-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Try Heal Aid Tool
+              </Button>
+              <button
+                onClick={() => setShowHealingWarning(false)}
+                className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+              >
+                Got it, thanks
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import type { Tattoo } from '@/types';
 import { logger } from '@/lib/logger';
 
 const LOCAL_STORAGE_KEY = 'budder_tattoos';
+const DELETED_IDS_KEY = 'budder_deleted_tattoo_ids';
 
 function getLocalTattoos(): Tattoo[] {
   try {
@@ -20,6 +21,25 @@ function setLocalTattoos(tattoos: Tattoo[]): void {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tattoos));
   } catch (error) {
     logger.error('Failed to save tattoos to local storage:', error);
+  }
+}
+
+function getDeletedIds(): Set<string> {
+  try {
+    const item = localStorage.getItem(DELETED_IDS_KEY);
+    return item ? new Set(JSON.parse(item)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function addDeletedId(id: string): void {
+  try {
+    const ids = getDeletedIds();
+    ids.add(id);
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify([...ids]));
+  } catch (error) {
+    logger.error('Failed to save deleted tattoo ID:', error);
   }
 }
 
@@ -116,8 +136,25 @@ export function useCloudTattoos(userId: string | null) {
           return;
         }
 
-        const cloudTattoos = (cloudData || []).map(cloudToLocal);
-        const localTattoos = getLocalTattoos();
+        const deletedIds = getDeletedIds();
+        const allCloudTattoos = (cloudData || []).map(cloudToLocal);
+
+        // Clean up any cloud tattoos that were previously deleted locally but survived
+        const zombieTattoos = allCloudTattoos.filter(t => deletedIds.has(t.id));
+        if (zombieTattoos.length > 0) {
+          logger.log('[useCloudTattoos] Cleaning up', zombieTattoos.length, 'zombie tattoos from cloud');
+          for (const zombie of zombieTattoos) {
+            await supabase
+              .from('user_tattoos')
+              .delete()
+              .eq('user_id', userId)
+              .eq('local_id', zombie.id);
+          }
+        }
+
+        const cloudTattoos = allCloudTattoos.filter(t => !deletedIds.has(t.id));
+        const localTattoos = getLocalTattoos()
+          .filter(t => !deletedIds.has(t.id));
 
         logger.log('[useCloudTattoos] sync start', {
           userId,
@@ -155,6 +192,8 @@ export function useCloudTattoos(userId: string | null) {
           } else {
             const distinct = new Map<string, string>();
             for (const row of photoRows || []) {
+              // Skip tattoos that were intentionally deleted
+              if (deletedIds.has(row.tattoo_id)) continue;
               if (!distinct.has(row.tattoo_id)) {
                 distinct.set(row.tattoo_id, row.photo_date);
               }
@@ -222,25 +261,35 @@ export function useCloudTattoos(userId: string | null) {
     // Add locally first for immediate feedback
     setTattoos(prev => [...prev, tattoo]);
 
-    // Then sync to cloud if authenticated
-    if (userId) {
-      const cloudData = localToCloud(tattoo, userId);
+    // Get current session directly to avoid stale userId closure
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
+
+    if (currentUserId) {
+      const cloudData = localToCloud(tattoo, currentUserId);
       const { error } = await supabase
         .from('user_tattoos')
         .insert(cloudData);
 
       if (error) {
         logger.error('Failed to save tattoo to cloud:', error);
+      } else {
+        logger.log('Tattoo saved to cloud:', tattoo.id);
       }
+    } else {
+      logger.error('addTattoo: no active session, tattoo only saved locally');
     }
-  }, [userId]);
+  }, []);
 
   const updateTattoo = useCallback(async (id: string, updates: Partial<Tattoo>) => {
     setTattoos(prev =>
       prev.map(t => (t.id === id ? { ...t, ...updates } : t))
     );
 
-    if (userId) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
+
+    if (currentUserId) {
       const updateData: Record<string, unknown> = {};
       if (updates.name !== undefined) updateData.name = updates.name;
       if (updates.tattooDate !== undefined) updateData.tattoo_date = updates.tattooDate;
@@ -257,30 +306,46 @@ export function useCloudTattoos(userId: string | null) {
       const { error } = await supabase
         .from('user_tattoos')
         .update(updateData)
-        .eq('user_id', userId)
+        .eq('user_id', currentUserId)
         .eq('local_id', id);
 
       if (error) {
         logger.error('Failed to update tattoo in cloud:', error);
       }
+    } else {
+      logger.error('updateTattoo: no active session, update only saved locally');
     }
-  }, [userId]);
+  }, []);
 
   const deleteTattoo = useCallback(async (id: string) => {
+    // Track locally as deleted so it won't be resurrected by recovery logic
+    addDeletedId(id);
+
+    // Remove from local state immediately for UI responsiveness
+    const previousTattoos = tattoos;
     setTattoos(prev => prev.filter(t => t.id !== id));
 
-    if (userId) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
+
+    if (currentUserId) {
       const { error } = await supabase
         .from('user_tattoos')
         .delete()
-        .eq('user_id', userId)
+        .eq('user_id', currentUserId)
         .eq('local_id', id);
 
       if (error) {
         logger.error('Failed to delete tattoo from cloud:', error);
+        // Revert local state so user knows it didn't work
+        setTattoos(previousTattoos);
+      } else {
+        logger.log('[useCloudTattoos] Tattoo deleted from cloud:', id);
       }
+    } else {
+      logger.error('deleteTattoo: no active session');
     }
-  }, [userId]);
+  }, [tattoos]);
 
   const getTattoo = useCallback(
     (id: string) => tattoos.find(t => t.id === id),

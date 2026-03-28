@@ -153,7 +153,7 @@ export default function TodayScreen() {
 
   if (!tattoo) {
     return (
-      <div className="min-h-screen bg-background safe-area-top px-6 pt-6 pb-6 space-y-4">
+      <div className="min-h-screen bg-background px-6 pt-6 pb-6 space-y-4">
         {/* No Tattoo CTA */}
         <div className="flex flex-col items-center justify-center text-center py-8">
           <img 
@@ -314,7 +314,7 @@ export default function TodayScreen() {
   const completedCount = Object.values(checklist).filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-background safe-area-top">
+    <div className="min-h-screen bg-background">
       {/* Header with mascot */}
       <div className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between mb-4">

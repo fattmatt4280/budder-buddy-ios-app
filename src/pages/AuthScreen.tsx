@@ -5,26 +5,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Lock, User, Loader2, Bell } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import mascotImage from '@/assets/mascot.png';
 import { notificationService } from '@/lib/notificationService';
 import { lovable } from '@/integrations/lovable/index';
+import { biometricService } from '@/lib/biometricService';
 
 const emailSchema = z.string().email('Please enter a valid email');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
 export default function AuthScreen() {
   const navigate = useNavigate();
-  const { signIn, signUp, isAuthenticated, loading: authLoading } = useAuth();
+  const { signIn, signUp, signInWithApple, signInWithGoogle, isAuthenticated, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  
+
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<'apple' | 'google' | null>(null);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
@@ -51,6 +53,62 @@ export default function AuthScreen() {
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const offerBiometricEnrollment = async () => {
+    const available = await biometricService.isAvailable();
+    const alreadyEnabled = await biometricService.isEnabled();
+    if (!available || alreadyEnabled) return;
+
+    const label = await biometricService.getBiometryLabel();
+    // Auto-enable biometric after first successful login and let user know
+    await biometricService.setEnabled(true);
+    toast({
+      title: `${label} enabled`,
+      description: `Next time, sign in instantly with ${label}. You can disable this in Settings.`,
+    });
+  };
+
+  const handleAppleSignIn = async () => {
+    setSocialLoading('apple');
+    try {
+      const result = await signInWithApple();
+      if (result.cancelled) return;
+      if (result.error) {
+        toast({
+          title: 'Apple Sign-In failed',
+          description: result.error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({ title: 'Welcome!', description: 'Signed in with Apple.' });
+        offerBiometricEnrollment();
+        navigate('/', { replace: true });
+      }
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setSocialLoading('google');
+    try {
+      const result = await signInWithGoogle();
+      if (result.cancelled) return;
+      if (result.error) {
+        toast({
+          title: 'Google Sign-In failed',
+          description: result.error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({ title: 'Welcome!', description: 'Signed in with Google.' });
+        offerBiometricEnrollment();
+        navigate('/', { replace: true });
+      }
+    } finally {
+      setSocialLoading(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,6 +140,7 @@ export default function AuthScreen() {
             title: 'Welcome back!',
             description: 'You have successfully logged in.',
           });
+          offerBiometricEnrollment();
           navigate('/', { replace: true });
         }
       } else {
@@ -103,12 +162,13 @@ export default function AuthScreen() {
         } else {
           // Send welcome push notification
           notificationService.sendWelcomeNotification();
-          
+
           // Show toast pointing to notifications
           toast({
             title: '🎉 Welcome to Budder Buddy!',
             description: 'Check your notifications for a special welcome message!',
           });
+          offerBiometricEnrollment();
           navigate('/', { replace: true });
         }
       }
@@ -325,6 +385,8 @@ export default function AuthScreen() {
             )}
           </Button>
         </form>
+
+        {/* Social Sign-In buttons hidden for now — logic preserved in useAuth */}
 
         {/* Toggle mode */}
         <div className="mt-6 text-center">

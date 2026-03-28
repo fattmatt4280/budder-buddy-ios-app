@@ -159,11 +159,13 @@ export default function PhotosScreen() {
       return;
     }
     
-    // Navigate to ghost camera with existing tattoo
-    navigate('/ghost-camera', { 
-      state: { 
+    // Navigate to ghost camera with existing tattoo + ghost image URL
+    const ghostPhoto = getCloudPhotos(tattoo.id).find(p => !!p.imageUrl);
+    navigate('/ghost-camera', {
+      state: {
         tattooId: tattoo.id,
-      } 
+        ghostImageUrl: ghostPhoto?.imageUrl,
+      }
     });
   };
 
@@ -301,7 +303,7 @@ export default function PhotosScreen() {
 
   if (!tattoo) {
     return (
-      <div className="min-h-screen bg-background safe-area-top">
+      <div className="min-h-screen bg-background">
         <div className="px-6 pt-6 pb-4">
           <h1 className="text-2xl font-bold text-foreground mb-1">Photo Log</h1>
           <p className="text-muted-foreground text-sm">Track your healing progress</p>
@@ -389,7 +391,7 @@ export default function PhotosScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-background safe-area-top">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
@@ -528,8 +530,9 @@ export default function PhotosScreen() {
               <Button
                 onClick={() => {
                   setIsAddingPhoto(false);
-                  navigate('/ghost-camera', { 
-                    state: { tattooId: tattoo?.id } 
+                  const ghostPhoto = tattoo ? getCloudPhotos(tattoo.id).find(p => !!p.imageUrl) : undefined;
+                  navigate('/ghost-camera', {
+                    state: { tattooId: tattoo?.id, ghostImageUrl: ghostPhoto?.imageUrl }
                   });
                 }}
                 className="flex-1 liquid-glass-primary text-white"

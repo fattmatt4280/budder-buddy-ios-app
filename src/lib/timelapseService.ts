@@ -8,11 +8,12 @@ interface TimelapsePhoto {
 interface TimelapseResult {
   success: boolean;
   error?: string;
+  gifDataUrl?: string;
 }
 
 /**
  * Generates an animated GIF timelapse from healing photos.
- * Uses gifshot library to create the GIF client-side.
+ * Returns the GIF as a base64 data URL — caller decides how to share/download.
  */
 export async function generateTimelapse(
   photos: TimelapsePhoto[],
@@ -25,7 +26,7 @@ export async function generateTimelapse(
   try {
     // Sort photos by day number (ascending)
     const sortedPhotos = [...photos].sort((a, b) => a.dayNumber - b.dayNumber);
-    
+
     // Load all images and add day overlay
     const processedImages = await Promise.all(
       sortedPhotos.map(photo => addDayOverlay(photo.imageUrl, photo.dayNumber))
@@ -33,28 +34,84 @@ export async function generateTimelapse(
 
     // Filter out any failed images
     const validImages = processedImages.filter((img): img is string => img !== null);
-    
+
     if (validImages.length < 2) {
       return { success: false, error: 'Failed to load enough images for timelapse' };
     }
 
-    // Generate GIF using gifshot
-    const gifBlob = await createGif(validImages);
-    
-    if (!gifBlob) {
+    // Generate GIF using gifshot — returns base64 data URL
+    const gifDataUrl = await createGif(validImages);
+
+    if (!gifDataUrl) {
       return { success: false, error: 'Failed to generate GIF' };
     }
 
-    // Trigger download
-    const filename = `healing-timelapse-${tattooName.toLowerCase().replace(/\s+/g, '-')}.gif`;
-    downloadBlob(gifBlob, filename);
-
-    return { success: true };
+    return { success: true, gifDataUrl };
   } catch (error) {
     logger.error('[TimelapseService] Error generating timelapse:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
+/**
+ * Saves GIF to device cache and opens native share sheet on iOS.
+ * Falls back to browser download on web.
+ */
+export async function shareTimelapse(
+  gifDataUrl: string,
+  filename: string
+): Promise<{ success: boolean; error?: string }> {
+  const isNative = !!(window as any).Capacitor?.isNativePlatform?.();
+
+  if (!isNative) {
+    downloadFromDataUrl(gifDataUrl, filename);
+    return { success: true };
+  }
+
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem');
+    const { Share } = await import('@capacitor/share');
+
+    // Extract pure base64 from data URL
+    const base64Data = gifDataUrl.split(',')[1];
+
+    // Write to cache directory (auto-cleaned by iOS)
+    await Filesystem.writeFile({
+      path: filename,
+      data: base64Data,
+      directory: Directory.Cache,
+    });
+
+    // Get the file URI for sharing
+    const uriResult = await Filesystem.getUri({
+      path: filename,
+      directory: Directory.Cache,
+    });
+
+    // Show native share sheet
+    await Share.share({
+      title: 'My Healing Timelapse',
+      text: 'Check out my tattoo healing journey!',
+      files: [uriResult.uri],
+      dialogTitle: 'Share Your Timelapse',
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    // Share.share() throws if user dismisses the share sheet — not a real error
+    if (error?.message?.includes('canceled') ||
+        error?.message?.includes('cancelled') ||
+        error?.message?.includes('dismissed')) {
+      return { success: true };
+    }
+
+    logger.error('[TimelapseService] Share failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to share timelapse',
     };
   }
 }
@@ -66,11 +123,11 @@ async function addDayOverlay(imageUrl: string, dayNumber: number): Promise<strin
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    
+
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
+
       if (!ctx) {
         resolve(null);
         return;
@@ -111,18 +168,18 @@ async function addDayOverlay(imageUrl: string, dayNumber: number): Promise<strin
 
 /**
  * Creates a GIF from an array of image data URLs using gifshot.
+ * Returns the GIF as a base64 data URL string.
  */
-async function createGif(images: string[]): Promise<Blob | null> {
+async function createGif(images: string[]): Promise<string | null> {
   return new Promise((resolve) => {
-    // Dynamic import of gifshot
     import('gifshot').then((gifshot) => {
       const gifshotLib = gifshot.default || gifshot;
-      
+
       gifshotLib.createGIF({
         images,
         gifWidth: 800,
         gifHeight: 800,
-        interval: 0.5, // 500ms per frame
+        interval: 0.5,
         numFrames: images.length,
         frameDuration: 1,
         sampleInterval: 10,
@@ -134,28 +191,8 @@ async function createGif(images: string[]): Promise<Blob | null> {
           return;
         }
 
-        // Convert base64 to blob
-        const base64 = result.image;
-        if (!base64) {
-          resolve(null);
-          return;
-        }
-
-        try {
-          const byteString = atob(base64.split(',')[1]);
-          const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
-          const ab = new ArrayBuffer(byteString.length);
-          const ia = new Uint8Array(ab);
-          
-          for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-          }
-          
-          resolve(new Blob([ab], { type: mimeString }));
-        } catch (error) {
-          logger.error('[TimelapseService] Failed to convert GIF to blob:', error);
-          resolve(null);
-        }
+        // result.image is a base64 data URL
+        resolve(result.image || null);
       });
     }).catch((error) => {
       logger.error('[TimelapseService] Failed to load gifshot:', error);
@@ -165,15 +202,13 @@ async function createGif(images: string[]): Promise<Blob | null> {
 }
 
 /**
- * Triggers a file download in the browser.
+ * Web fallback: triggers a file download from a data URL.
  */
-function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
+function downloadFromDataUrl(dataUrl: string, filename: string): void {
   const link = document.createElement('a');
-  link.href = url;
+  link.href = dataUrl;
   link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
 }

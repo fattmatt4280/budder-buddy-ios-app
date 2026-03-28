@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { clearAuthStorage } from '@/lib/supabaseClientInit';
 import { purchaseService } from '@/lib/purchaseService';
+import { socialAuthService } from '@/lib/socialAuthService';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -67,6 +68,28 @@ export function useAuth() {
     return { error };
   }, []);
 
+  const signInWithApple = useCallback(async () => {
+    const result = await socialAuthService.signInWithApple();
+    if (!result.success && !result.cancelled) {
+      return { error: { message: result.error || 'Apple Sign-In failed' }, cancelled: false };
+    }
+    if (result.cancelled) {
+      return { error: null, cancelled: true };
+    }
+    return { error: null, cancelled: false };
+  }, []);
+
+  const signInWithGoogle = useCallback(async () => {
+    const result = await socialAuthService.signInWithGoogle();
+    if (!result.success && !result.cancelled) {
+      return { error: { message: result.error || 'Google Sign-In failed' }, cancelled: false };
+    }
+    if (result.cancelled) {
+      return { error: null, cancelled: true };
+    }
+    return { error: null, cancelled: false };
+  }, []);
+
   return {
     user,
     session,
@@ -74,6 +97,8 @@ export function useAuth() {
     signUp,
     signIn,
     signOut,
+    signInWithApple,
+    signInWithGoogle,
     isAuthenticated: !!session,
   };
 }

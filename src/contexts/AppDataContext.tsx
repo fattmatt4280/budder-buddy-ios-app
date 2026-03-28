@@ -37,6 +37,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   sunGuardEnabled: false,
   activityRemindersEnabled: true,
   longTermCareEnabled: false,
+  hasSeenWalkthrough: false,
 };
 
 interface AppDataContextType {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, MapPin, Ruler, Palette, User, Store, FileText, Tag } from 'lucide-react';
+import { Calendar, MapPin, Ruler, Palette, User, Store, FileText, Tag, Droplets } from 'lucide-react';
 import { PremiumGate } from '@/components/premium/PremiumGate';
 import { analytics } from '@/lib/analyticsService';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTattoos, useSettings, generateId } from '@/hooks/useStorage';
-import { BODY_LOCATIONS, SizeTier, InkType } from '@/types';
+import { BODY_LOCATIONS, SizeTier, InkType, AftercareProduct, AFTERCARE_PRODUCTS } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 interface AddTattooDialogProps {
@@ -35,6 +35,8 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
     bodyLocation: '',
     sizeTier: 'Medium' as SizeTier,
     inkType: 'BlackGrey' as InkType,
+    aftercareProduct: '' as AftercareProduct | '',
+    aftercareProductOther: '',
     artistName: '',
     shopName: '',
     notes: '',
@@ -55,6 +57,8 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
       createdAt: new Date().toISOString(),
       ...formData,
       name: formData.name.trim() || undefined,
+      aftercareProduct: formData.aftercareProduct || undefined,
+      aftercareProductOther: formData.aftercareProduct === 'other' ? formData.aftercareProductOther.trim() || undefined : undefined,
     };
 
     addTattoo(newTattoo);
@@ -79,6 +83,8 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
       bodyLocation: '',
       sizeTier: 'Medium',
       inkType: 'BlackGrey',
+      aftercareProduct: '',
+      aftercareProductOther: '',
       artistName: '',
       shopName: '',
       notes: '',
@@ -213,6 +219,37 @@ export default function AddTattooDialog({ open, onOpenChange, onTattooAdded, pre
                 Color
               </Button>
             </div>
+          </div>
+
+          {/* Aftercare Product */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Droplets className="w-4 h-4 text-muted-foreground" />
+              Aftercare method
+            </Label>
+            <Select
+              value={formData.aftercareProduct}
+              onValueChange={(value) => setFormData({ ...formData, aftercareProduct: value as AftercareProduct })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="What did your artist recommend?" />
+              </SelectTrigger>
+              <SelectContent>
+                {AFTERCARE_PRODUCTS.map((product) => (
+                  <SelectItem key={product.value} value={product.value}>
+                    {product.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {formData.aftercareProduct === 'other' && (
+              <Input
+                value={formData.aftercareProductOther}
+                onChange={(e) => setFormData({ ...formData, aftercareProductOther: e.target.value })}
+                placeholder="What product are you using?"
+                className="mt-2"
+              />
+            )}
           </div>
 
           {/* Optional Details - Collapsed */}

@@ -141,24 +141,36 @@ export function useCloudCheckins(userId: string | null) {
   const addCheckin = useCallback(async (checkin: DailyCheckin) => {
     setCheckins(prev => [...prev, checkin]);
 
-    if (userId) {
-      const cloudData = localToCloud(checkin, userId);
+    // Get current session directly to avoid stale userId closure
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
+
+    if (currentUserId) {
+      const cloudData = localToCloud(checkin, currentUserId);
       const { error } = await supabase
         .from('user_checkins')
         .insert(cloudData);
 
       if (error) {
         logger.error('Failed to save checkin to cloud:', error);
+      } else {
+        logger.log('Checkin saved to cloud:', checkin.id);
       }
+    } else {
+      logger.error('addCheckin: no active session, checkin only saved locally');
     }
-  }, [userId]);
+  }, []);
 
   const updateCheckin = useCallback(async (id: string, updates: Partial<DailyCheckin>) => {
     setCheckins(prev =>
       prev.map(c => (c.id === id ? { ...c, ...updates } : c))
     );
 
-    if (userId) {
+    // Get current session directly to avoid stale userId closure
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
+
+    if (currentUserId) {
       const updateData: Record<string, unknown> = {};
       if (updates.checklist !== undefined) updateData.checklist = updates.checklist;
       if (updates.userNotes !== undefined) updateData.user_notes = updates.userNotes;
@@ -168,13 +180,15 @@ export function useCloudCheckins(userId: string | null) {
         .from('user_checkins')
         .update(updateData)
         .eq('id', id)
-        .eq('user_id', userId);
+        .eq('user_id', currentUserId);
 
       if (error) {
         logger.error('Failed to update checkin in cloud:', error);
       }
+    } else {
+      logger.error('updateCheckin: no active session, update only saved locally');
     }
-  }, [userId]);
+  }, []);
 
   const getCheckinForDay = useCallback(
     (tattooId: string, dayNumber: number) =>

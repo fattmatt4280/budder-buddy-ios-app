@@ -34,7 +34,7 @@ export default function LearnScreen() {
   }, [loading, isAuthenticated]);
 
   return (
-    <div className="min-h-screen bg-background safe-area-top">
+    <div className="min-h-screen bg-background">
       {/* Header with mascot */}
       <div className="px-6 pt-6 pb-4">
         <div className="flex items-center gap-4 mb-4">

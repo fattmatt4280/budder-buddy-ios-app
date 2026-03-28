@@ -34,6 +34,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   sunGuardEnabled: false,
   activityRemindersEnabled: true,
   longTermCareEnabled: false,
+  hasSeenWalkthrough: false,
 };
 
 function getLocalSettings(): AppSettings {
@@ -144,12 +145,16 @@ export function useCloudSettings(userId: string | null) {
     const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
 
-    if (userId) {
+    // Get current session directly to avoid stale userId closure
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
+
+    if (currentUserId) {
       // Use type assertion since types haven't regenerated yet
       const { error } = await (supabase
         .from('user_settings') as any)
         .upsert({
-          user_id: userId,
+          user_id: currentUserId,
           settings: newSettings,
         }, {
           onConflict: 'user_id',
@@ -159,17 +164,20 @@ export function useCloudSettings(userId: string | null) {
         logger.error('Failed to save settings to cloud:', error);
       }
     }
-  }, [userId, settings]);
+  }, [settings]);
 
   const resetSettings = useCallback(async () => {
     setSettings(DEFAULT_SETTINGS);
 
-    if (userId) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
+
+    if (currentUserId) {
       // Use type assertion since types haven't regenerated yet
       const { error } = await (supabase
         .from('user_settings') as any)
         .upsert({
-          user_id: userId,
+          user_id: currentUserId,
           settings: DEFAULT_SETTINGS,
         }, {
           onConflict: 'user_id',
@@ -179,7 +187,7 @@ export function useCloudSettings(userId: string | null) {
         logger.error('Failed to reset settings in cloud:', error);
       }
     }
-  }, [userId]);
+  }, []);
 
   return {
     settings,

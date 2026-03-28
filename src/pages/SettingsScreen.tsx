@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Bell, 
-  Cloud, 
-  Shield, 
-  ExternalLink, 
+import {
+  Bell,
+  Cloud,
+  Shield,
+  ExternalLink,
   ChevronRight,
   Clock,
   Droplet,
@@ -21,7 +21,9 @@ import {
   Waves,
   Archive,
   Crown,
-  RotateCcw
+  RotateCcw,
+  ScanFace,
+  Fingerprint,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,6 +41,7 @@ import { notificationService } from '@/lib/notificationService';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { useAppData } from '@/contexts/AppDataContext';
+import { biometricService, type BiometryType } from '@/lib/biometricService';
 import {
   Dialog,
   DialogContent,
@@ -85,6 +88,23 @@ export default function SettingsScreen() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometryType, setBiometryType] = useState<BiometryType>('none');
+
+  // Check biometric availability
+  useEffect(() => {
+    (async () => {
+      const [available, enabled, type] = await Promise.all([
+        biometricService.isAvailable(),
+        biometricService.isEnabled(),
+        biometricService.getBiometryType(),
+      ]);
+      setBiometricAvailable(available);
+      setBiometricEnabled(enabled);
+      setBiometryType(type);
+    })();
+  }, []);
 
   const selectedTattoo = tattoos.find(t => t.id === settings.selectedTattooId) || tattoos[0];
 
@@ -115,6 +135,8 @@ export default function SettingsScreen() {
 
   const handleSignOut = async () => {
     setSigningOut(true);
+    // Clear biometric preference on sign out so next account doesn't inherit it
+    await biometricService.setEnabled(false);
     const { error } = await signOut();
     setSigningOut(false);
     
@@ -224,7 +246,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-background safe-area-top">
+    <div className="min-h-screen bg-background">
       {/* Header with mascot */}
       <div className="px-6 pt-6 pb-4">
         <div className="flex items-center gap-4">
@@ -256,6 +278,48 @@ export default function SettingsScreen() {
                     <p className="text-sm text-muted-foreground">Signed in</p>
                   </div>
                 </div>
+                {biometricAvailable && (
+                  <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {biometryType === 'faceId' ? (
+                        <ScanFace className="w-5 h-5 text-muted-foreground" />
+                      ) : (
+                        <Fingerprint className="w-5 h-5 text-muted-foreground" />
+                      )}
+                      <div>
+                        <span className="font-medium text-foreground">
+                          {biometryType === 'faceId' ? 'Face ID' : 'Touch ID'} Login
+                        </span>
+                        <p className="text-xs text-muted-foreground">Quick sign-in with biometrics</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={biometricEnabled}
+                      onCheckedChange={async (checked) => {
+                        if (checked) {
+                          // Verify identity before enabling
+                          const label = biometryType === 'faceId' ? 'Face ID' : 'Touch ID';
+                          const result = await biometricService.authenticate(`Confirm ${label} to enable`);
+                          if (result.success) {
+                            await biometricService.setEnabled(true);
+                            setBiometricEnabled(true);
+                            toast({ title: `${label} enabled`, description: `You can now sign in with ${label}.` });
+                          } else {
+                            toast({
+                              title: 'Verification failed',
+                              description: `Could not verify ${label}. Please try again.`,
+                              variant: 'destructive',
+                            });
+                          }
+                        } else {
+                          await biometricService.setEnabled(false);
+                          setBiometricEnabled(false);
+                          toast({ title: 'Biometric login disabled' });
+                        }
+                      }}
+                    />
+                  </div>
+                )}
                 <button
                   onClick={handleSignOut}
                   disabled={signingOut}

@@ -27,12 +27,17 @@ export function useCloudPhotos() {
     }
 
     try {
+      logger.log('Fetching photos for user:', user.id);
+
       const { data, error } = await supabase
         .from('photos')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      logger.log('Fetched', data?.length ?? 0, 'photos from database');
 
       // Generate signed URLs for each photo
       const photosWithUrls = await Promise.all(
@@ -73,14 +78,22 @@ export function useCloudPhotos() {
       dayNumber: number,
       caption?: string
     ): Promise<{ success: boolean; error?: string }> => {
-      if (!user) {
+      // Get the current session directly from Supabase to avoid stale closure issues
+      // (the hook's `user` state may not be set yet if Keychain read is slow)
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user;
+
+      if (!currentUser) {
+        logger.error('Upload failed: no active session found');
         return { success: false, error: 'You must be logged in to save photos' };
       }
 
       try {
         // Create unique filename
         const fileExt = file.name.split('.').pop() || 'jpg';
-        const fileName = `${user.id}/${tattooId}/${Date.now()}.${fileExt}`;
+        const fileName = `${currentUser.id}/${tattooId}/${Date.now()}.${fileExt}`;
+
+        logger.log('Uploading photo:', { fileName, fileSize: file.size, tattooId, dayNumber });
 
         // Upload to storage
         const { error: uploadError } = await supabase.storage
@@ -90,22 +103,33 @@ export function useCloudPhotos() {
             upsert: false,
           });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          logger.error('Storage upload failed:', uploadError);
+          throw uploadError;
+        }
+
+        logger.log('Storage upload succeeded, creating DB record...');
 
         // Create database record
         const { data: photoRecord, error: dbError } = await supabase
           .from('photos')
           .insert({
-            user_id: user.id,
+            user_id: currentUser.id,
             tattoo_id: tattooId,
             day_number: dayNumber,
             storage_path: fileName,
+            photo_date: new Date().toISOString(),
             caption: caption || null,
           })
           .select()
           .single();
 
-        if (dbError) throw dbError;
+        if (dbError) {
+          logger.error('DB insert failed:', dbError);
+          throw dbError;
+        }
+
+        logger.log('Photo record created:', photoRecord.id);
 
         // Generate signed URL for immediate display
         const { data: urlData } = await supabase.storage
@@ -135,13 +159,14 @@ export function useCloudPhotos() {
         };
       }
     },
-    [user]
+    []
   );
 
   // Delete photo from storage and database
   const deletePhoto = useCallback(
     async (photoId: string): Promise<{ success: boolean; error?: string }> => {
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
         return { success: false, error: 'You must be logged in' };
       }
 

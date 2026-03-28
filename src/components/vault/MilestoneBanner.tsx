@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import type { Tattoo } from '@/types';
 import { getUpcomingMilestones, formatMilestoneDate } from '@/lib/milestoneService';
+import { useCloudPhotos } from '@/hooks/useCloudPhotos';
 
 interface MilestoneBannerProps {
   tattoo: Tattoo;
@@ -10,6 +11,7 @@ interface MilestoneBannerProps {
 
 export function MilestoneBanner({ tattoo }: MilestoneBannerProps) {
   const navigate = useNavigate();
+  const { getPhotosForTattoo } = useCloudPhotos();
   const milestones = getUpcomingMilestones(tattoo);
 
   if (milestones.length === 0) return null;
@@ -35,7 +37,10 @@ export function MilestoneBanner({ tattoo }: MilestoneBannerProps) {
             {milestone.message}
           </p>
           <Button
-            onClick={() => navigate('/ghost-camera', { state: { tattooId: tattoo.id } })}
+            onClick={() => {
+              const ghostPhoto = getPhotosForTattoo(tattoo.id).find(p => !!p.imageUrl);
+              navigate('/ghost-camera', { state: { tattooId: tattoo.id, ghostImageUrl: ghostPhoto?.imageUrl } });
+            }}
             size="sm"
             variant="glassPrimary"
             className="gap-1.5"

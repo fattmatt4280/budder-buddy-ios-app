@@ -1,9 +1,9 @@
-import { 
-  ChevronDown, 
-  ChevronRight, 
-  User, 
-  MapPin, 
-  Palette, 
+import {
+  ChevronDown,
+  ChevronRight,
+  User,
+  MapPin,
+  Palette,
   Ruler,
   Camera,
   CheckCircle2,
@@ -11,7 +11,7 @@ import {
   BarChart3,
   Edit2,
   Trash2,
-  Download,
+  Share2,
   Heart,
   Loader2
 } from 'lucide-react';
@@ -25,7 +25,7 @@ import { useState } from 'react';
 import { useTattoos, useSettings } from '@/hooks/useStorage';
 import { useCloudPhotos } from '@/hooks/useCloudPhotos';
 import EditTattooDialog from './EditTattooDialog';
-import { generateTimelapse } from '@/lib/timelapseService';
+import { generateTimelapse, shareTimelapse } from '@/lib/timelapseService';
 import { notificationService } from '@/lib/notificationService';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -106,25 +106,25 @@ export default function TattooVaultCard({
     toast.success('Tattoo marked as healed! Notifications turned off.');
   };
 
-  const handleDownloadTimelapse = async () => {
+  const handleShareTimelapse = async () => {
     // Get photos for this tattoo from cloud storage
     const tattooPhotos = cloudPhotos.filter(p => p.tattooId === tattoo.id);
-    
+
     if (tattooPhotos.length < 2) {
       toast.error('Need at least 2 photos to create a timelapse');
       return;
     }
 
     setIsGeneratingTimelapse(true);
-    
+
     try {
       // Get signed URLs for all photos
       const photosWithUrls = await Promise.all(
         tattooPhotos.map(async (photo) => {
           const { data } = await supabase.storage
             .from('tattoo-photos')
-            .createSignedUrl(photo.storagePath, 300); // 5 minute expiry
-          
+            .createSignedUrl(photo.storagePath, 300);
+
           return {
             imageUrl: data?.signedUrl || '',
             dayNumber: photo.dayNumber,
@@ -132,7 +132,6 @@ export default function TattooVaultCard({
         })
       );
 
-      // Filter out any photos that failed to get URLs
       const validPhotos = photosWithUrls.filter(p => p.imageUrl);
 
       if (validPhotos.length < 2) {
@@ -140,12 +139,22 @@ export default function TattooVaultCard({
         return;
       }
 
+      // Generate the GIF
       const result = await generateTimelapse(validPhotos, tattoo.bodyLocation);
-      
-      if (result.success) {
-        toast.success('Timelapse downloaded!');
-      } else {
+
+      if (!result.success || !result.gifDataUrl) {
         toast.error(result.error || 'Failed to generate timelapse');
+        return;
+      }
+
+      // Share or download the GIF
+      const filename = `healing-timelapse-${tattoo.bodyLocation.toLowerCase().replace(/\s+/g, '-')}.gif`;
+      const shareResult = await shareTimelapse(result.gifDataUrl, filename);
+
+      if (shareResult.success) {
+        toast.success('Timelapse ready!');
+      } else {
+        toast.error(shareResult.error || 'Failed to share timelapse');
       }
     } catch (error) {
       toast.error('Failed to generate timelapse');
@@ -362,7 +371,7 @@ export default function TattooVaultCard({
                 )}
                 {isHealed && hasEnoughPhotosForTimelapse && (
                   <Button
-                    onClick={handleDownloadTimelapse}
+                    onClick={handleShareTimelapse}
                     variant="outline"
                     size="sm"
                     className="flex-1 gap-1.5"
@@ -375,8 +384,8 @@ export default function TattooVaultCard({
                       </>
                     ) : (
                       <>
-                        <Download className="w-3.5 h-3.5" />
-                        Download Timelapse
+                        <Share2 className="w-3.5 h-3.5" />
+                        Share Timelapse
                       </>
                     )}
                   </Button>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CAPACITOR_DEBUG</key>
+	<string>$(CAPACITOR_DEBUG)</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Budder Buddy</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Budder Buddy needs access to your photo library so you can add and track healing of your tattoo .</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Budder Buddy saves your tattoo progress so you can track the healing over time.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Budder Buddy uses location to give the user a uv score for protecting their tattoo from uv light.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Budde Buddy uses location to give the user a location based uv rating for protecting their tattoo fro =m uv rays </string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Budder Buddy uses location only to capture the weathers uv rating for the day </string>
+	<key>NSCameraUsageDescription</key>
+	<string>Budder Buddy accesses the users camera for the picture upload function to properly track your tattoos healing process </string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Budder Buddy send the user notifications to utilaize the daily checkin feature and to let the user know when its time to clean and moisturize </string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>sign in securly using face id</string>
+	<key>GIDClientID</key>
+	<string>758862592689-60e6fvb72pqu0117m6tbg59el6gbtg5l.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.758862592689-60e6fvb72pqu0117m6tbg59el6gbtg5l</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+	</array>
+</dict>
+</plist>

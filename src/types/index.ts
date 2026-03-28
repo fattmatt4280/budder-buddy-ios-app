@@ -2,6 +2,18 @@
 
 export type SizeTier = 'Small' | 'Medium' | 'Large';
 export type InkType = 'BlackGrey' | 'Color';
+export type AftercareProduct = 'dermal_shield' | 'blue_dream_budder' | 'hustle_butter' | 'mad_rabbit' | 'aquaphor' | 'a_and_d' | 'nothing' | 'other';
+
+export const AFTERCARE_PRODUCTS: { value: AftercareProduct; label: string }[] = [
+  { value: 'dermal_shield', label: 'Dermal Shield' },
+  { value: 'blue_dream_budder', label: 'Blue Dream Budder' },
+  { value: 'hustle_butter', label: 'Hustle Butter' },
+  { value: 'mad_rabbit', label: 'Mad Rabbit' },
+  { value: 'aquaphor', label: 'Aquaphor' },
+  { value: 'a_and_d', label: 'A & D' },
+  { value: 'nothing', label: 'Nothing' },
+  { value: 'other', label: 'Other' },
+];
 
 export interface Tattoo {
   id: string;
@@ -15,6 +27,11 @@ export interface Tattoo {
   shopName?: string;
   notes?: string;
   artistSocialLink?: string;
+  // Aftercare
+  aftercareProduct?: AftercareProduct;
+  aftercareProductOther?: string; // custom entry when aftercareProduct is 'other'
+  dermalShieldRemoved?: boolean; // true once user confirms shield is off
+  dermalShieldRemovedDate?: string; // ISO date when removed
   // Manual healing control
   isHealed?: boolean;
   healedDate?: string; // ISO date when marked healed
@@ -87,6 +104,8 @@ export interface AppSettings {
   activityRemindersEnabled: boolean;
   // Long-term care (post-healing)
   longTermCareEnabled: boolean;
+  // Feature walkthrough
+  hasSeenWalkthrough: boolean;
 }
 
 export interface HealingPhase {
