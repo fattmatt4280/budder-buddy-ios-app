@@ -165,9 +165,10 @@ function GhostCameraContent() {
       const status = await cameraService.checkCameraPermission();
       if (mounted) {
         setPermissionStatus(status);
-        if (status === 'granted') {
-          startCamera();
-        }
+        // On native, don't call startCamera() here — the openNativeCamera
+        // useEffect handles it once ghostImageLoaded is also true.
+        // Calling startCamera() here sets cameraReady=true too early,
+        // which prevents openNativeCamera from ever firing.
       }
     };
 

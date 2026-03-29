@@ -78,7 +78,11 @@ export function useCloudSettings(userId: string | null) {
 
   // Fetch from cloud and merge/import local data
   useEffect(() => {
-    if (!userId || hasSynced) return;
+    if (!userId) {
+      setIsLoading(false);
+      return;
+    }
+    if (hasSynced) return;
 
     const syncFromCloud = async () => {
       setIsLoading(true);
