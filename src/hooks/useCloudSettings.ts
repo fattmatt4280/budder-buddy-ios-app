@@ -58,8 +58,11 @@ function setLocalSettings(settings: AppSettings): void {
 }
 
 export function useCloudSettings(userId: string | null) {
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
-  const [isLoading, setIsLoading] = useState(false);
+  // Initialize from local storage so persisted flags (like hasSeenWalkthrough)
+  // are immediately available, preventing stale-default flashes.
+  const [settings, setSettings] = useState<AppSettings>(getLocalSettings);
+  // Start true — walkthrough/UI gates on isLoading until cloud sync finishes
+  const [isLoading, setIsLoading] = useState(true);
   const [hasSynced, setHasSynced] = useState(false);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
@@ -73,6 +76,7 @@ export function useCloudSettings(userId: string | null) {
     prevUserIdRef.current = userId;
     setSettings(DEFAULT_SETTINGS);
     setHasSynced(false);
+    setIsLoading(true); // Block UI until new user's cloud settings load
     localStorage.removeItem(LOCAL_STORAGE_KEY);
   }, [userId]);
 
