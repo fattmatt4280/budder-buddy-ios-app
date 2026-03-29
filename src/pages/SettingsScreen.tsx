@@ -20,7 +20,6 @@ import {
   MapPin,
   Waves,
   Archive,
-  Crown,
   RotateCcw,
   ScanFace,
   Fingerprint,
@@ -78,7 +77,8 @@ export default function SettingsScreen() {
   const { user, isAuthenticated, signOut, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
-  const { isPro, premiumLoading, purchase, restore } = useAppData();
+  // Premium plan UI hidden for free launch — logic preserved in useAppData
+  // const { isPro, premiumLoading, purchase, restore } = useAppData();
 
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -358,72 +358,6 @@ export default function SettingsScreen() {
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
-            )}
-          </div>
-        </section>
-
-        {/* Your Plan */}
-        <section className="animate-fade-in">
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">YOUR PLAN</h2>
-          <div className="liquid-glass-card rounded-xl p-4">
-            {premiumLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : isPro ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/30 to-amber-600/20 flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Budder Buddy Pro</p>
-                    <p className="text-xs text-muted-foreground">All features unlocked</p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  To manage your subscription, go to <strong>Settings → Subscriptions</strong> on your iPhone.
-                </p>
-                <Button
-                  onClick={restore}
-                  variant="outline"
-                  size="sm"
-                  className="w-full gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Restore Purchases
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Free Plan</p>
-                    <p className="text-xs text-muted-foreground">1 active tattoo • Basic features</p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => navigate('/upgrade')}
-                  variant="glassPrimary"
-                  size="sm"
-                  className="w-full gap-2"
-                >
-                  <Crown className="w-4 h-4" />
-                  Go Pro
-                </Button>
-                <Button
-                  onClick={restore}
-                  variant="ghost"
-                  size="sm"
-                  className="w-full gap-2 text-muted-foreground"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Restore Purchases
-                </Button>
-              </div>
             )}
           </div>
         </section>
