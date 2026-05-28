@@ -286,7 +286,7 @@ export default function PhotosScreen() {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-foreground">Ink Vault</h3>
+              <h2 className="font-semibold text-foreground">Ink Vault</h2>
               <span className="text-xs liquid-glass-light text-success px-2 py-0.5 rounded-full font-medium">
                 Archive
               </span>
@@ -336,7 +336,7 @@ export default function PhotosScreen() {
           <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
             <Camera className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="font-semibold text-foreground mb-2">Add Your Tattoo</h3>
+          <h2 className="font-semibold text-foreground mb-2">Add Your Tattoo</h2>
           <p className="text-sm text-muted-foreground mb-6 max-w-xs">
             {isAuthenticated 
               ? 'Add your tattoo details to start tracking your healing journey.'
@@ -448,7 +448,7 @@ export default function PhotosScreen() {
           <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
             <Camera className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="font-semibold text-foreground mb-2">No Photos Yet</h3>
+          <h2 className="font-semibold text-foreground mb-2">No Photos Yet</h2>
           <p className="text-sm text-muted-foreground mb-6 max-w-xs">
             Track your healing progress by taking daily photos of your tattoo.
           </p>
@@ -467,9 +467,9 @@ export default function PhotosScreen() {
             .sort(([a], [b]) => Number(b) - Number(a))
             .map(([day, dayPhotos]) => (
               <div key={day} className="animate-fade-in">
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                <h2 className="text-sm font-medium text-muted-foreground mb-3">
                   Day {day}
-                </h3>
+                </h2>
                 <div className="grid grid-cols-3 gap-2">
                   {dayPhotos.map((photo) => (
                     <button
