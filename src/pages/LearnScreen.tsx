@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Search, ChevronRight, ExternalLink, Sparkles, BookOpen, Archive } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,14 @@ export default function LearnScreen() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Tattoo Care Education — Budder Buddy Learn</title>
+        <meta name="description" content="Browse Budder Buddy's tattoo aftercare library: healing stages, what's normal, common mistakes, itching and peeling, and when to contact your artist." />
+        <link rel="canonical" href="https://budderbuddy.lovable.app/learn" />
+        <meta property="og:title" content="Tattoo Care Education — Budder Buddy Learn" />
+        <meta property="og:description" content="Browse Budder Buddy's tattoo aftercare library: healing stages, common mistakes, and when to seek help." />
+        <meta property="og:url" content="https://budderbuddy.lovable.app/learn" />
+      </Helmet>
       {/* Header with mascot */}
       <div className="px-6 pt-6 pb-4">
         <div className="flex items-center gap-4 mb-4">
@@ -44,7 +53,7 @@ export default function LearnScreen() {
             className="w-12 h-12 rounded-xl shadow-md"
           />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Learn</h1>
+            <h1 className="text-2xl font-bold text-foreground">Tattoo Care Education</h1>
             <p className="text-muted-foreground text-sm">
               Everything about tattoo healing
             </p>

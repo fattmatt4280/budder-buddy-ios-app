@@ -175,7 +175,7 @@ export default function TodayScreen() {
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Bell className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground">Today's Reminders</h3>
+              <h2 className="font-semibold text-foreground">Today's Reminders</h2>
               <span className="text-xs text-muted-foreground ml-auto">
                 {scheduledReminders.times.length} scheduled
               </span>
@@ -205,7 +205,7 @@ export default function TodayScreen() {
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <Lightbulb className="w-4 h-4 text-amber-500" />
             </div>
-            <h3 className="font-semibold text-foreground">Daily Tip</h3>
+            <h2 className="font-semibold text-foreground">Daily Tip</h2>
           </div>
           <p className="text-sm text-muted-foreground">{dailyTip}</p>
         </div>
@@ -402,7 +402,7 @@ export default function TodayScreen() {
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Bell className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground">Today's Reminders</h3>
+              <h2 className="font-semibold text-foreground">Today's Reminders</h2>
               <span className="text-xs text-muted-foreground ml-auto">
                 {scheduledReminders.times.length} scheduled
               </span>
@@ -432,7 +432,7 @@ export default function TodayScreen() {
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <Lightbulb className="w-4 h-4 text-amber-500" />
             </div>
-            <h3 className="font-semibold text-foreground">Daily Tip</h3>
+            <h2 className="font-semibold text-foreground">Daily Tip</h2>
           </div>
           <p className="text-sm text-muted-foreground">{dailyTip}</p>
         </div>
@@ -446,7 +446,7 @@ export default function TodayScreen() {
             <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
               <Check className="w-4 h-4 text-success" />
             </div>
-            <h3 className="font-semibold text-foreground">What's Normal</h3>
+            <h2 className="font-semibold text-foreground">What's Normal</h2>
           </div>
           <ul className="space-y-2">
             {content.whatsNormal.slice(0, 3).map((item, i) => (
@@ -464,7 +464,7 @@ export default function TodayScreen() {
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Droplet className="w-4 h-4 text-primary" />
             </div>
-            <h3 className="font-semibold text-foreground">What To Do</h3>
+            <h2 className="font-semibold text-foreground">What To Do</h2>
           </div>
           <ul className="space-y-2">
             {content.whatToDo.slice(0, 4).map((item, i) => (
@@ -482,7 +482,7 @@ export default function TodayScreen() {
             <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
               <Hand className="w-4 h-4 text-destructive" />
             </div>
-            <h3 className="font-semibold text-foreground">What To Avoid</h3>
+            <h2 className="font-semibold text-foreground">What To Avoid</h2>
           </div>
           <ul className="space-y-2">
             {content.whatToAvoid.slice(0, 4).map((item, i) => (
@@ -501,7 +501,7 @@ export default function TodayScreen() {
           style={{ animationDelay: '0.3s' }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-foreground">Today's Checklist</h3>
+            <h2 className="font-semibold text-foreground">Today's Checklist</h2>
             <span className="text-sm text-muted-foreground">{completedCount}/{CHECKLIST_ITEMS.length}</span>
           </div>
           <div className="space-y-3">
@@ -545,7 +545,7 @@ export default function TodayScreen() {
               <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
                 <MessageCircle className="w-4 h-4 text-violet-500" />
               </div>
-              <h3 className="font-semibold text-foreground">My Observations</h3>
+              <h2 className="font-semibold text-foreground">My Observations</h2>
             </div>
             <Button
               variant="ghost"

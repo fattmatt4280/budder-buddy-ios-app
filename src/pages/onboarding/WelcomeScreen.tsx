@@ -104,6 +104,7 @@ export default function WelcomeScreen() {
 
           {/* App title */}
           <h1
+            aria-label="Budder Buddy — Your Tattoo Healing Companion"
             style={{
               fontFamily: "'Lilita One', sans-serif",
               fontSize: 40,
@@ -115,7 +116,8 @@ export default function WelcomeScreen() {
               textShadow: '0 4px 10px rgba(0,0,0,0.25)',
             }}
           >
-            BUDDER BUDDY
+            <span aria-hidden="true">BUDDER BUDDY</span>
+            <span className="sr-only">Budder Buddy — Your Tattoo Healing Companion</span>
           </h1>
         </div>
 
