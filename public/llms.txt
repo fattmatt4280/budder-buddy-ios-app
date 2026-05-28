@@ -1,0 +1,15 @@
+# Budder Buddy
+
+> Budder Buddy is a tattoo aftercare companion app providing daily guidance, reminders, healing stage education, and expert tips to help new tattoos heal beautifully.
+
+Budder Buddy helps people care for fresh tattoos with day-by-day guidance, what's-normal education, and reminders for cleaning and moisturizing. It also includes a healing stage visual library to identify common phases and concerns.
+
+## Pages
+
+- [Home](/): Overview and onboarding for the Budder Buddy tattoo aftercare app.
+- [Learn](/learn): Educational articles about tattoo aftercare, what's normal, common mistakes, and when to contact your artist or seek medical care.
+- [Healing Guide](/healing-guide): Visual library of tattoo healing stages with guidance on what's normal vs. concerning.
+- [Sign In](/auth): Create an account or sign in to sync your tattoo care journey.
+- [Support](/support): Help, FAQs, and contact information.
+- [Privacy Policy](/privacy): How Budder Buddy handles your data.
+- [Terms of Service](/terms): Terms governing use of Budder Buddy.

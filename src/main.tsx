@@ -1,6 +1,13 @@
 import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
+
+const Root = () => (
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>
+);
 import { initializeSecureAuth } from "./lib/supabaseClientInit";
 import { notificationService } from "./lib/notificationService";
 import { purchaseService } from "./lib/purchaseService";
@@ -22,9 +29,9 @@ initializeSecureAuth().then(async () => {
     window.location.href = '/checkin';
   });
   
-  createRoot(document.getElementById("root")!).render(<App />);
+  createRoot(document.getElementById("root")!).render(<Root />);
 }).catch((error) => {
   logger.error('[App] Failed to initialize:', error);
   // Render app anyway to prevent blank screen
-  createRoot(document.getElementById("root")!).render(<App />);
+  createRoot(document.getElementById("root")!).render(<Root />);
 });

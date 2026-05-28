@@ -197,7 +197,7 @@ export default function AuthScreen() {
         />
         
         <h1 className="text-2xl font-bold text-foreground mb-1">
-          {mode === 'login' ? 'Welcome Back!' : 'Create Account'}
+          {mode === 'login' ? 'Sign In to Budder Buddy' : 'Create Your Budder Buddy Account'}
         </h1>
         <p className="text-muted-foreground text-center mb-8">
           {mode === 'login' 
