@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,14 @@ export default function HealingGuideScreen() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Tattoo Healing Stage Guide — Budder Buddy</title>
+        <meta name="description" content="Identify tattoo healing stages with a visual library and AI guidance. Learn what's normal, what to watch for, and when to seek help." />
+        <link rel="canonical" href="https://budderbuddy.lovable.app/healing-guide" />
+        <meta property="og:title" content="Tattoo Healing Stage Guide — Budder Buddy" />
+        <meta property="og:description" content="Visual library of tattoo healing stages plus an AI guide for late-night reassurance." />
+        <meta property="og:url" content="https://budderbuddy.lovable.app/healing-guide" />
+      </Helmet>
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-foreground mb-1">Healing Guide</h1>
