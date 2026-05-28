@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import { getArticle, EDUCATION_CATEGORIES } from '@/data/educationContent';
 
@@ -29,11 +30,30 @@ export default function ArticleScreen() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{`${article.title} — Budder Buddy`}</title>
+        <meta name="description" content={article.summary} />
+        <link rel="canonical" href={`https://budderbuddy.lovable.app/learn/${article.id}`} />
+        <meta property="og:title" content={`${article.title} — Budder Buddy`} />
+        <meta property="og:description" content={article.summary} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://budderbuddy.lovable.app/learn/${article.id}`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: article.title,
+          description: article.summary,
+          author: { "@type": "Organization", name: "Budder Buddy" },
+          publisher: { "@type": "Organization", name: "Budder Buddy", logo: { "@type": "ImageObject", url: "https://budderbuddy.lovable.app/app-icon.png" } },
+          url: `https://budderbuddy.lovable.app/learn/${article.id}`
+        })}</script>
+      </Helmet>
       {/* Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10">
         <div className="px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate('/learn')}
+            aria-label="Back to Learn"
             className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronLeft className="w-6 h-6" />
