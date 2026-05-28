@@ -175,7 +175,7 @@ export default function TodayScreen() {
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Bell className="w-4 h-4 text-primary" />
               </div>
-              <h2 className="font-semibold text-foreground">Today&#39;s Reminders</h2>
+              <h2 className="font-semibold text-foreground">Today's Reminders</h2>
               <span className="text-xs text-muted-foreground ml-auto">
                 {scheduledReminders.times.length} scheduled
               </span>
@@ -402,7 +402,7 @@ export default function TodayScreen() {
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Bell className="w-4 h-4 text-primary" />
               </div>
-              <h2 className="font-semibold text-foreground">Today&#39;s Reminders</h2>
+              <h2 className="font-semibold text-foreground">Today's Reminders</h2>
               <span className="text-xs text-muted-foreground ml-auto">
                 {scheduledReminders.times.length} scheduled
               </span>
@@ -446,7 +446,7 @@ export default function TodayScreen() {
             <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
               <Check className="w-4 h-4 text-success" />
             </div>
-            <h2 className="font-semibold text-foreground">What&#39;s Normal</h2>
+            <h2 className="font-semibold text-foreground">What's Normal</h2>
           </div>
           <ul className="space-y-2">
             {content.whatsNormal.slice(0, 3).map((item, i) => (
@@ -501,7 +501,7 @@ export default function TodayScreen() {
           style={{ animationDelay: '0.3s' }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-foreground">Today&#39;s Checklist</h2>
+            <h2 className="font-semibold text-foreground">Today's Checklist</h2>
             <span className="text-sm text-muted-foreground">{completedCount}/{CHECKLIST_ITEMS.length}</span>
           </div>
           <div className="space-y-3">
