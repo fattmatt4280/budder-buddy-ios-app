@@ -88,8 +88,10 @@ function AppRoutes() {
 
   // Self-heal onboarding state so users don't get stuck on the welcome screen
   // if they already have enough state to use the app.
+  // Skip while cloud data is still loading - firing this mid-sync would
+  // upsert stale/default settings over the real ones still coming in.
   useEffect(() => {
-    if (settings.hasCompletedOnboarding) return;
+    if (isLoading || settings.hasCompletedOnboarding) return;
 
     const shouldUnlock =
       isAuthenticated ||
@@ -104,6 +106,7 @@ function AppRoutes() {
     settings.selectedTattooId,
     tattoos.length,
     isAuthenticated,
+    isLoading,
     updateSettings,
   ]);
 
