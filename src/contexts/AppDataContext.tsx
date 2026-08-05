@@ -38,6 +38,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   activityRemindersEnabled: true,
   longTermCareEnabled: false,
   hasSeenWalkthrough: false,
+  lastBetaFeedbackPromptDate: null,
 };
 
 interface AppDataContextType {

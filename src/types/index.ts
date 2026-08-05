@@ -106,6 +106,8 @@ export interface AppSettings {
   longTermCareEnabled: boolean;
   // Feature walkthrough
   hasSeenWalkthrough: boolean;
+  // Beta feedback prompt — ISO date string (YYYY-MM-DD) of the last day it was shown
+  lastBetaFeedbackPromptDate: string | null;
 }
 
 export interface HealingPhase {

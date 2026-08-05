@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useNotificationBootstrap } from '@/hooks/useNotificationBootstrap';
 import { useAppData } from '@/contexts/AppDataContext';
 import AppWalkthrough from '@/components/onboarding/AppWalkthrough';
+import DailyFeedbackPrompt from '@/components/feedback/DailyFeedbackPrompt';
 
 const tabs = [
   { id: 'home', label: 'Today', icon: Home, path: '/' },
@@ -17,7 +18,7 @@ const tabs = [
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { settings, updateSettings, isLoading, isAuthenticated } = useAppData();
+  const { settings, updateSettings, isLoading, isAuthenticated, checkins } = useAppData();
   const mainRef = useRef<HTMLElement>(null);
 
   // Verify and reschedule notifications on app boot
@@ -34,6 +35,16 @@ export default function AppLayout() {
     isAuthenticated &&
     settings.hasCompletedOnboarding &&
     !settings.hasSeenWalkthrough;
+
+  // Once-a-day beta feedback prompt — only for engaged users (at least one
+  // check-in logged already) and never stacked on top of the walkthrough.
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const showBetaFeedback = !isLoading &&
+    isAuthenticated &&
+    settings.hasCompletedOnboarding &&
+    !showWalkthrough &&
+    checkins.length > 0 &&
+    settings.lastBetaFeedbackPromptDate !== todayStr;
 
   // Scroll to top on route change
   useEffect(() => {
@@ -92,6 +103,9 @@ export default function AppLayout() {
       {showWalkthrough && (
         <AppWalkthrough onComplete={() => updateSettings({ hasSeenWalkthrough: true })} />
       )}
+
+      {/* Beta feedback prompt (shown at most once a day to active users) */}
+      {showBetaFeedback && <DailyFeedbackPrompt />}
     </div>
   );
 }

@@ -14,6 +14,7 @@ import ProtectedRoute from "@/components/layout/ProtectedRoute";
 
 // Onboarding screens
 import WelcomeScreen from "@/pages/onboarding/WelcomeScreen";
+import BetaLandingScreen from "@/pages/BetaLandingScreen";
 import NotificationPermissionScreen from "@/pages/onboarding/NotificationPermissionScreen";
 import ReminderSetupScreen from "@/pages/onboarding/ReminderSetupScreen";
 
@@ -154,6 +155,7 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/" element={<WelcomeScreen />} />
+        <Route path="/beta" element={<BetaLandingScreen />} />
         <Route path="/setup" element={<Navigate to="/" replace />} />
         <Route path="/notifications" element={<NotificationPermissionScreen />} />
         <Route path="/reminder-setup" element={<ReminderSetupScreen />} />
@@ -173,6 +175,7 @@ function AppRoutes() {
     <Routes>
       {/* Welcome screen for unauthenticated users */}
       <Route path="/welcome" element={<WelcomeScreen />} />
+      <Route path="/beta" element={<BetaLandingScreen />} />
       
       <Route element={<AppLayout />}>
         {/* Protected routes - require authentication */}
