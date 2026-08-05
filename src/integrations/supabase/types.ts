@@ -14,33 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      beta_feedback: {
-        Row: {
-          created_at: string | null
-          day_number: number | null
-          id: string
-          message: string | null
-          rating: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          day_number?: number | null
-          id?: string
-          message?: string | null
-          rating?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          day_number?: number | null
-          id?: string
-          message?: string | null
-          rating?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       photos: {
         Row: {
           caption: string | null
