@@ -3,6 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const allowedOrigins = [
   'https://f8e96625-555b-4f76-9c47-7869ccd21511.lovableproject.com',
   'https://id-preview--f8e96625-555b-4f76-9c47-7869ccd21511.lovable.app',
+  'https://budderbuddy.org',
+  'https://www.budderbuddy.org',
   'capacitor://localhost',
   'http://localhost',
 ];
