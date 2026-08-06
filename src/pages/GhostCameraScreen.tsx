@@ -7,7 +7,7 @@ import { useCloudPhotos } from "@/hooks/useCloudPhotos";
 import { useTattoos, useSettings } from "@/hooks/useStorage";
 import { useToast } from "@/hooks/use-toast";
 import { getDayNumber } from "@/types";
-import { Loader2, Camera, ImageOff, Settings, ShieldAlert } from "lucide-react";
+import { Loader2, Camera, ImageOff, Settings, ShieldAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PremiumGate } from "@/components/premium/PremiumGate";
 import { Capacitor, registerPlugin } from "@capacitor/core";
@@ -374,6 +374,13 @@ function GhostCameraContent() {
   if (permissionStatus === 'prompt' && isNative) {
     return (
       <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-8">
+        <button
+          onClick={handleClose}
+          aria-label="Close"
+          className="absolute top-6 right-6 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white"
+        >
+          <X className="h-5 w-5" />
+        </button>
         <div className="text-center text-white max-w-sm">
           <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
             <Camera className="h-10 w-10 text-primary" />
@@ -382,11 +389,8 @@ function GhostCameraContent() {
           <p className="text-white/70 mb-8">
             To take photos of your healing tattoo, Budder Buddy needs access to your camera.
           </p>
-          <Button onClick={handleRequestPermission} className="w-full mb-4" size="lg">
-            Allow Camera Access
-          </Button>
-          <Button variant="ghost" onClick={handleClose} className="w-full text-white/60">
-            Maybe Later
+          <Button onClick={handleRequestPermission} className="w-full" size="lg">
+            Continue
           </Button>
         </div>
       </div>
