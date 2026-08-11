@@ -7,7 +7,7 @@ import { useCloudPhotos } from "@/hooks/useCloudPhotos";
 import { useTattoos, useSettings } from "@/hooks/useStorage";
 import { useToast } from "@/hooks/use-toast";
 import { getDayNumber } from "@/types";
-import { Loader2, Camera, ImageOff, Settings, ShieldAlert, X } from "lucide-react";
+import { Loader2, Camera, ImageOff, Settings, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PremiumGate } from "@/components/premium/PremiumGate";
 import { Capacitor, registerPlugin } from "@capacitor/core";
@@ -182,6 +182,15 @@ function GhostCameraContent() {
       openNativeCamera();
     }
   }, [permissionStatus, ghostImageLoaded, cameraReady, isNative, isWebFallback]);
+
+  // On native: if permission hasn't been asked for yet, go straight to the
+  // real iOS permission dialog — no custom priming screen in between
+  // (Apple Guideline 5.1.1(iv): custom pre-permission UI is not allowed).
+  useEffect(() => {
+    if (isNative && permissionStatus === 'prompt') {
+      handleRequestPermission();
+    }
+  }, [isNative, permissionStatus]);
 
   const startCamera = async () => {
     try {
@@ -358,40 +367,15 @@ function GhostCameraContent() {
     navigate(-1);
   }, [navigate]);
 
-  // Permission checking state
-  if (permissionStatus === 'loading') {
+  // Permission checking / requesting state — 'prompt' triggers the real iOS
+  // dialog automatically (see useEffect above), so it shares this same
+  // neutral loading UI rather than a custom pre-permission screen.
+  if (permissionStatus === 'loading' || (permissionStatus === 'prompt' && isNative)) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
         <div className="text-center text-white">
           <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" />
           <p>Checking camera access...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Permission needs to be requested (first time)
-  if (permissionStatus === 'prompt' && isNative) {
-    return (
-      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-8">
-        <button
-          onClick={handleClose}
-          aria-label="Close"
-          className="absolute top-6 right-6 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white"
-        >
-          <X className="h-5 w-5" />
-        </button>
-        <div className="text-center text-white max-w-sm">
-          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
-            <Camera className="h-10 w-10 text-primary" />
-          </div>
-          <h1 className="text-2xl font-semibold mb-3">Camera Access Needed</h1>
-          <p className="text-white/70 mb-8">
-            To take photos of your healing tattoo, Budder Buddy needs access to your camera.
-          </p>
-          <Button onClick={handleRequestPermission} className="w-full" size="lg">
-            Continue
-          </Button>
         </div>
       </div>
     );
