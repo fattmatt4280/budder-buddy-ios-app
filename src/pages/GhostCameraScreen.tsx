@@ -272,10 +272,7 @@ function GhostCameraContent() {
   };
 
   const handleOpenSettings = () => {
-    toast({
-      title: "Open Settings",
-      description: "Go to Settings > Budder Buddy > Camera and enable access",
-    });
+    window.location.href = 'app-settings:';
   };
 
   const handleCapture = useCallback(async () => {
@@ -389,26 +386,17 @@ function GhostCameraContent() {
           <div className="w-20 h-20 rounded-full bg-destructive/20 flex items-center justify-center mx-auto mb-6">
             <ShieldAlert className="h-10 w-10 text-destructive" />
           </div>
-          <h1 className="text-2xl font-semibold mb-3">Camera Access Denied</h1>
-          <p className="text-white/70 mb-4">
-            Camera access was previously denied. To take photos, you'll need to enable it in your device settings.
+          <h1 className="text-2xl font-semibold mb-3">Camera Access Off</h1>
+          <p className="text-white/70 mb-8">
+            Enable it in Settings to take photos.
           </p>
-          <div className="bg-white/10 rounded-xl p-4 mb-8 text-left">
-            <p className="text-sm text-white/80 font-medium mb-2">How to enable:</p>
-            <ol className="text-sm text-white/60 space-y-1 list-decimal list-inside">
-              <li>Open the <strong>Settings</strong> app</li>
-              <li>Scroll down and tap <strong>Budder Buddy</strong></li>
-              <li>Enable <strong>Camera</strong> access</li>
-              <li>Return here and try again</li>
-            </ol>
-          </div>
           <Button onClick={handleOpenSettings} className="w-full mb-4 gap-2" size="lg">
             <Settings className="h-5 w-5" />
-            Open Settings Guide
+            Open Settings
           </Button>
-          <Button variant="ghost" onClick={handleClose} className="w-full text-white/60">
-            Go Back
-          </Button>
+          <button onClick={handleClose} className="text-sm text-white/50">
+            Not now
+          </button>
         </div>
       </div>
     );
