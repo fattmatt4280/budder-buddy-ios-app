@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Clock, Camera, BookOpen, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,6 +20,25 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { settings, updateSettings, isLoading, isAuthenticated, checkins } = useAppData();
   const mainRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+
+  // Measure the nav bar's real rendered height (h-16 content + its own
+  // safe-area-bottom padding, which varies by device) instead of guessing
+  // it with a fixed padding value. Without this, content near the bottom
+  // of any page can end up hidden behind the always-on-screen nav bar on
+  // devices with a taller safe-area inset (e.g. the home indicator).
+  const [navHeight, setNavHeight] = useState(96);
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    // Use offsetHeight (not contentRect, which excludes padding/border) so
+    // the safe-area-bottom padding and border-t are both accounted for.
+    const observer = new ResizeObserver(() => {
+      setNavHeight(nav.offsetHeight);
+    });
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
 
   // Verify and reschedule notifications on app boot
   useNotificationBootstrap(settings, !isLoading);
@@ -60,12 +79,16 @@ export default function AppLayout() {
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Main content area - scrollable */}
-      <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pb-20 safe-area-top">
+      <main
+        ref={mainRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain safe-area-top"
+        style={{ paddingBottom: navHeight + 16 }}
+      >
         <Outlet />
       </main>
 
       {/* Bottom tab bar - iOS 26 Liquid Glass */}
-      <nav className="fixed bottom-0 left-0 right-0 liquid-glass border-t border-white/10 safe-area-bottom">
+      <nav ref={navRef} className="fixed bottom-0 left-0 right-0 liquid-glass border-t border-white/10 safe-area-bottom">
         <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
           {tabs.map((tab) => {
             const active = isActive(tab.path);
