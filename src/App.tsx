@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Loader2, ScanFace, Fingerprint } from "lucide-react";
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
 import { biometricService, type BiometryType } from "@/lib/biometricService";
+import IntroVideoScreen from "@/components/IntroVideoScreen";
 
 // Layouts
 import AppLayout from "@/components/layout/AppLayout";
@@ -46,6 +47,9 @@ function AppRoutes() {
   const [biometricLocked, setBiometricLocked] = useState<boolean | null>(null); // null = checking
   const [biometryType, setBiometryType] = useState<BiometryType>('none');
   const [biometricChecking, setBiometricChecking] = useState(false);
+
+  // Mascot intro plays once per app launch, on top of whatever's loading behind it.
+  const [introDone, setIntroDone] = useState(false);
 
   // On mount, check if biometric lock should be shown
   useEffect(() => {
@@ -110,6 +114,12 @@ function AppRoutes() {
     isLoading,
     updateSettings,
   ]);
+
+  // Mascot intro renders on top first; auth/data loading happens behind it
+  // regardless, so this rarely adds real wait time.
+  if (!introDone) {
+    return <IntroVideoScreen onFinish={() => setIntroDone(true)} />;
+  }
 
   // Show loading spinner while auth/data is resolving to prevent
   // flash to welcome screen on app restart for already-signed-in users
