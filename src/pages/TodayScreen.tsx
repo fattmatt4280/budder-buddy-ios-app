@@ -22,6 +22,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import HealAidWarningDialog from '@/components/HealAidWarningDialog';
+import { HEAL_AID_SYMPTOM_TAGS, HEAL_AID_SYMPTOM_DAY_THRESHOLD, HEAL_AID_CONCERN_DAY_THRESHOLD, HealAidWarningReason } from '@/lib/healAid';
 
 // Observation tags for user to log symptoms
 const OBSERVATION_TAGS = [
@@ -80,6 +82,8 @@ export default function TodayScreen() {
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [showStartHereHighlight, setShowStartHereHighlight] = useState(false);
+  const [showHealingWarning, setShowHealingWarning] = useState(false);
+  const [healingWarningReason, setHealingWarningReason] = useState<HealAidWarningReason>('symptoms');
   const [checklist, setChecklist] = useState<DailyChecklist>({
     washed: false,
     moisturized: false,
@@ -287,6 +291,35 @@ export default function TodayScreen() {
         checklist,
         observations: newObs,
       });
+    }
+
+    // Prompt Heal Aid once any listed symptom tag is present a week+ into healing
+    if (dayNumber >= HEAL_AID_SYMPTOM_DAY_THRESHOLD) {
+      const hasSymptom = newObs.some((o) => HEAL_AID_SYMPTOM_TAGS.includes(o));
+      if (hasSymptom) {
+        setHealingWarningReason('symptoms');
+        setShowHealingWarning(true);
+      }
+    }
+  };
+
+  const handleConcernToggle = (checked: boolean) => {
+    if (existingCheckin) {
+      updateCheckin(existingCheckin.id, { concerned: checked });
+    } else {
+      addCheckin({
+        id: generateId(),
+        tattooId: tattoo.id,
+        dayNumber,
+        date: todayDate,
+        checklist,
+        concerned: checked,
+      });
+    }
+
+    if (checked) {
+      setHealingWarningReason('concern');
+      setShowHealingWarning(true);
     }
   };
 
@@ -599,6 +632,39 @@ export default function TodayScreen() {
           )}
         </div>
 
+        {/* Self-reported concern — available from day 2 onward */}
+        {dayNumber >= HEAL_AID_CONCERN_DAY_THRESHOLD && (
+          <div className="liquid-glass-card rounded-2xl p-5 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">🩹</span>
+              <h2 className="font-semibold text-foreground">Feeling unsure?</h2>
+            </div>
+            <label
+              className={cn(
+                "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all",
+                existingCheckin?.concerned
+                  ? "bg-amber-500/10 border border-amber-500/20"
+                  : "bg-muted/30 border border-transparent hover:border-border"
+              )}
+            >
+              <Checkbox
+                checked={existingCheckin?.concerned || false}
+                onCheckedChange={(checked) => handleConcernToggle(!!checked)}
+                className={cn(
+                  "w-5 h-5 rounded-md",
+                  existingCheckin?.concerned && "bg-amber-500 border-amber-500 text-white"
+                )}
+              />
+              <span className={cn(
+                "text-sm font-medium flex-1",
+                existingCheckin?.concerned ? "text-foreground" : "text-muted-foreground"
+              )}>
+                I'm a little concerned about how it looks or feels today
+              </span>
+            </label>
+          </div>
+        )}
+
       </div>
 
       {/* Note Dialog */}
@@ -618,6 +684,14 @@ export default function TodayScreen() {
           </Button>
         </DialogContent>
       </Dialog>
+
+      {/* Heal Aid Warning Dialog */}
+      <HealAidWarningDialog
+        open={showHealingWarning}
+        reason={healingWarningReason}
+        dayNumber={dayNumber}
+        onClose={() => setShowHealingWarning(false)}
+      />
     </div>
   );
 }

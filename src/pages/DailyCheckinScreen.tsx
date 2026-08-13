@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Check, Droplet, Sun, Hand, GlassWater, Sparkles, ArrowLeft, MessageCircle, Trophy, AlertTriangle, ExternalLink, X, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Camera, Check, Droplet, Sun, Hand, GlassWater, Sparkles, ArrowLeft, MessageCircle, Trophy, ShieldCheck, ShieldOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,14 +12,8 @@ import mascotImage from '@/assets/mascot.png';
 import { generateId } from '@/hooks/useStorage';
 import FirstCheckinSuccess from '@/components/checkin/FirstCheckinSuccess';
 import { analytics } from '@/lib/analyticsService';
-
-// Heal Aid redirect: prompts the user to check a photo with our AI pre-diagnosis
-// tool (heal-aid.com). Triggers two ways:
-//  1) Any of these symptom tags is selected once healing is a week or more along.
-//  2) The user proactively flags themselves as concerned (available from day 2 on).
-const HEAL_AID_SYMPTOM_TAGS = ['sore', 'really_sore', 'hot', 'swelling', 'redness'];
-const HEAL_AID_SYMPTOM_DAY_THRESHOLD = 7; // "after 7 days" / a week into healing
-const HEAL_AID_CONCERN_DAY_THRESHOLD = 2; // self-reported concern can trigger from day 2
+import HealAidWarningDialog from '@/components/HealAidWarningDialog';
+import { HEAL_AID_SYMPTOM_TAGS, HEAL_AID_SYMPTOM_DAY_THRESHOLD, HEAL_AID_CONCERN_DAY_THRESHOLD, HealAidWarningReason } from '@/lib/healAid';
 
 const CHECKLIST_ITEMS = [
   { key: 'washed', label: 'Washed gently', icon: Droplet, emoji: '🧼' },
@@ -108,7 +102,7 @@ export default function DailyCheckinScreen() {
   const [isConcerned, setIsConcerned] = useState(false);
   const [showFirstCheckinSuccess, setShowFirstCheckinSuccess] = useState(false);
   const [showHealingWarning, setShowHealingWarning] = useState(false);
-  const [healingWarningReason, setHealingWarningReason] = useState<'symptoms' | 'concern'>('symptoms');
+  const [healingWarningReason, setHealingWarningReason] = useState<HealAidWarningReason>('symptoms');
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
 
@@ -685,75 +679,13 @@ export default function DailyCheckinScreen() {
         onClose={() => setShowFirstCheckinSuccess(false)}
       />
 
-      {/* Abnormal Healing Warning Dialog */}
-      {showHealingWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowHealingWarning(false)}
-          />
-
-          {/* Dialog */}
-          <div className="relative w-full max-w-sm rounded-2xl bg-card border border-border shadow-2xl p-6 animate-fade-in">
-            {/* Close button */}
-            <button
-              onClick={() => setShowHealingWarning(false)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Warning icon */}
-            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-amber-500/15 flex items-center justify-center">
-              <AlertTriangle className="w-7 h-7 text-amber-500" />
-            </div>
-
-            {/* Title */}
-            <h2 className="text-lg font-bold text-foreground text-center mb-2">
-              {healingWarningReason === 'concern' ? "Trust Your Gut" : "Heads Up — Check Your Healing"}
-            </h2>
-
-            {/* Description */}
-            <p className="text-sm text-muted-foreground text-center mb-4 leading-relaxed">
-              {healingWarningReason === 'concern' ? (
-                "You flagged that you're feeling a little concerned about your tattoo today. That's worth listening to — a quick photo check can help put your mind at ease or catch something early."
-              ) : (
-                <>It's day {dayNumber} — a week or more into healing — and you're noticing soreness, heat, swelling, or redness.
-                Symptoms like this showing up (or sticking around) this far along can be a sign of abnormal healing or infection.</>
-              )}
-            </p>
-
-            <div className="bg-muted/50 rounded-xl p-3 mb-5">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                <span className="font-semibold text-foreground">When in doubt:</span>{' '}
-                Reach out to your tattoo artist or a medical professional.
-                You can also use our AI-powered Heal Aid tool to analyze a photo of your tattoo for signs of concern.
-              </p>
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="space-y-3">
-              <Button
-                onClick={() => {
-                  setShowHealingWarning(false);
-                  window.open('https://heal-aid.com', '_blank');
-                }}
-                className="w-full h-12 text-base font-semibold liquid-glass-primary text-white gap-2"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Try Heal Aid Tool
-              </Button>
-              <button
-                onClick={() => setShowHealingWarning(false)}
-                className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-              >
-                Got it, thanks
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Heal Aid Warning Dialog */}
+      <HealAidWarningDialog
+        open={showHealingWarning}
+        reason={healingWarningReason}
+        dayNumber={dayNumber}
+        onClose={() => setShowHealingWarning(false)}
+      />
     </div>
   );
 }
