@@ -53,6 +53,7 @@ export interface DailyCheckin {
   checklist: DailyChecklist;
   userNotes?: string;
   observations?: string[]; // Array of symptom tags from user observations
+  concerned?: boolean; // User self-flagged as concerned about how it looks/feels
 }
 
 export interface PhotoEntry {

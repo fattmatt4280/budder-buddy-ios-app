@@ -32,6 +32,7 @@ interface CloudCheckin {
   checklist: Record<string, boolean>;
   user_notes: string | null;
   observations: string[] | null;
+  concerned: boolean;
   created_at: string;
 }
 
@@ -44,6 +45,7 @@ function cloudToLocal(cloud: CloudCheckin): DailyCheckin {
     checklist: cloud.checklist as unknown as DailyChecklist,
     userNotes: cloud.user_notes ?? undefined,
     observations: cloud.observations ?? undefined,
+    concerned: cloud.concerned ?? undefined,
   };
 }
 
@@ -56,6 +58,7 @@ function localToCloud(local: DailyCheckin, userId: string): Omit<CloudCheckin, '
     checklist: local.checklist as unknown as Record<string, boolean>,
     user_notes: local.userNotes ?? null,
     observations: local.observations ?? null,
+    concerned: local.concerned ?? false,
   };
 }
 
@@ -175,6 +178,7 @@ export function useCloudCheckins(userId: string | null) {
       if (updates.checklist !== undefined) updateData.checklist = updates.checklist;
       if (updates.userNotes !== undefined) updateData.user_notes = updates.userNotes;
       if (updates.observations !== undefined) updateData.observations = updates.observations;
+      if (updates.concerned !== undefined) updateData.concerned = updates.concerned;
 
       const { error } = await supabase
         .from('user_checkins')

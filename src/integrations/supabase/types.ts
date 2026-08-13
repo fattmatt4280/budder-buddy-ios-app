@@ -192,6 +192,7 @@ export type Database = {
         Row: {
           checkin_date: string
           checklist: Json
+          concerned: boolean
           created_at: string | null
           day_number: number
           id: string
@@ -203,6 +204,7 @@ export type Database = {
         Insert: {
           checkin_date: string
           checklist: Json
+          concerned?: boolean
           created_at?: string | null
           day_number: number
           id?: string
@@ -214,6 +216,7 @@ export type Database = {
         Update: {
           checkin_date?: string
           checklist?: Json
+          concerned?: boolean
           created_at?: string | null
           day_number?: number
           id?: string

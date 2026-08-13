@@ -13,10 +13,13 @@ import { generateId } from '@/hooks/useStorage';
 import FirstCheckinSuccess from '@/components/checkin/FirstCheckinSuccess';
 import { analytics } from '@/lib/analyticsService';
 
-// Observation tags that indicate potential abnormal healing when selected after day 3
-const CONCERN_TAGS = ['hot', 'swelling', 'redness'];
-const CONCERN_THRESHOLD = 2; // Show warning when 2+ concern tags are selected
-const CONCERN_DAY_THRESHOLD = 4; // Only trigger from day 4 onward
+// Heal Aid redirect: prompts the user to check a photo with our AI pre-diagnosis
+// tool (heal-aid.com). Triggers two ways:
+//  1) Any of these symptom tags is selected once healing is a week or more along.
+//  2) The user proactively flags themselves as concerned (available from day 2 on).
+const HEAL_AID_SYMPTOM_TAGS = ['sore', 'really_sore', 'hot', 'swelling', 'redness'];
+const HEAL_AID_SYMPTOM_DAY_THRESHOLD = 7; // "after 7 days" / a week into healing
+const HEAL_AID_CONCERN_DAY_THRESHOLD = 2; // self-reported concern can trigger from day 2
 
 const CHECKLIST_ITEMS = [
   { key: 'washed', label: 'Washed gently', icon: Droplet, emoji: '🧼' },
@@ -102,8 +105,10 @@ export default function DailyCheckinScreen() {
   const [noteText, setNoteText] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [selectedObs, setSelectedObs] = useState<string[]>([]);
+  const [isConcerned, setIsConcerned] = useState(false);
   const [showFirstCheckinSuccess, setShowFirstCheckinSuccess] = useState(false);
   const [showHealingWarning, setShowHealingWarning] = useState(false);
+  const [healingWarningReason, setHealingWarningReason] = useState<'symptoms' | 'concern'>('symptoms');
 
   const tattoo = settings.selectedTattooId ? getTattoo(settings.selectedTattooId) : tattoos[0];
 
@@ -150,6 +155,7 @@ export default function DailyCheckinScreen() {
       setChecklist(existingCheckin.checklist);
       setNoteText(existingCheckin.userNotes || '');
       setSelectedObs(existingCheckin.observations || []);
+      setIsConcerned(existingCheckin.concerned || false);
     }
   }, [existingCheckin]);
 
@@ -194,12 +200,37 @@ export default function DailyCheckinScreen() {
       });
     }
 
-    // Check for abnormal healing indicators from day 4 onward
-    if (dayNumber >= CONCERN_DAY_THRESHOLD) {
-      const concernCount = newObs.filter(o => CONCERN_TAGS.includes(o)).length;
-      if (concernCount >= CONCERN_THRESHOLD) {
+    // Prompt Heal Aid once any listed symptom tag is present a week+ into healing
+    if (dayNumber >= HEAL_AID_SYMPTOM_DAY_THRESHOLD) {
+      const hasSymptom = newObs.some(o => HEAL_AID_SYMPTOM_TAGS.includes(o));
+      if (hasSymptom) {
+        setHealingWarningReason('symptoms');
         setShowHealingWarning(true);
       }
+    }
+  };
+
+  const handleConcernToggle = (checked: boolean) => {
+    if (!tattoo) return;
+    setIsConcerned(checked);
+
+    if (existingCheckin) {
+      updateCheckin(existingCheckin.id, { concerned: checked });
+    } else {
+      addCheckin({
+        id: generateId(),
+        tattooId: tattoo.id,
+        dayNumber,
+        date: todayDate,
+        checklist,
+        observations: selectedObs,
+        concerned: checked,
+      });
+    }
+
+    if (checked) {
+      setHealingWarningReason('concern');
+      setShowHealingWarning(true);
     }
   };
 
@@ -546,6 +577,41 @@ export default function DailyCheckinScreen() {
           </div>
         </button>
 
+        {/* Self-reported concern — available from day 2 onward */}
+        {dayNumber >= HEAL_AID_CONCERN_DAY_THRESHOLD && (
+          <div className="liquid-glass-card rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">🩹</span>
+              <h3 className="font-semibold text-foreground">Feeling unsure?</h3>
+            </div>
+            <label
+              className={cn(
+                "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200",
+                isConcerned
+                  ? "bg-amber-500/10 border border-amber-500/20"
+                  : "bg-muted/30 border border-transparent hover:bg-muted/50"
+              )}
+            >
+              <Checkbox
+                checked={isConcerned}
+                onCheckedChange={(checked) => handleConcernToggle(!!checked)}
+                className={cn(
+                  "w-5 h-5 rounded-md border-2",
+                  isConcerned
+                    ? "bg-amber-500 border-amber-500 text-white"
+                    : "border-muted-foreground/40"
+                )}
+              />
+              <span className={cn(
+                "text-sm font-medium flex-1",
+                isConcerned ? "text-foreground" : "text-muted-foreground"
+              )}>
+                I'm a little concerned about how it looks or feels today
+              </span>
+            </label>
+          </div>
+        )}
+
         <div className="liquid-glass-card rounded-2xl p-5">
           {!showNotes ? (
             <button
@@ -645,14 +711,17 @@ export default function DailyCheckinScreen() {
 
             {/* Title */}
             <h2 className="text-lg font-bold text-foreground text-center mb-2">
-              Heads Up — Check Your Healing
+              {healingWarningReason === 'concern' ? "Trust Your Gut" : "Heads Up — Check Your Healing"}
             </h2>
 
             {/* Description */}
             <p className="text-sm text-muted-foreground text-center mb-4 leading-relaxed">
-              It's day {dayNumber} and you're reporting symptoms like heat, swelling, or redness.
-              While some of this can be normal early on, these signs persisting past day 3
-              could indicate abnormal healing or a possible infection.
+              {healingWarningReason === 'concern' ? (
+                "You flagged that you're feeling a little concerned about your tattoo today. That's worth listening to — a quick photo check can help put your mind at ease or catch something early."
+              ) : (
+                <>It's day {dayNumber} — a week or more into healing — and you're noticing soreness, heat, swelling, or redness.
+                Symptoms like this showing up (or sticking around) this far along can be a sign of abnormal healing or infection.</>
+              )}
             </p>
 
             <div className="bg-muted/50 rounded-xl p-3 mb-5">
