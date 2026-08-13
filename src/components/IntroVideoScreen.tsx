@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import introVideo from "@/assets/mascot-intro.mp4";
-import mascotFallback from "@/assets/mascot.png";
 
 interface IntroVideoScreenProps {
   onFinish: () => void;
@@ -61,7 +60,11 @@ export default function IntroVideoScreen({ onFinish }: IntroVideoScreenProps) {
         ref={videoRef}
         className="h-full w-full object-cover"
         src={introVideo}
-        poster={mascotFallback}
+        // No poster: the video is bundled locally and starts near-instantly, and the
+        // mascot's resting-pose art looks almost identical to the clip's *last* frame —
+        // using it as a poster made the intro look like it flashed the ending before
+        // cutting back to the real (empty-stage) first frame. The container's bg color
+        // covers the brief gap before the video paints instead.
         autoPlay
         muted
         playsInline
