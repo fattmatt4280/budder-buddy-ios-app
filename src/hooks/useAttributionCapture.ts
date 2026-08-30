@@ -22,7 +22,7 @@ export function useAttributionCapture(userId: string | null) {
 
     // Table not in the generated Database type yet — same `as any` pattern
     // used in useCloudSettings.ts for user_settings before its types synced.
-    (supabase.from('user_attribution') as any)
+    (supabase.from('user_attribution' as any) as any)
       .insert({ user_id: userId, ...firstTouch })
       .then(({ error }: { error: { code?: string } | null }) => {
         // 23505 = unique violation (already captured for this user) — expected, not an error.
