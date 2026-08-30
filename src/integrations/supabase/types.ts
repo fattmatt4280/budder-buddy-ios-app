@@ -188,6 +188,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_attribution: {
+        Row: {
+          captured_at: string
+          landing_page: string | null
+          referrer: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          captured_at?: string
+          landing_page?: string | null
+          referrer?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          captured_at?: string
+          landing_page?: string | null
+          referrer?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
       user_checkins: {
         Row: {
           checkin_date: string
