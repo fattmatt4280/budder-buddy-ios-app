@@ -12,6 +12,11 @@ import { initializeSecureAuth } from "./lib/supabaseClientInit";
 import { notificationService } from "./lib/notificationService";
 import { purchaseService } from "./lib/purchaseService";
 import { logger } from "./lib/logger";
+import { captureFirstTouch } from "./lib/firstTouch";
+
+// Stash first-touch acquisition (UTM/referrer) before anything else — cheap,
+// synchronous, web-only. See src/hooks/useAttributionCapture.ts for the flush.
+captureFirstTouch();
 
 // Initialize secure auth storage before rendering
 // This migrates tokens from localStorage to Keychain/Keystore on native platforms

@@ -8,6 +8,7 @@ import { Loader2, ScanFace, Fingerprint } from "lucide-react";
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
 import { biometricService, type BiometryType } from "@/lib/biometricService";
 import IntroVideoScreen from "@/components/IntroVideoScreen";
+import { useAttributionCapture } from "@/hooks/useAttributionCapture";
 
 // Layouts
 import AppLayout from "@/components/layout/AppLayout";
@@ -41,7 +42,11 @@ import NotFound from "@/pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { settings, updateSettings, tattoos, isAuthenticated, isLoading } = useAppData();
+  const { settings, updateSettings, tattoos, isAuthenticated, isLoading, userId } = useAppData();
+
+  // Flush any pre-auth acquisition data (UTM/referrer) onto this user now
+  // that we have a user_id — see src/hooks/useAttributionCapture.ts.
+  useAttributionCapture(userId);
 
   // Biometric lock state
   const [biometricLocked, setBiometricLocked] = useState<boolean | null>(null); // null = checking

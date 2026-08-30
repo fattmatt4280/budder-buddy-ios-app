@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.healing-guide]
 verify_jwt = false
+
+[functions.crm-data]
+verify_jwt = false
