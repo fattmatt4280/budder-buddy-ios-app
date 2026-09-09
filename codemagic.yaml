@@ -4,11 +4,13 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      # This is the key Matt named "magiccode" in App Store Connect (Admin
-      # access, Key ID BHNKDRCGAP) - but it was already registered in
-      # Codemagic under "budder buddy api" from an earlier attempt, so
-      # that's the integration name Codemagic actually knows it by.
-      app_store_connect: "budder buddy api"
+      # TEMP DIAGNOSTIC: swapped to the other existing integration ("codemagic",
+      # App Manager role, key V2768K4GZZ) to isolate whether Codemagic's
+      # "<name> does not exist" error is specific to "budder buddy api" or
+      # affects the integrations: app_store_connect: lookup mechanism itself.
+      # This key's role is insufficient for actual signing (expect a
+      # permissions error instead, not "does not exist", if this resolves).
+      app_store_connect: codemagic
     environment:
       # Create this group under the app's Environment variables in Codemagic
       # and add VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY to it
