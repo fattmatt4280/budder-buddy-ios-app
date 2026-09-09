@@ -111,10 +111,16 @@ export function useCloudTattoos(userId: string | null) {
       return;
     }
     if (prevUserIdRef.current === userId) return;
+    // See useCloudSettings.ts for why guest->real-account transitions must not
+    // wipe localStorage: it would delete tattoos added pre-signup right before
+    // the "import local to cloud" step below reads them.
+    const wasGuestClaimingAccount = prevUserIdRef.current === null && userId !== null;
     prevUserIdRef.current = userId;
     setTattoos([]);
     setHasSynced(false);
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    if (!wasGuestClaimingAccount) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
   }, [userId]);
 
   // Fetch from cloud and merge/import local data
@@ -250,12 +256,14 @@ export function useCloudTattoos(userId: string | null) {
     syncFromCloud();
   }, [userId, hasSynced]);
 
-  // Persist to local storage whenever tattoos change
+  // Persist to local storage whenever tattoos change. See useCloudSettings.ts
+  // for why a true guest (userId null, nothing to sync) must persist right
+  // away instead of waiting on hasSynced, which would never flip for them.
   useEffect(() => {
-    if (hasSynced) {
+    if (hasSynced || !userId) {
       setLocalTattoos(tattoos);
     }
-  }, [tattoos, hasSynced]);
+  }, [tattoos, hasSynced, userId]);
 
   const addTattoo = useCallback(async (tattoo: Tattoo) => {
     // Add locally first for immediate feedback

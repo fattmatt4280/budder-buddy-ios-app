@@ -74,11 +74,21 @@ export function useCloudSettings(userId: string | null) {
       return;
     }
     if (prevUserIdRef.current === userId) return;
+    // A guest (userId null, e.g. an anonymous session or pre-auth local state)
+    // claiming a real account is NOT an account switch — it's the same person's
+    // data gaining a user id. Wiping localStorage here would delete it out from
+    // under the "import local settings to cloud" step below, right before it
+    // reads getLocalSettings() — that's the bug that sent onboarding progress
+    // back to square one right after sign-up. Only wipe on an actual switch
+    // between two different real accounts (or sign-out).
+    const wasGuestClaimingAccount = prevUserIdRef.current === null && userId !== null;
     prevUserIdRef.current = userId;
     setSettings(DEFAULT_SETTINGS);
     setHasSynced(false);
     setIsLoading(true); // Block UI until new user's cloud settings load
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    if (!wasGuestClaimingAccount) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
   }, [userId]);
 
   // Fetch from cloud and merge/import local data
@@ -143,12 +153,17 @@ export function useCloudSettings(userId: string | null) {
     syncFromCloud();
   }, [userId, hasSynced]);
 
-  // Persist to local storage whenever settings change
+  // Persist to local storage whenever settings change. Gated on hasSynced
+  // when there's a real account to avoid a pre-sync write of stale/default
+  // settings clobbering the real cloud data still loading in — but for a true
+  // guest (no userId at all, e.g. anonymous auth unavailable) there is no
+  // cloud sync coming, so hasSynced would never flip and nothing would ever
+  // get saved; persist immediately in that case instead.
   useEffect(() => {
-    if (hasSynced) {
+    if (hasSynced || !userId) {
       setLocalSettings(settings);
     }
-  }, [settings, hasSynced]);
+  }, [settings, hasSynced, userId]);
 
   const updateSettings = useCallback(async (updates: Partial<AppSettings>) => {
     const newSettings = { ...settings, ...updates };

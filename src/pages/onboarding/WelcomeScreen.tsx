@@ -1,12 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSettings, useTattoos } from '@/hooks/useStorage';
+import { useSettings, useTattoos, useAppData } from '@/hooks/useStorage';
 import mascotImage from '@/assets/mascot.png';
 
 export default function WelcomeScreen() {
   const navigate = useNavigate();
   const { settings, updateSettings } = useSettings();
   const { tattoos } = useTattoos();
+  const { signInAnonymously } = useAppData();
+  const [startingJourney, setStartingJourney] = useState(false);
 
   // If the user already has a tattoo/reminders configured, unlock the app and route them in.
   useEffect(() => {
@@ -27,9 +29,23 @@ export default function WelcomeScreen() {
     navigate,
   ]);
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    if (startingJourney) return;
+    setStartingJourney(true);
     updateSettings({ hasAcknowledgedDisclaimer: true });
-    navigate('/auth', { replace: true });
+
+    // Start a real (anonymous) session now so the tattoo they're about to add,
+    // and the photos after it, save for real from the very first step —
+    // "create an account" later just attaches an email/password to this same
+    // session instead of migrating anything.
+    try {
+      await signInAnonymously();
+    } catch {
+      // Non-fatal — AddFirstTattooScreen/GhostCamera still work locally-first
+      // and the account-creation step will retry establishing a session.
+    }
+
+    navigate('/onboarding/add-tattoo', { replace: true });
   };
 
   return (
@@ -47,34 +63,6 @@ export default function WelcomeScreen() {
         className="flex-1 flex flex-col items-center justify-center"
         style={{ gap: 12, overflow: 'hidden' }}
       >
-        {/* ── Brand group ── */}
-        <div className="flex flex-col items-center text-center animate-fade-in" style={{ gap: 4 }}>
-          <h2
-            style={{
-              fontFamily: "'Lilita One', sans-serif",
-              fontSize: 24,
-              fontWeight: 700,
-              letterSpacing: 2,
-              background: 'linear-gradient(180deg, #A8D8FF 0%, #3AA0FF 50%, #0A5BFF 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 8px rgba(58,160,255,0.35))',
-            }}
-          >
-            BLUE DREAM BUDDER
-          </h2>
-          <p
-            style={{
-              fontFamily: "'Nunito', sans-serif",
-              fontSize: 15,
-              color: '#CFE6FF',
-              opacity: 0.7,
-            }}
-          >
-            presents...
-          </p>
-        </div>
-
         {/* ── Hero group (logo + title) ── */}
         <div
           className="flex flex-col items-center animate-fade-in"
@@ -183,6 +171,7 @@ export default function WelcomeScreen() {
         {/* CTA button */}
         <button
           onClick={handleStart}
+          disabled={startingJourney}
           className="w-full relative overflow-hidden"
           style={{
             height: 58,
@@ -196,9 +185,10 @@ export default function WelcomeScreen() {
             letterSpacing: 1,
             border: 'none',
             cursor: 'pointer',
+            opacity: startingJourney ? 0.7 : 1,
           }}
         >
-          SIGN UP
+          {startingJourney ? 'STARTING…' : "LET'S GET YOU GOING"}
         </button>
       </div>
     </div>

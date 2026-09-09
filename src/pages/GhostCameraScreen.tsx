@@ -28,6 +28,12 @@ const GHOST_OPACITY = 20;
 interface LocationState {
   tattooId?: string;
   ghostImageUrl?: string;
+  // Set when reached from the guided first-run onboarding flow (see
+  // AddFirstTattooScreen / SecondPhotoPromptScreen) instead of the normal
+  // Photos/Today screens, so a successful capture routes to the next
+  // onboarding step rather than the Photos gallery.
+  onboarding?: boolean;
+  onboardingPhotoStep?: 'first' | 'second';
 }
 
 export default function GhostCameraScreen() {
@@ -48,6 +54,14 @@ function GhostCameraContent() {
 
   const state = location.state as LocationState | null;
   const tattooId = state?.tattooId || settings.selectedTattooId;
+
+  // Where a successful capture should go next.
+  const nextRouteAfterCapture = (): string => {
+    if (!state?.onboarding) return '/photos';
+    if (state.onboardingPhotoStep === 'first') return '/onboarding/second-photo';
+    // Second onboarding photo done — on to account creation.
+    return '/auth';
+  };
 
   // Find the current tattoo to calculate day number
   const currentTattoo = tattoos.find(t => t.id === tattooId);
@@ -236,7 +250,7 @@ function GhostCameraContent() {
             title: "Photo saved!",
             description: `Day ${currentDayNumber} photo added to your gallery`,
           });
-          navigate('/photos', { replace: true });
+          navigate(nextRouteAfterCapture(), { replace: true, state });
         } else {
           console.error('[GhostCamera] Upload failed:', uploadResult.error);
           toast({
@@ -313,7 +327,7 @@ function GhostCameraContent() {
         });
 
         await cameraService.stop();
-        navigate('/photos', { replace: true });
+        navigate(nextRouteAfterCapture(), { replace: true, state });
       } else {
         // Web fallback - trigger file input
         fileInputRef.current?.click();
@@ -328,7 +342,7 @@ function GhostCameraContent() {
     } finally {
       setIsCapturing(false);
     }
-  }, [tattooId, currentDayNumber, isNative, isWebFallback, ghostImageUrl, uploadPhoto, toast, navigate]);
+  }, [tattooId, currentDayNumber, isNative, isWebFallback, ghostImageUrl, uploadPhoto, toast, navigate, state]);
 
   const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -337,14 +351,22 @@ function GhostCameraContent() {
     setIsCapturing(true);
     try {
       const compressedFile = await cameraService.compressImage(file);
-      await uploadPhoto(compressedFile, tattooId, currentDayNumber);
+      const uploadResult = await uploadPhoto(compressedFile, tattooId, currentDayNumber);
 
-      toast({
-        title: "Photo saved!",
-        description: `Day ${currentDayNumber} photo added to your gallery`,
-      });
-
-      navigate('/photos', { replace: true });
+      if (uploadResult.success) {
+        toast({
+          title: "Photo saved!",
+          description: `Day ${currentDayNumber} photo added to your gallery`,
+        });
+        navigate(nextRouteAfterCapture(), { replace: true, state });
+      } else {
+        console.error('[GhostCamera] Upload failed:', uploadResult.error);
+        toast({
+          title: "Upload failed",
+          description: uploadResult.error || "Could not save photo. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error('[GhostCamera] Upload failed:', error);
       toast({
@@ -358,7 +380,7 @@ function GhostCameraContent() {
         fileInputRef.current.value = '';
       }
     }
-  }, [tattooId, currentDayNumber, uploadPhoto, toast, navigate]);
+  }, [tattooId, currentDayNumber, uploadPhoto, toast, navigate, state]);
 
   const handleClose = useCallback(async () => {
     navigate(-1);

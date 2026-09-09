@@ -64,7 +64,10 @@ interface AppDataContextType {
   // Auth state
   userId: string | null;
   isAuthenticated: boolean;
+  isAnonymous: boolean;
   isLoading: boolean;
+  signInAnonymously: () => Promise<{ data: unknown; error: unknown }>;
+  upgradeAnonymousAccount: (email: string, password: string, displayName?: string) => Promise<{ data: unknown; error: unknown }>;
   
   // Premium
   isPro: boolean;
@@ -90,7 +93,10 @@ const fallbackContext: AppDataContextType = {
   getCheckinsForTattoo: () => [],
   userId: null,
   isAuthenticated: false,
+  isAnonymous: false,
   isLoading: true,
+  signInAnonymously: async () => ({ data: null, error: null }),
+  upgradeAnonymousAccount: async () => ({ data: null, error: null }),
   isPro: false,
   premiumLoading: true,
   purchase: async () => {},
@@ -104,7 +110,7 @@ interface AppDataProviderProps {
 }
 
 export function AppDataProvider({ children }: AppDataProviderProps) {
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, isAnonymous, loading: authLoading, signInAnonymously, upgradeAnonymousAccount } = useAuth();
   const userId = user?.id ?? null;
   
   // Use cloud hooks - they handle auth state internally
@@ -158,7 +164,10 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
     getCheckinsForTattoo,
     userId,
     isAuthenticated,
+    isAnonymous,
     isLoading,
+    signInAnonymously,
+    upgradeAnonymousAccount,
     isPro,
     premiumLoading,
     purchase,

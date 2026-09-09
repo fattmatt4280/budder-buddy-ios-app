@@ -37,7 +37,7 @@ export function useAuth() {
 
   const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -48,7 +48,33 @@ export function useAuth() {
         },
       },
     });
-    
+
+    return { data, error };
+  }, []);
+
+  // Starts a real (but anonymous) Supabase session so a brand-new user gets a
+  // genuine user_id before they've created an account — tattoos/photos/checkins
+  // added during onboarding go straight to the cloud like any other user's,
+  // instead of needing a separate local-only code path. No-ops if a session
+  // (anonymous or real) already exists.
+  const signInAnonymously = useCallback(async () => {
+    const { data: { session: existing } } = await supabase.auth.getSession();
+    if (existing) return { data: { session: existing, user: existing.user }, error: null };
+
+    const { data, error } = await supabase.auth.signInAnonymously();
+    return { data, error };
+  }, []);
+
+  // Converts the current anonymous session into a real account by attaching
+  // an email/password identity to the SAME user id — every tattoo/photo/
+  // checkin/setting already saved under that id stays put, no migration.
+  const upgradeAnonymousAccount = useCallback(async (email: string, password: string, displayName?: string) => {
+    const { data, error } = await supabase.auth.updateUser({
+      email,
+      password,
+      data: displayName ? { display_name: displayName } : undefined,
+    });
+
     return { data, error };
   }, []);
 
@@ -99,6 +125,11 @@ export function useAuth() {
     signOut,
     signInWithApple,
     signInWithGoogle,
+    signInAnonymously,
+    upgradeAnonymousAccount,
     isAuthenticated: !!session,
+    // True for a session created by signInAnonymously() that hasn't had an
+    // email/password identity attached yet via upgradeAnonymousAccount().
+    isAnonymous: !!user?.is_anonymous,
   };
 }

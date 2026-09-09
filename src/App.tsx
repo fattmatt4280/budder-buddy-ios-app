@@ -19,6 +19,10 @@ import WelcomeScreen from "@/pages/onboarding/WelcomeScreen";
 import BetaLandingScreen from "@/pages/BetaLandingScreen";
 import NotificationPermissionScreen from "@/pages/onboarding/NotificationPermissionScreen";
 import ReminderSetupScreen from "@/pages/onboarding/ReminderSetupScreen";
+import AddFirstTattooScreen from "@/pages/onboarding/AddFirstTattooScreen";
+import SecondPhotoPromptScreen from "@/pages/onboarding/SecondPhotoPromptScreen";
+import FaceIdPromptScreen from "@/pages/onboarding/FaceIdPromptScreen";
+import SunGuardPromptScreen from "@/pages/onboarding/SunGuardPromptScreen";
 
 // Main app screens
 import TodayScreen from "@/pages/TodayScreen";
@@ -42,7 +46,7 @@ import NotFound from "@/pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { settings, updateSettings, tattoos, isAuthenticated, isLoading, userId } = useAppData();
+  const { settings, updateSettings, isAuthenticated, isAnonymous, isLoading, userId } = useAppData();
 
   // Flush any pre-auth acquisition data (UTM/referrer) onto this user now
   // that we have a user_id — see src/hooks/useAttributionCapture.ts.
@@ -96,26 +100,28 @@ function AppRoutes() {
     }
   }, [biometricLocked, isAuthenticated, isLoading, handleBiometricUnlock]);
 
-  // Self-heal onboarding state so users don't get stuck on the welcome screen
-  // if they already have enough state to use the app.
+  // Self-heal onboarding state so returning users with a real account don't
+  // get stuck on the welcome screen if hasCompletedOnboarding somehow reads
+  // false for them (e.g. an old client version, a sync edge case).
+  // Deliberately requires a real (non-anonymous) account, not just tattoos/
+  // selectedTattooId — the guided onboarding flow (Welcome -> add tattoo ->
+  // photos -> create account -> permission prompts) has a brand-new user
+  // holding tattoo data under an anonymous session for most of its length,
+  // and that mid-flow state must NOT be treated as "onboarding complete".
   // Skip while cloud data is still loading - firing this mid-sync would
   // upsert stale/default settings over the real ones still coming in.
   useEffect(() => {
     if (isLoading || settings.hasCompletedOnboarding) return;
 
-    const shouldUnlock =
-      isAuthenticated ||
-      settings.selectedTattooId !== null ||
-      tattoos.length > 0;
+    const shouldUnlock = isAuthenticated && !isAnonymous;
 
     if (shouldUnlock) {
       updateSettings({ hasCompletedOnboarding: true });
     }
   }, [
     settings.hasCompletedOnboarding,
-    settings.selectedTattooId,
-    tattoos.length,
     isAuthenticated,
+    isAnonymous,
     isLoading,
     updateSettings,
   ]);
@@ -172,9 +178,17 @@ function AppRoutes() {
         <Route path="/" element={<WelcomeScreen />} />
         <Route path="/beta" element={<BetaLandingScreen />} />
         <Route path="/setup" element={<Navigate to="/" replace />} />
+        {/* Guided first-run flow: add a tattoo, take 2 photos (real cloud
+            storage from the start via an anonymous session started on
+            Welcome), create an account, then the permission prompts. */}
+        <Route path="/onboarding/add-tattoo" element={<AddFirstTattooScreen />} />
+        <Route path="/ghost-camera" element={<GhostCameraScreen />} />
+        <Route path="/onboarding/second-photo" element={<SecondPhotoPromptScreen />} />
+        <Route path="/auth" element={<AuthScreen />} />
+        <Route path="/onboarding/face-id" element={<FaceIdPromptScreen />} />
+        <Route path="/onboarding/sun-guard" element={<SunGuardPromptScreen />} />
         <Route path="/notifications" element={<NotificationPermissionScreen />} />
         <Route path="/reminder-setup" element={<ReminderSetupScreen />} />
-        <Route path="/auth" element={<AuthScreen />} />
         <Route path="/checkin" element={<DailyCheckinScreen />} />
         {/* Allow Learn to be accessible during onboarding transition */}
         <Route element={<AppLayout />}>

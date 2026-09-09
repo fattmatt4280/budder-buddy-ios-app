@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import HealAidWarningDialog from '@/components/HealAidWarningDialog';
 import { HEAL_AID_SYMPTOM_TAGS, HEAL_AID_SYMPTOM_DAY_THRESHOLD, HEAL_AID_CONCERN_DAY_THRESHOLD, HealAidWarningReason } from '@/lib/healAid';
+import AddTattooDialog from '@/components/vault/AddTattooDialog';
 
 // Observation tags for user to log symptoms
 const OBSERVATION_TAGS = [
@@ -83,6 +84,7 @@ export default function TodayScreen() {
   const [noteText, setNoteText] = useState('');
   const [showStartHereHighlight, setShowStartHereHighlight] = useState(false);
   const [showHealingWarning, setShowHealingWarning] = useState(false);
+  const [addTattooOpen, setAddTattooOpen] = useState(false);
   const [healingWarningReason, setHealingWarningReason] = useState<HealAidWarningReason>('symptoms');
   const [checklist, setChecklist] = useState<DailyChecklist>({
     washed: false,
@@ -167,10 +169,13 @@ export default function TodayScreen() {
           />
           <h2 className="text-xl font-bold mb-2">No Tattoo Added</h2>
           <p className="text-muted-foreground mb-6">Add your first tattoo to start tracking.</p>
-          <Button onClick={() => navigate('/settings')} className="gradient-primary">
-            Go to Settings
+          <Button onClick={() => setAddTattooOpen(true)} className="gradient-primary">
+            <Plus className="w-4 h-4 mr-1" />
+            Add a Tattoo
           </Button>
         </div>
+
+        <AddTattooDialog open={addTattooOpen} onOpenChange={setAddTattooOpen} />
 
         {/* Today's Reminders Card (even without tattoo) */}
         {settings.notificationsEnabled && scheduledReminders.times.length > 0 && (

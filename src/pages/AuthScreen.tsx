@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useSettings } from '@/hooks/useStorage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,10 +18,25 @@ const passwordSchema = z.string().min(6, 'Password must be at least 6 characters
 
 export default function AuthScreen() {
   const navigate = useNavigate();
-  const { signIn, signUp, signInWithApple, signInWithGoogle, isAuthenticated, loading: authLoading } = useAuth();
+  const {
+    signIn,
+    signUp,
+    signInWithApple,
+    signInWithGoogle,
+    upgradeAnonymousAccount,
+    isAuthenticated,
+    isAnonymous,
+    loading: authLoading,
+  } = useAuth();
+  const { settings } = useSettings();
   const { toast } = useToast();
 
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  // Still going through the guided first-run flow (Welcome -> add tattoo ->
+  // photos -> HERE -> permission prompts), as opposed to a normal sign
+  // in/out from Settings. Determines both the copy and what happens next.
+  const isOnboarding = !settings.hasCompletedOnboarding;
+
+  const [mode, setMode] = useState<'login' | 'signup'>(isAnonymous ? 'signup' : 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -31,12 +47,16 @@ export default function AuthScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated with a real account. An anonymous
+  // session (started back on Welcome so tattoos/photos save for real during
+  // onboarding) is NOT "already authenticated" for this purpose — that's
+  // exactly the case this screen exists to finish, by attaching an
+  // email/password to it below.
   useEffect(() => {
-    if (isAuthenticated && !authLoading) {
+    if (isAuthenticated && !isAnonymous && !authLoading) {
       navigate('/', { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, isAnonymous, authLoading, navigate]);
 
   const validateForm = (): boolean => {
     const newErrors: { email?: string; password?: string } = {};
@@ -144,9 +164,17 @@ export default function AuthScreen() {
           navigate('/', { replace: true });
         }
       } else {
-        const { error } = await signUp(email, password, displayName);
+        // With an anonymous session already active (started on Welcome),
+        // attach the email/password to it in place instead of creating a
+        // separate account — the tattoo/photos already saved under this
+        // session's user id carry over with no migration needed.
+        const { error } = isAnonymous
+          ? await upgradeAnonymousAccount(email, password, displayName)
+          : await signUp(email, password, displayName);
+
         if (error) {
-          if (error.message.includes('already registered')) {
+          const message = error instanceof Error ? error.message : String((error as { message?: string })?.message ?? error);
+          if (message.toLowerCase().includes('already')) {
             toast({
               title: 'Account exists',
               description: 'An account with this email already exists. Try logging in instead.',
@@ -155,7 +183,7 @@ export default function AuthScreen() {
           } else {
             toast({
               title: 'Sign up failed',
-              description: error.message,
+              description: message,
               variant: 'destructive',
             });
           }
@@ -168,8 +196,15 @@ export default function AuthScreen() {
             title: '🎉 Welcome to Budder Buddy!',
             description: 'Check your notifications for a special welcome message!',
           });
-          offerBiometricEnrollment();
-          navigate('/', { replace: true });
+
+          if (isOnboarding) {
+            // Guided flow continues into the explicit permission prompts
+            // instead of the old silent auto-enable-and-toast.
+            navigate('/onboarding/face-id', { replace: true });
+          } else {
+            offerBiometricEnrollment();
+            navigate('/', { replace: true });
+          }
         }
       }
     } finally {
@@ -197,12 +232,18 @@ export default function AuthScreen() {
         />
         
         <h1 className="text-2xl font-bold text-foreground mb-1">
-          {mode === 'login' ? 'Sign In to Budder Buddy' : 'Create Your Budder Buddy Account'}
+          {mode === 'login'
+            ? 'Sign In to Budder Buddy'
+            : isOnboarding
+              ? 'Save Your Tattoo'
+              : 'Create Your Budder Buddy Account'}
         </h1>
         <p className="text-muted-foreground text-center mb-8">
-          {mode === 'login' 
+          {mode === 'login'
             ? 'Sign in to sync your tattoo care journey'
-            : 'Join to save your progress across devices'
+            : isOnboarding
+              ? "You've been tracking locally — add an email & password so it's backed up and syncs across devices."
+              : 'Join to save your progress across devices'
           }
         </p>
 
@@ -287,7 +328,7 @@ export default function AuthScreen() {
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              mode === 'login' ? 'Sign In' : 'Create Account'
+              mode === 'login' ? 'Sign In' : isOnboarding ? 'Save & Continue' : 'Create Account'
             )}
           </Button>
         </form>
