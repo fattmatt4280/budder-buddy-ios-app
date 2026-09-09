@@ -20,9 +20,6 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcodeproj/project.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.bluedreambudder.budder-buddy"
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.bluedreambudder.budder-buddy
       node: 20
       xcode: latest
     scripts:
@@ -32,7 +29,21 @@ workflows:
         script: npm run build
       - name: Sync Capacitor iOS project
         script: npx cap sync ios
-      - name: Set up automatic code signing
+      - name: Fetch signing files
+        # Uses the "budder buddy api" integration (Admin access) to fetch an
+        # existing App Store distribution cert+profile for this bundle ID,
+        # or create one if none exists yet (--create). The declarative
+        # `ios_signing:` block tried before this does NOT do this - it only
+        # checks for profiles already manually uploaded to Codemagic's own
+        # Code Signing Identities page, which is why it failed instantly
+        # with "No matching profiles found" before any script even ran.
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+      - name: Set up signing certificate
+        script: keychain add-certificates
+      - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Build ipa for distribution
         script: |
