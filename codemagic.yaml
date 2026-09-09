@@ -22,7 +22,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcodeproj/project.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.bluedreambudder.budder-buddy"
-      node: 20
+      node: 22
       xcode: latest
     scripts:
       - name: Install npm dependencies
