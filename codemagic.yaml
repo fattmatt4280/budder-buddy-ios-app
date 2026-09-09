@@ -4,9 +4,11 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      # Matches the "magiccode" App Store Connect API key integration added
-      # under Codemagic > Team settings > Integrations > App Store Connect.
-      app_store_connect: magiccode
+      # This is the key Matt named "magiccode" in App Store Connect (Admin
+      # access, Key ID BHNKDRCGAP) - but it was already registered in
+      # Codemagic under "budder buddy api" from an earlier attempt, so
+      # that's the integration name Codemagic actually knows it by.
+      app_store_connect: "budder buddy api"
     environment:
       # Create this group under the app's Environment variables in Codemagic
       # and add VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY to it
