@@ -4,10 +4,9 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      # Name this exactly as you name the App Store Connect API key
-      # integration when you add it under Codemagic > Team settings >
-      # Integrations > App Store Connect.
-      app_store_connect: budder_buddy_asc_api_key
+      # Matches the "magiccode" App Store Connect API key integration added
+      # under Codemagic > Team settings > Integrations > App Store Connect.
+      app_store_connect: magiccode
     environment:
       # Create this group under the app's Environment variables in Codemagic
       # and add VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY to it
