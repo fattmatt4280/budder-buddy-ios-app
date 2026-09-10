@@ -31,17 +31,30 @@ workflows:
       - name: Sync Capacitor iOS project
         script: npx cap sync ios
       - name: Fetch signing files
-        # Uses the "budder buddy api" integration (Admin access) to fetch an
+        # Uses the budder_buddy_admin integration (Admin access) to fetch an
         # existing App Store distribution cert+profile for this bundle ID,
         # or create one if none exists yet (--create). The declarative
         # `ios_signing:` block tried before this does NOT do this - it only
         # checks for profiles already manually uploaded to Codemagic's own
         # Code Signing Identities page, which is why it failed instantly
         # with "No matching profiles found" before any script even ran.
+        #
+        # --create alone still fails with "Cannot save Signing Certificates
+        # without certificate private key" - it needs an explicit private
+        # key to pair with the new certificate's CSR, which it does not
+        # generate on its own. FCI_CERTIFICATE_PRIVATE_KEY (base64-encoded
+        # RSA key, set as a secure env var in the budder_buddy_env group) is
+        # decoded to a file and passed via --certificate-key so the new
+        # certificate this step creates actually has a usable private key.
         script: |
+          set -e
+          CERT_KEY_PATH="$CM_BUILD_DIR/cert_key.pem"
+          echo "$FCI_CERTIFICATE_PRIVATE_KEY" | base64 -d > "$CERT_KEY_PATH"
+
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --certificate-key=@file:"$CERT_KEY_PATH"
       - name: Set up signing certificate
         script: keychain add-certificates
       - name: Set up code signing settings on Xcode project
