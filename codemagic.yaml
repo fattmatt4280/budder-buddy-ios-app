@@ -56,7 +56,19 @@ workflows:
             --create \
             --certificate-key=@file:"$CERT_KEY_PATH"
       - name: Set up signing certificate
-        script: keychain add-certificates
+        # keychain add-certificates alone left the imported key without
+        # `codesign` in its ACL partition list, so the archive step failed
+        # with "errSecInternalComponent" the moment Xcode's parallel build
+        # tried to actually use the key to sign a resource bundle (macOS
+        # keychain asking for non-interactive codesign access it was never
+        # granted - a well-documented CI code-signing gotcha, not specific
+        # to this app). Explicitly granting codesign access after import
+        # fixes it; the exact pattern Codemagic's own real-world yaml
+        # examples use (github.com/BasedHardware/omi/blob/main/codemagic.yaml).
+        script: |
+          keychain add-certificates
+          KEYCHAIN_PATH=$(keychain get-default)
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" "$KEYCHAIN_PATH" 2>/dev/null || true
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Build ipa for distribution
