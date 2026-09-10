@@ -30,6 +30,33 @@ workflows:
         script: npm run build
       - name: Sync Capacitor iOS project
         script: npx cap sync ios
+      - name: Re-add GoogleSignIn to regenerated Package.swift
+        # `cap sync` fully regenerates ios/App/CapApp-SPM/Package.swift from
+        # the installed npm Capacitor plugins only. GoogleSignIn-iOS was
+        # added by hand (native Google sign-in used by SocialAuthPlugin.swift,
+        # not an npm Capacitor plugin), so cap sync silently drops it on
+        # every single build - archive then fails with "unable to resolve
+        # module dependency: 'GoogleSignIn'". Patches it back in after sync;
+        # idempotent (no-op if already present).
+        script: |
+          PKG="ios/App/CapApp-SPM/Package.swift"
+          if ! grep -q "GoogleSignIn-iOS" "$PKG"; then
+            python3 -c "
+          path = '$PKG'
+          with open(path) as f:
+              content = f.read()
+          content = content.replace(
+              '.package(name: \"CapacitorSecureStoragePlugin\", path: \"../../../node_modules/capacitor-secure-storage-plugin\")',
+              '.package(name: \"CapacitorSecureStoragePlugin\", path: \"../../../node_modules/capacitor-secure-storage-plugin\"),\n        .package(url: \"https://github.com/google/GoogleSignIn-iOS.git\", from: \"8.0.0\")',
+          )
+          content = content.replace(
+              '.product(name: \"CapacitorSecureStoragePlugin\", package: \"CapacitorSecureStoragePlugin\")',
+              '.product(name: \"CapacitorSecureStoragePlugin\", package: \"CapacitorSecureStoragePlugin\"),\n                .product(name: \"GoogleSignIn\", package: \"GoogleSignIn-iOS\")',
+          )
+          with open(path, 'w') as f:
+              f.write(content)
+          "
+          fi
       - name: Fetch signing files
         # Uses the budder_buddy_admin integration (Admin access) to fetch an
         # existing App Store distribution cert+profile for this bundle ID,
