@@ -6,7 +6,7 @@ export default function TermsOfServiceScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background safe-area-top">
+    <div className="fixed inset-0 bg-background safe-area-top overflow-y-auto">
       {/* Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10">
         <div className="px-6 py-4 flex items-center gap-3">

@@ -53,7 +53,7 @@ export default function PaywallScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-background safe-area-top safe-area-bottom flex flex-col">
+    <div className="fixed inset-0 bg-background safe-area-top safe-area-bottom flex flex-col">
       {/* Header */}
       <div className="px-4 pt-4 pb-2">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-muted-foreground">
@@ -61,7 +61,7 @@ export default function PaywallScreen() {
         </button>
       </div>
 
-      <div className="flex-1 px-6 pb-8 flex flex-col">
+      <div className="flex-1 px-6 pb-8 flex flex-col overflow-y-auto">
         {/* Hero */}
         <div className="text-center mb-6">
           <img src={mascotImage} alt="Budder Buddy" className="w-20 h-20 mx-auto mb-4 rounded-2xl shadow-lg" />

@@ -140,7 +140,7 @@ function AppRoutes() {
   // flash to welcome screen on app restart for already-signed-in users
   if (isLoading || biometricLocked === null) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="fixed inset-0 bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -150,7 +150,7 @@ function AppRoutes() {
   if (biometricLocked && isAuthenticated) {
     const label = biometryType === 'faceId' ? 'Face ID' : 'Touch ID';
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-8 gap-6 safe-area-top safe-area-bottom">
+      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center px-8 gap-6 safe-area-top safe-area-bottom">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
           {biometryType === 'faceId' ? (
             <ScanFace className="w-10 h-10 text-primary" />
