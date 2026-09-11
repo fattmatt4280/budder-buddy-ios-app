@@ -129,7 +129,7 @@ export default function ReminderSetupScreen() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background safe-area-top safe-area-bottom">
+    <div className="fixed inset-0 flex flex-col bg-background safe-area-top safe-area-bottom">
       {/* Header */}
       <div className="flex-1 px-6 pt-8 pb-4 overflow-auto">
         {/* Mascot and Title */}

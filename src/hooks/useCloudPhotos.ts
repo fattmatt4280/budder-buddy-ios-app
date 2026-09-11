@@ -14,12 +14,24 @@ export interface CloudPhoto {
 }
 
 export function useCloudPhotos() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [photos, setPhotos] = useState<CloudPhoto[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch photos from database
   const fetchPhotos = useCallback(async () => {
+    // useAuth() is a plain hook (not shared context) — every component that
+    // calls it, including this one via a fresh mount, starts with user=null
+    // until its own getSession()/onAuthStateChange resolves. Bail out without
+    // touching `loading` while that's still in flight, so callers relying on
+    // `loading` (e.g. GhostCameraScreen's ghost-photo lookup) don't read a
+    // false "no user, no photos" conclusion moments before the real session
+    // (and real photos) show up — this raced visibly during onboarding,
+    // where a brand-new anonymous session is only seconds old when the 2nd
+    // Ghost Camera screen mounts, so this window is much likelier to be hit
+    // than for a returning user whose session settled long ago.
+    if (authLoading) return;
+
     if (!user) {
       setPhotos([]);
       setLoading(false);
@@ -64,7 +76,7 @@ export function useCloudPhotos() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   useEffect(() => {
     fetchPhotos();

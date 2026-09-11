@@ -11,7 +11,7 @@ export default function AddFirstTattooScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="fixed inset-0 bg-background">
       <AddTattooDialog
         open={true}
         onOpenChange={(open) => {

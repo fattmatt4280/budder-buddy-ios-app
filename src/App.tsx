@@ -57,8 +57,12 @@ function AppRoutes() {
   const [biometryType, setBiometryType] = useState<BiometryType>('none');
   const [biometricChecking, setBiometricChecking] = useState(false);
 
-  // Mascot intro plays once per app launch, on top of whatever's loading behind it.
-  const [introDone, setIntroDone] = useState(false);
+  // Mascot intro plays once per app launch, on top of whatever's loading behind it —
+  // except when the launch itself was a notification tap (main.tsx hard-navigates
+  // to /checkin for that), which should always land straight on check-in with no
+  // intro. Checking the entry path here makes that explicit and deterministic
+  // instead of relying on incidental timing.
+  const [introDone, setIntroDone] = useState(() => window.location.pathname === '/checkin');
 
   // On mount, check if biometric lock should be shown
   useEffect(() => {

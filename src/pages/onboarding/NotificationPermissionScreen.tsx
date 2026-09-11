@@ -56,7 +56,7 @@ export default function NotificationPermissionScreen() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background safe-area-top safe-area-bottom">
+    <div className="fixed inset-0 flex flex-col bg-background safe-area-top safe-area-bottom">
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         {/* Icon */}

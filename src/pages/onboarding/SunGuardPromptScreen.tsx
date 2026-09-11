@@ -46,7 +46,7 @@ export default function SunGuardPromptScreen() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background safe-area-top safe-area-bottom">
+    <div className="fixed inset-0 flex flex-col bg-background safe-area-top safe-area-bottom">
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="w-24 h-24 rounded-full bg-amber-500/10 flex items-center justify-center mb-8 animate-fade-in">
           <Sun className="w-12 h-12 text-amber-500" />

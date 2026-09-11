@@ -26,7 +26,7 @@ export default function SecondPhotoPromptScreen() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background safe-area-top safe-area-bottom">
+    <div className="fixed inset-0 flex flex-col bg-background safe-area-top safe-area-bottom">
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="relative mb-8 animate-fade-in">
           <img

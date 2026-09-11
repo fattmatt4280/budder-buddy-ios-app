@@ -70,14 +70,14 @@ export default function FaceIdPromptScreen() {
 
   if (checking || !available) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background safe-area-top safe-area-bottom">
+    <div className="fixed inset-0 flex flex-col bg-background safe-area-top safe-area-bottom">
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-8 animate-fade-in">
           {biometryType === 'faceId' ? (
